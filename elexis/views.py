@@ -1,12 +1,14 @@
+from django.contrib.auth import authenticate
 from django.shortcuts import redirect
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Recruiter, Candidate
-from .serializers import RecruiterSerializer, CandidateSerializer
+from .serializers import RecruiterSerializer, CandidateSerializer, LoginSerializer
 
 
 class RecruiterViewSet(viewsets.ModelViewSet):
@@ -68,7 +70,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Candidate.objects.filter(recruiter=self.request.user)
+        return Candidate.objects.filter(recruiter=self.request.user.pk)
 
     def perform_create(self, serializer):
         serializer.save(recruiter=self.request.user)
@@ -112,3 +114,29 @@ class CandidateViewSet(viewsets.ModelViewSet):
         candidate.joining_link = None
         candidate.save()
         return redirect("www.google.com")
+
+
+class SignupView(APIView):
+    def post(self, request):
+        serializer = RecruiterSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Signup successful!"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginView(APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
+            user = authenticate(request, email=email, password=password)
+            if user:
+                # Generate tokens
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }, status=status.HTTP_200_OK)
+            return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

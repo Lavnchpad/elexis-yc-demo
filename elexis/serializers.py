@@ -26,3 +26,8 @@ class CandidateSerializer(serializers.ModelSerializer):
         model = Candidate
         fields = '__all__'
         read_only_fields = ('recruiter',)
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)

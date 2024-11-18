@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 
+from decouple import config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -174,8 +176,9 @@ SIMPLE_JWT = {
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-AWS_ACCESS_KEY_ID = 'VM4ad88e0MoMcO34nYjC'  # Replace with generated access key
-AWS_SECRET_ACCESS_KEY = '24cCVVEQAIiZ8NjzH2cZKTU4Z52dbOs6yrSL4qOb'  # Replace with generated secret key
-AWS_STORAGE_BUCKET_NAME = 'elexis'  # Replace with your bucket name
-AWS_S3_ENDPOINT_URL = 'http://127.0.0.1:9000'  # MinIO S3-compatible API URL
-AWS_QUERYSTRING_AUTH = False  # Optional: Disable query string authentication
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')  # Retrieve from .env
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')  # Retrieve from .env
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')  # Retrieve from .env
+AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL')  # Retrieve from .env
+AWS_QUERYSTRING_AUTH = config('AWS_QUERYSTRING_AUTH', default=False, cast=bool)  # Cast to boolean
+
