@@ -21,10 +21,10 @@ const AddCandidate = ({ children }) => {
   const { candidates, setCandidates } = useContext(CandidatesContext);
   const { jobs, fetchJobs } = useContext(JobsContext); // Fetch jobs and jobs state from context
 
-  // Fetch jobs on mount
+
   useEffect(() => {
     fetchJobs();
-  }, [fetchJobs]);
+  }, []);
 
   const onSubmit = async (data) => {
     const formData = new FormData();

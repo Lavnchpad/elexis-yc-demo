@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 export const JobsContext = createContext();
 
@@ -20,9 +20,12 @@ export const JobsProvider = ({ children }) => {
       console.error("Error fetching jobs:", error);
     }
   };
+  useEffect(() => {
+    fetchJobs();  // Ensure jobs are fetched on component mount
+  }, []);
 
   return (
-    <JobsContext.Provider value={{ jobs, fetchJobs }}>
+    <JobsContext.Provider value={{ jobs,setJobs, fetchJobs }}>
       {children}
     </JobsContext.Provider>
   );
