@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Recruiter, Candidate
-from .serializers import RecruiterSerializer, CandidateSerializer, LoginSerializer
+from .models import Recruiter, Candidate, Job
+from .serializers import RecruiterSerializer, CandidateSerializer, LoginSerializer, JobSerializer
 
 
 class RecruiterViewSet(viewsets.ModelViewSet):
@@ -124,6 +124,7 @@ class SignupView(APIView):
             return Response({"message": "Signup successful!"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -140,3 +141,9 @@ class LoginView(APIView):
                 }, status=status.HTTP_200_OK)
             return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class JobViewSet(viewsets.ModelViewSet):
+    queryset = Job.objects.all()
+    serializer_class = JobSerializer
+    permission_classes = [IsAuthenticated]

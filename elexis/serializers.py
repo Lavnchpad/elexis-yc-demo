@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Recruiter, Candidate
+from .models import Recruiter, Candidate, Job
 
 
 class RecruiterSerializer(serializers.ModelSerializer):
@@ -21,7 +21,17 @@ class RecruiterSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class JobSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        fields = '__all__'
+
 class CandidateSerializer(serializers.ModelSerializer):
+    job = JobSerializer(read_only=True)
+    job_id = serializers.PrimaryKeyRelatedField(
+        queryset=Job.objects.all(), source='job', write_only=True
+    )
+
     class Meta:
         model = Candidate
         fields = '__all__'
@@ -31,3 +41,5 @@ class CandidateSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+
+
