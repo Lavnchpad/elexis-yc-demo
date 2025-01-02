@@ -1,0 +1,135 @@
+import json
+import os
+import tempfile
+import requests
+import dotenv
+import google.generativeai as genai
+from loguru import logger
+
+
+dotenv.load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI"))
+
+
+def generate_summary_data(data):
+    prompt_template = '''
+        As a senior recruiter, create a detailed and comprehensive summary of the candidate from the transcription of the interview conversation. This summary will help hiring managers understand the candidate's suitability for the position based on various criteria. Include relevant examples and provide ratings for each section. The summary should encompass the following sections: overall impression, strengths (with examples and ratings), areas for improvement (with suggestions), and final recommendation.
+        
+        I want you to be give critical reviews.
+        
+        Transcription:
+        {{data}}
+
+        Return the summary as a JSON object with these keys: 'overall_impression', 'strengths', 'areas_for_improvement', and 'final_recommendation'.
+
+        Each section should contain the following information:
+
+        overall_impression: List of points summarizing the general impression of the candidate, including communication skills, demeanor, and fit for the company culture.
+
+        strengths: Each item should be a dictionary with the following fields:
+        strength: The specific strength of the candidate
+        example: An example or situation demonstrating this strength
+        rating: A rating out of 5, where 5 indicates excellent proficiency
+
+        areas_for_improvement: Each item should be a dictionary with the following fields:
+        area: The specific area needing improvement
+        details: A detailed explanation of the area
+        suggestions: Suggestions questions that can be asked on how the candidate can improve in this area or recommendations for further assessments during interviews in a paragraph
+
+        final_recommendation: List of points summarizing the overall recommendation regarding the candidate's potential fit for the position, including any conditions or next steps.
+
+        Ensure the summary is clear, concise, and provides a holistic view of the candidate's capabilities, potential, and areas needing improvement.
+
+        '''
+    while True:
+        try:
+            prompt = prompt_template.replace("{{data}}", data)
+            model = genai.GenerativeModel('gemini-1.5-flash-8b',
+                                          generation_config={"response_mime_type": "application/json"})
+            chat = model.start_chat(history=[])
+            response = chat.send_message(prompt)
+
+            response_json = json.loads(response.text)
+
+            required_keys = [
+                'overall_impression',
+                'strengths',
+                'areas_for_improvement',
+                'final_recommendation'
+            ]
+
+            for key in required_keys:
+                assert key in response_json, f"Missing key in the response: {key}"
+                assert isinstance(response_json[key],
+                                  list), f"Key '{key}' should be a list but got {type(response_json[key])}"
+
+            for item in response_json['strengths']:
+                assert 'strength' in item, "Missing 'strength' in strengths"
+                assert 'example' in item, "Missing 'example' in strengths"
+                assert 'rating' in item, "Missing 'rating' in strengths"
+
+            for item in response_json['areas_for_improvement']:
+                assert 'area' in item, "Missing 'area' in areas_for_improvement"
+                assert 'details' in item, "Missing 'details' in areas_for_improvement"
+                assert 'suggestions' in item, "Missing 'suggestions' in areas_for_improvement"
+
+            return response_json
+
+        except AssertionError as e:
+            print(f"Assertion Error: {e}")
+
+            correction_prompt = (
+                f"There was an error in the format of the JSON response: {e}. Please ensure the response has the following structure:\n\n"
+                f"1. 'overall_impression' should be an array of points.\n"
+                f"2. 'strengths' should be an array of dictionaries, each with 'strength', 'example', and 'rating'.\n"
+                f"3. 'areas of potential discussion' should be an array of dictionaries, each with 'area', 'details', and 'suggestions'.\n"
+                f"4. 'final_recommendation' should be an array of points.\n\n"
+                f"Please correct and reformat the response accordingly."
+            )
+            prompt_template = correction_prompt
+            continue
+
+        except Exception as e:
+            print(e)
+            return None
+
+
+
+def generate_summary(file_url):
+    logger.info("Summary Function started")
+
+    response = requests.get(file_url)
+
+    if response.status_code == 200:
+        logger.info("File downloaded successfully")
+        file_content = response.text
+    else:
+        logger.error(f"Failed to fetch the file. HTTP Status Code: {response.status_code}")
+        return {"status": "error", "message": f"Failed to fetch the file. HTTP Status Code: {response.status_code}"}
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as temp_file:
+        file_path = temp_file.name
+        temp_file.write(file_content.encode('utf-8')) 
+
+    logger.info(f"Temporary file created at: {file_path}")
+
+    try:
+        with open(file_path, 'r') as file:
+            file_data = file.read()
+
+        summary_data = generate_summary_data(file_data)
+        logger.info("File processing completed successfully")
+
+        return summary_data
+
+    except Exception as e:
+        logger.error(f"An error occurred while processing the file: {e}")
+        return {"status": "error", "message": str(e)}
+
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            logger.info(f"Temporary file deleted: {file_path}")
+
+
+

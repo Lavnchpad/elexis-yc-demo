@@ -66,7 +66,7 @@ class Candidate(BaseModel):
     name = models.CharField(max_length=255)
     email = models.EmailField()
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    interview_summary = models.FileField(upload_to='interview_summaries/', blank=True)
+    interview_summary = models.JSONField(default=dict, blank=True,null=True)
     transcript = models.FileField(upload_to='transcripts/', blank=True)
     applied_for = models.CharField(max_length=255)
     proctoring_images = models.JSONField(default=list, blank=True)

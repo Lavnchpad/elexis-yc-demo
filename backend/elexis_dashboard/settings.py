@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     "rest_framework",
     'drf_yasg',
 
-    "elexis"
+    "elexis",
+    "interview_scheduler",
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
