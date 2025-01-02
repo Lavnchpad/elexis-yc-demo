@@ -38,5 +38,4 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('admin/', admin.site.urls),
     path("", include("elexis.urls")),
-    path('interview/', include('interview_scheduler.urls')),
 ]
