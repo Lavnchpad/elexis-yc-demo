@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'drf_yasg',
 
     "elexis",
-    "interview_scheduler",
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -149,7 +148,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-AUTH_USER_MODEL = "elexis.Recruiter"
+AUTH_USER_MODEL = "elexis.User"
 
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
@@ -187,11 +186,5 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 }
 
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')  # Retrieve from .env
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')  # Retrieve from .env
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')  # Retrieve from .env
-AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL')  # Retrieve from .env
-AWS_QUERYSTRING_AUTH = config('AWS_QUERYSTRING_AUTH', default=False, cast=bool)  # Cast to boolean
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 

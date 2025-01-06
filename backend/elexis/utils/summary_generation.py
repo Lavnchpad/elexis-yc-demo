@@ -1,10 +1,11 @@
 import json
 import os
-import tempfile
-import requests
+
 import dotenv
 import google.generativeai as genai
-from loguru import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 dotenv.load_dotenv()
@@ -95,29 +96,12 @@ def generate_summary_data(data):
 
 
 
-def generate_summary(file_url):
+def generate_summary(transcript_data):
     logger.info("Summary Function started")
 
-    response = requests.get(file_url)
-
-    if response.status_code == 200:
-        logger.info("File downloaded successfully")
-        file_content = response.text
-    else:
-        logger.error(f"Failed to fetch the file. HTTP Status Code: {response.status_code}")
-        return {"status": "error", "message": f"Failed to fetch the file. HTTP Status Code: {response.status_code}"}
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as temp_file:
-        file_path = temp_file.name
-        temp_file.write(file_content.encode('utf-8')) 
-
-    logger.info(f"Temporary file created at: {file_path}")
-
+    
     try:
-        with open(file_path, 'r') as file:
-            file_data = file.read()
-
-        summary_data = generate_summary_data(file_data)
+        summary_data = generate_summary_data(transcript_data)
         logger.info("File processing completed successfully")
 
         return summary_data
@@ -126,10 +110,7 @@ def generate_summary(file_url):
         logger.error(f"An error occurred while processing the file: {e}")
         return {"status": "error", "message": str(e)}
 
-    finally:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            logger.info(f"Temporary file deleted: {file_path}")
+
 
 
 

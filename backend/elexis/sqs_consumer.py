@@ -1,5 +1,6 @@
-from backend.elexis.models import Candidate
-from backend.elexis.utils.summary_generation import generate_summary
+from elexis.models import Interview
+from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3
+from elexis.utils.summary_generation import generate_summary
 import boto3
 import json
 import time
@@ -8,28 +9,32 @@ import os
 
 load_dotenv()
 
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+SQS_QUEUE_URL = os.getenv("SQS_QUEUE_URL")
+AWS_REGION = os.getenv("AWS_REGION")
 
-AWS_ACCESS_KEY_ID=os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY=os.getenv("AWS_SECRET_ACCESS_KEY")
+
 def start_sqs_consumer():
     """
     Function to start the SQS consumer.
     This runs in a separate thread to avoid blocking the server.
     """
-    queue_url = "https://sqs.us-east-1.amazonaws.com/818798134310/elexis-transcript-queue"
-    aws_region = "us-east-1"
-
-    sqs_client = boto3.client('sqs', region_name=aws_region,aws_access_key_id=AWS_ACCESS_KEY_ID,
-                   aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+    sqs_client = boto3.client(
+        'sqs',
+        region_name=AWS_REGION,
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+    )
 
     print("SQS Consumer started...")
 
     while True:
         try:
             response = sqs_client.receive_message(
-                QueueUrl=queue_url,
-                MaxNumberOfMessages=1, 
-                WaitTimeSeconds=10  
+                QueueUrl=SQS_QUEUE_URL,
+                MaxNumberOfMessages=1,  # Process one message at a time
+                WaitTimeSeconds=10      # Wait for up to 10 seconds for a new message
             )
 
             messages = response.get('Messages', [])
@@ -42,51 +47,60 @@ def start_sqs_consumer():
 
                 process_message(message_body)
 
+                # Delete the message from the queue after processing
                 sqs_client.delete_message(
-                    QueueUrl=queue_url,
+                    QueueUrl=SQS_QUEUE_URL,
                     ReceiptHandle=receipt_handle
                 )
                 print(f"Processed and deleted message: {message_body}")
 
         except Exception as e:
             print(f"Error consuming SQS messages: {e}")
-            time.sleep(5)  
+            time.sleep(5)  # Retry after a short delay
 
 
 def process_message(message_body):
     """
-    Process the SQS message. Customize this function as needed.
+    Process the SQS message and update the Interview instance.
     """
     try:
         message = json.loads(message_body)
 
-        candidate_id = message.get("candidate_id")
+        interview_id = message.get("interview_id")
         transcript_url = message.get("s3_file_url")
 
-        if not candidate_id or not transcript_url:
-            print(f"Invalid data in message: candidate_id={candidate_id}, transcript_url={transcript_url}")
+        if not interview_id or not transcript_url:
+            print(f"Invalid data in message: interview_id={interview_id}, transcript_url={transcript_url}")
             return
 
+        # Fetch transcript data from S3
         try:
-            summary_json = generate_summary(transcript_url)
+            transcript_data = get_file_data_from_s3(transcript_url)
         except Exception as e:
-            print(f"Error generating summary for transcript URL: {transcript_url}, Error: {e}")
+            print(f"Error fetching transcript data from S3: {e}")
             return
 
+        # Generate summary from transcript data
         try:
-            rows_updated = Candidate.objects.filter(id=candidate_id).update(
-                transcript=transcript_url,
-                interview_summary=summary_json
+            summary_json = generate_summary(transcript_data)
+        except Exception as e:
+            print(f"Error generating summary for transcript: {e}")
+            return
+
+        # Update the Interview instance with the transcript and summary
+        try:
+            rows_updated = Interview.objects.filter(id=interview_id).update(
+                transcript=transcript_data,
+                summary=summary_json
             )
             if rows_updated:
-                print(f"Transcript and summary updated for Candidate ID: {candidate_id}")
+                print(f"Transcript and summary updated for Interview ID: {interview_id}")
             else:
-                print(f"Candidate ID {candidate_id} not found. No update performed.")
+                print(f"Interview ID {interview_id} not found. No update performed.")
         except Exception as e:
-            print(f"Error updating database for Candidate ID {candidate_id}: {e}")
+            print(f"Error updating database for Interview ID {interview_id}: {e}")
 
     except json.JSONDecodeError:
         print(f"Invalid message format: {message_body}")
     except Exception as e:
         print(f"Unexpected error processing message: {e}")
-
