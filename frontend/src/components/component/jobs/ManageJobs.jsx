@@ -1,4 +1,9 @@
+"use client";
+
 import React, { useState, useEffect, useContext } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "../../ui/button";
 import {
   Dialog,
@@ -9,18 +14,39 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../ui/dialog";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "../../ui/form";
 import { Input } from "../../ui/input";
-import { Label } from "../../ui/label";
 import { Textarea } from "../../ui/textarea";
 import axios from "axios";
 import { JobsContext } from "./JobsContext";
+import { Loader } from "lucide-react";
+import { toast } from "sonner";
+
+const jobSchema = z.object({
+  title: z.string().min(1, { message: "Job title is required" }),
+  description: z.string().min(1, { message: "Job description is required" }),
+});
 
 const ManageJobs = ({ children }) => {
   const { jobs, setJobs } = useContext(JobsContext);
-  const [jobTitle, setJobTitle] = useState("");
-  const [additionalInfo, setAdditionalInfo] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
-  const [pdfFile, setPdfFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+   const [open, setOpen] = useState(false);
+
+  const form = useForm({
+    resolver: zodResolver(jobSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+    },
+  });
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -38,16 +64,19 @@ const ManageJobs = ({ children }) => {
     fetchJobs();
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
+    setLoading(true);
     const formData = new FormData();
-    formData.append("job_name", jobTitle);
-    formData.append("additional_data", additionalInfo);
-    if (pdfFile) formData.append("job_description", pdfFile);
+    formData.append("title", data.title);
+    formData.append("description", data.description);
 
     try {
       const token = localStorage.getItem("authToken");
       if (selectedJob) {
+        if (data.title.trim() === "" || data.description.trim() === "") {
+          setSelectedJob(null);
+          return; // Don't update if fields are cleared
+        }
         const response = await axios.put(
           `${import.meta.env.VITE_API_BASE_URL}/jobs/${selectedJob.id}/`,
           formData,
@@ -57,30 +86,33 @@ const ManageJobs = ({ children }) => {
         );
         setJobs((prevJobs) =>
           prevJobs.map((job) =>
-            job.id === selectedJob.id ? { ...job, job_description: response.data.job_description } : job
+            job.id === selectedJob.id
+              ? { ...job, title: response.data.title, description: response.data.description }
+              : job
           )
-        );
+        );        
         setSelectedJob(null);
+        toast.success("Job updated successfully!");
       } else {
         const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/jobs/`, formData, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
         });
         setJobs((prevJobs) => [...prevJobs, response.data]);
+        toast.success("New job created successfully!");
       }
+      form.reset();
+      setOpen(false);
     } catch (error) {
       console.error("Error handling job submission:", error);
+      toast.error("An error occurred. Please try again!");
+    }finally {
+      setLoading(false);
     }
-
-    setJobTitle("");
-    setAdditionalInfo("");
-    setPdfFile(null);
   };
-
-  const handleFileChange = (e) => setPdfFile(e.target.files[0]);
 
   return (
     <div>
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger>{children}</DialogTrigger>
         <DialogContent className="sm:max-w-[900px]">
           <DialogHeader>
@@ -97,37 +129,50 @@ const ManageJobs = ({ children }) => {
                     className="p-2 cursor-pointer hover:bg-gray-100"
                     onClick={() => {
                       setSelectedJob(job);
-                      setJobTitle(job.job_name);
-                      setAdditionalInfo(job.additional_data);
+                      form.setValue("title", job.title);
+                      form.setValue("description", job.description);
                     }}
                   >
-                    {job.job_name}
+                    {job.title}
                   </li>
                 ))}
               </ul>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="jobTitle">Job Title</Label>
-                <Input id="jobTitle" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="uploadPDF">Job Description (PDF)</Label>
-                <Input id="uploadPDF" type="file" onChange={handleFileChange} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="additionalInfo">Additional Information</Label>
-                <Textarea
-                  id="additionalInfo"
-                  value={additionalInfo}
-                  onChange={(e) => setAdditionalInfo(e.target.value)}
-                  rows={3}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter job title" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <DialogFooter>
-                <Button type="submit">Save Job Details</Button>
-              </DialogFooter>
-            </form>
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Description</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Enter job description" {...field} rows={3} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                  <Button type="submit" disabled={loading}>
+              {loading ? <Loader className="animate-spin mr-2" size={16} /> : "Save Job Details"}
+            </Button>
+                </DialogFooter>
+              </form>
+            </Form>
           </div>
         </DialogContent>
       </Dialog>

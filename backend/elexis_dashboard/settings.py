@@ -64,6 +64,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'GET',
     'POST',
+    'PUT',
     'OPTIONS',  # Make sure OPTIONS is included
 ]
 

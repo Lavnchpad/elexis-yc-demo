@@ -1,91 +1,72 @@
-import React from "react";
-import sample from "../../../assets/video/sample.mp4";
-import one from "../../../assets/images/one.png";
-import two from "../../../assets/images/two.png";
-import three from "../../../assets/images/three.png";
-import four from "../../../assets/images/four.png";
+import React, { useEffect, useState } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { useOutletContext } from "react-router-dom";
+import axios from "axios";
+import mammoth from "mammoth";
 
 const Transcript = () => {
-  // Example of snapshot URLs
-  const snapshots = [one, two, three, four];
+  const { selectedCandidate } = useOutletContext();
+  const [qaData, setQaData] = useState([]);
+  const [error, setError] = useState("");
 
-  return (
-    <div className="video-container">
-      {/* Video Player */}
-      <div className="video-player">
-        <video
-          width="100%"
-          controls
-          src={sample} // Use your video URL here
-          alt="Sample Video"
-        >
-          Your browser does not support the video tag.
-        </video>
-      </div>
-
-      {/* Snapshot Heading */}
-      <h2 className="text-left my-4 text-xl font-semibold">Snapshots</h2>
-
-      {/* Snapshots Below Video */}
-      <div className="snapshots">
-        {snapshots.map((snapshot, index) => (
-          <div key={index} className="snapshot-wrapper">
-            <img
-              src={snapshot}
-              alt={`Snapshot ${index + 1}`}
-              className="snapshot-img"
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Styles */}
-      <style jsx>{`
-        .video-container {
-          max-width: 900px;
-          margin: 0 auto;
-          padding: 20px;
+  useEffect(() => {
+    const fetchTranscript = async () => {
+      // Check if the transcript URL exists
+      if (!selectedCandidate?.transcript) {
+        setError("No transcript available for this candidate.");
+        return;
+      }
+      try {
+        // Fetch the .docx file
+        const response = await axios.get(selectedCandidate.transcript, {
+          responseType: "arraybuffer",
+        });
+        // Parse the .docx content
+        const { value: rawText } = await mammoth.extractRawText({
+          arrayBuffer: response.data,
+        });
+         // Convert raw text into structured Q&A data
+         const lines = rawText.split("\n").filter(Boolean); 
+         const parsedData = lines.reduce((acc, line, index) => {
+           if (line.startsWith("Question:")) {
+             acc.push({ question: line.replace("Question:", "").trim(), answer: "" });
+           } else if (line.startsWith("Answer:") && acc.length > 0) {
+             acc[acc.length - 1].answer = line.replace("Answer:", "").trim();
+           }
+           return acc;
+         }, []);
+         setQaData(parsedData);
+        } catch (err) {
+          console.error("Error fetching or processing transcript:", err);
+          setError("Failed to process the transcript file.");
         }
-
-        .video-player {
-          margin-bottom: 20px;
-        }
-
-        .snapshot-heading {
-          font-size: 1.5rem;
-          margin: 20px 0;
-          text-align: center;
-          font-weight: bold;
-          color: #333;
-        }
-
-        .snapshots {
-          display: flex;
-          flex-direction: column; /* Stack items vertically */
-          gap: 20px; /* Space between snapshots */
-          align-items: center;
-        }
-
-        .snapshot-wrapper {
-          width: 100%; /* Allow full width for each snapshot */
-          text-align: center; /* Center align content */
-        }
-
-        .snapshot-img {
-          max-width: 90%; /* Restrict image size */
-          height: auto;
-          border: 2px solid #ddd;
-          border-radius: 8px;
-          transition: transform 0.2s;
-          cursor: pointer;
-        }
-
-        .snapshot-img:hover {
-          transform: scale(1.05);
-        }
-      `}</style>
+      };
+      fetchTranscript();
+    }, [selectedCandidate]);
+  
+    return (
+      <div className="w-full">
+        {error ? (
+          <p className="text-red-500">{error}</p>
+        ) : qaData.length > 0 ? (
+          <Accordion type="single" collapsible className="w-full">
+            {qaData.map((item, index) => (
+              <AccordionItem key={index} value={`item-${index}`}>
+                <AccordionTrigger className="text-left">{item.question}</AccordionTrigger>
+                <AccordionContent>{item.answer}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        ) : (
+          <p className="text-gray-500">Loading transcript data...</p>
+        )}
     </div>
-  );
-};
+  )
+}
 
-export default Transcript;
+export default Transcript

@@ -35,7 +35,7 @@ const LoginPage = () => {
       try{
       const data = await response.json();
       console.log(data)
-      const token = data.access; // Assuming the token is in `data.token`
+      const token = data.tokens.access; // Assuming the token is in `data.token`
         localStorage.setItem('authToken', token);
       } catch(error){
         console.log(error)
