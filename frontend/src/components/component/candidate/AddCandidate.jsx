@@ -87,7 +87,7 @@ const AddCandidate = ({ children }) => {
         const newCandidate = await response.json();
         const avatarResponse = await fetch("https://mighty.tools/mockmind-api/?category=popular&nocache=1736359714029");
         const avatarData = await avatarResponse.json();
-        const avatarUrl = avatarData.data[2];
+        const avatarUrl = avatarData.data[1];
         const candidateWithAvatar = { ...newCandidate, avatar: avatarUrl };
         setCandidates([...candidates, candidateWithAvatar]);
         toast.success("Candidate added successfully!");

@@ -5,13 +5,60 @@ import { BadgeCheck, X, Clock, FileSearch } from "lucide-react";
 import Filter from "./Filter";
 import { CandidatesContext } from "./candidate/CandidatesContext";
 import CandidateLoader from "./Loader/CandidateLoader";
+import { useNavigate } from "react-router-dom";
 
-const Sidebar = ({ setSelectedCandidate }) => {
+const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
   const { candidates, loading, error } = useContext(CandidatesContext);
   const [filteredCandidates, setFilteredCandidates] = useState(candidates || []);
+  const statusPriority = {
+    "accepted": 1,
+    "pending": 2,
+    "review": 3,
+    "rejected": 4,
+    "registered": 5,
+  };
 
+
+  // Fetch interview details
   useEffect(() => {
-    setFilteredCandidates(candidates);
+    const fetchInterviews = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        // Assume API returns an array of interviews with candidate IDs
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/interviews/`, {
+          headers: { 
+              Authorization: `Bearer ${token}`, },
+              'Content-Type': 'application/json',
+        });
+        const interviews = await response.json();
+        console.log(interviews)
+
+        // Map interview details to candidates
+        const updatedCandidates = candidates.map((candidate) => {
+          const candidateInterviews = interviews.filter(
+            (interview) => interview.candidate.id === candidate.id
+          );
+          console.log(candidateInterviews)
+          let status = "No interviews"; 
+          if (candidateInterviews.length > 0) {
+            status = candidateInterviews
+              .map((i) => i.status)
+              .sort((a, b) => statusPriority[a] - statusPriority[b])[0]; // Get the highest priority status
+          }
+          return {
+            ...candidate,
+            interviews: candidateInterviews,
+            status
+          };
+        });
+        console.log(updatedCandidates)
+        setFilteredCandidates(updatedCandidates);
+      } catch (error) {
+        console.error("Error fetching interviews:", error);
+      }
+    };
+
+    if (candidates.length > 0) fetchInterviews();
   }, [candidates]);
 
   // Handle search input
@@ -22,6 +69,11 @@ const Sidebar = ({ setSelectedCandidate }) => {
       candidate.email.toLowerCase().includes(searchTerm) // Include email in search
     );
     setFilteredCandidates(filtered);
+  };
+  const navigate = useNavigate()
+  const handleCandidateClick = (candidate) => {
+    setSelectedCandidate(candidate); // Update the context state
+    navigate("/");
   };
 
   // if (loading) return <div><CandidateLoader/></div>;
@@ -49,7 +101,7 @@ const Sidebar = ({ setSelectedCandidate }) => {
                   ? "bg-[#FFFFE5]"
                   : "bg-[#E5E5FF]"
               }`}
-              onClick={() => setSelectedCandidate(contact)}
+              onClick={() => handleCandidateClick(contact)} 
             >
               {/* Avatar + Status Icon */}
               <div className="relative w-12 h-12 mr-4">

@@ -1,14 +1,8 @@
-import { useOutletContext } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
-const Summary = () => {
-  const { selectedCandidate } = useOutletContext();
+const Summary = ({interview_summary}) => {
+  console.log(interview_summary)
 
-  if (!selectedCandidate || !selectedCandidate.interview_summary) {
-    return <div>No candidate details available.</div>;
-  }
-
-  const { interview_summary } = selectedCandidate;
   const {
     overall_impression = [],
     strengths = [],

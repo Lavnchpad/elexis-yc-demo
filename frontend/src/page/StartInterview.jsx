@@ -1,36 +1,41 @@
 import React, { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 const StartInterview = () => {
   const { interviewId } = useParams();
-  const navigate = useNavigate();
 
   useEffect(() => {
     const startInterview = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/interviews/${interviewId}/start/`, {
-          method: "GET",
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/interviews/${interviewId}/start/`,
+          {
+            method: "GET",
+          }
+        );
+        console.log(response);
 
         if (response.ok) {
-          // Let the backend handle the redirection
-          console.log(response.url) 
+          // Redirect to the URL provided by the backend
+          const redirectLink = await response.text(); // Assuming backend sends a plain text URL
+          window.location.href = redirectLink;
         } else {
           const errorData = await response.json();
-          alert(errorData.message || "Failed to start the interview.");
+          toast.error(errorData.message || "Failed to start the interview.");
         }
       } catch (error) {
         console.error("Error:", error);
-        alert("An error occurred. Please try again later.");
+        toast.error("An error occurred. Please try again later.");
       }
     };
 
     startInterview();
-  }, [interviewId, navigate]);
+  }, [interviewId]);
 
   return (
     <div>
-      <p>Starting your interview... Please wait.</p>
+      <p>This link is not valid at this time. Please check your scheduled interview time.</p>
     </div>
   );
 };

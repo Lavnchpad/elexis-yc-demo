@@ -35,7 +35,7 @@ const jobSchema = z.object({
 });
 
 const ManageJobs = ({ children }) => {
-  const { jobs, setJobs } = useContext(JobsContext);
+  const { jobs, setJobs,fetchJobs } = useContext(JobsContext);
   const [selectedJob, setSelectedJob] = useState(null);
   const [loading, setLoading] = useState(false);
    const [open, setOpen] = useState(false);
@@ -92,12 +92,14 @@ const ManageJobs = ({ children }) => {
           )
         );        
         setSelectedJob(null);
+        fetchJobs();
         toast.success("Job updated successfully!");
       } else {
         const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/jobs/`, formData, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
         });
         setJobs((prevJobs) => [...prevJobs, response.data]);
+        fetchJobs();
         toast.success("New job created successfully!");
       }
       form.reset();

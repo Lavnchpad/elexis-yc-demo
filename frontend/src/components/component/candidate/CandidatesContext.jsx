@@ -46,8 +46,9 @@ const CandidatesProvider = ({ children }) => {
         candidates.map(async (candidate) => {
           const avatarResponse = await fetch("https://mighty.tools/mockmind-api/?category=popular&nocache=1736359714029");
           const avatarData = await avatarResponse.json();
-          const randomIndex = allowedIndices[Math.floor(Math.random())];
-          const avatarUrl = avatarData.data[randomIndex];
+          const randomIndex = allowedIndices[Math.floor(Math.random() * allowedIndices.length)];
+          console.log(randomIndex)
+          const avatarUrl = avatarData.data[2];
           return { ...candidate, avatar: avatarUrl };
         })
       );

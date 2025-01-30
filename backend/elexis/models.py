@@ -57,6 +57,7 @@ class Candidate(BaseModel):
     email = models.EmailField()
     resume = models.FileField(upload_to="resumes/", blank=True, null=True)
     applied_for = models.CharField(max_length=100, blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True) 
 
     def __str__(self):
         return self.name
@@ -72,6 +73,14 @@ class Job(BaseModel):
 
 
 class Interview(BaseModel):
+    STATUS_CHOICES = [
+        ('accepted', 'Accepted'), 
+        ('rejected', 'Rejected'),
+        ('scheduled', 'Scheduled'),
+        ('hold', 'Hold'),
+        ('registered', 'Registered'),
+    ]
+
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name="interviews")
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="interviews")
     scheduled_by = models.ForeignKey(Recruiter, on_delete=models.CASCADE, related_name="scheduled_interviews")
@@ -80,6 +89,7 @@ class Interview(BaseModel):
     link = models.URLField(blank=True, null=True)
     transcript = models.JSONField(default=dict, blank=True, null=True)
     summary = models.JSONField(default=dict, blank=True, null=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='registered')
 
     def __str__(self):
         return f"Interview for {self.candidate.name} - {self.job.title}"

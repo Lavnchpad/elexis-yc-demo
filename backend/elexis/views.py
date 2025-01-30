@@ -1,4 +1,7 @@
 from django.contrib.auth import authenticate
+from django_filters import CharFilter, FilterSet
+from django_filters.rest_framework import DjangoFilterBackend
+
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import redirect
@@ -106,18 +109,24 @@ class JobViewSet(viewsets.ModelViewSet):
         serializer.save(recruiter=self.request.user.recruiter_profile)
 
 
+class InterviewFilters(FilterSet):
+    candidate_id = CharFilter(field_name="candidate__id")
+    
 class InterviewViewSet(viewsets.ModelViewSet):
     queryset = Interview.objects.all()
     serializer_class = InterviewSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = InterviewFilters
 
     def get_queryset(self):
         if self.request.user.is_authenticated and hasattr(self.request.user, "recruiter_profile"):
             return Interview.objects.filter(scheduled_by=self.request.user.recruiter_profile)
         return Interview.objects.all()
+    
     def perform_create(self, serializer):
         interview = serializer.save(scheduled_by=self.request.user.recruiter_profile)
-        interview.link = f"http://127.0.0.1:8001/interviews/{interview.id}/start/"
+        interview.link = f"http://localhost:5173/interviews/{interview.id}/start/"
         interview.save()
 
         subject = "Interview Scheduled"

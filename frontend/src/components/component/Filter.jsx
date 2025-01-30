@@ -45,7 +45,7 @@ const Filter = ({ onSearch }) => {
             </DropdownMenuItem>
             <DropdownMenuItem className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 bg-blue-500 rounded-full"></span>
-              <span>Review</span>
+              <span>Register</span>
             </DropdownMenuItem>
             <DropdownMenuItem className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 bg-yellow-500 rounded-full"></span>

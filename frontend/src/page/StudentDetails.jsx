@@ -18,16 +18,33 @@ import StatusButton from "@/utils/StatusButton";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { JobsContext } from "@/components/component/jobs/JobsContext";
+import axios from "axios";
+import { InterviewContext } from "@/components/component/interview/InterviewContext";
+import Skills from "@/components/component/candidate/skills-experience/Skills";
+import Experience from "@/components/component/candidate/skills-experience/Experience";
 
 const StudentDetails = () => {
   const [activeTab, setActiveTab] = useState("summary");
   const [loading, setLoading] = useState(true);
-  const { selectedCandidate } = useOutletContext();
+  const { selectedCandidate } = useOutletContext(); 
   const { jobs, fetchJobs } = useContext(JobsContext);
+  const {interviewData, fetchInterviewDetails} = useContext(InterviewContext);
+  const [selectedInterview, setSelectedInterview] = useState(null);
+  console.log(interviewData)
+
+  
+  const handleDownloadResume = () => {
+    // Trigger file download
+    const link = document.createElement("a");
+    link.href = selectedCandidate.resume;
+    link.download = "resume.pdf"; // You can change the file name here
+    link.click();
+  };
 
   useEffect(() => {
     if (selectedCandidate) {
       fetchJobs(); // Fetch jobs on initial render or when the selected candidate changes
+      fetchInterviewDetails(selectedCandidate.id);
       setLoading(true);
       setTimeout(() => setLoading(false), 1000); // Simulate loading delay
     }
@@ -65,10 +82,10 @@ const StudentDetails = () => {
               <Phone className="mr-2  w-5 h-5" />
               {selectedCandidate.phone_number}
             </p>
-            <p className="text-muted-foreground flex items-center mt-2">
+            {/* <p className="text-muted-foreground flex items-center mt-2">
               <BriefcaseBusiness className="mr-2  w-5 h-5" />
               {selectedCandidate.applied_for}
-            </p>
+            </p> */}
           </div>
         </div>
 
@@ -77,31 +94,45 @@ const StudentDetails = () => {
           {/* <Label htmlFor="jobRole">Job Role</Label> */}
           <Select
             onValueChange={(value) => {
-              const selectedJob = jobs.find((job) => job.id === value);
-              setValue("jobRole", selectedJob?.id || "");
-              setValue("applied_for", selectedJob?.title || "");
+              const interview = interviewData.find((interview) => interview.job.id === value);
+              setSelectedInterview(interview);
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder={jobs ? "Select a job role" : "Loading jobs..."} />
+            <SelectValue placeholder={interviewData?.title || "Select a job role"} />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {jobs.map((job) => (
-                  <SelectItem key={job.id} value={job.id}>
-                    {job.title}
-                  </SelectItem>
-                ))}
+              {interviewData.length>0 ? interviewData.map((interview) => (
+                <SelectItem key={interview.job.id} value={interview.job.id}>
+                  {interview.job.title}
+                </SelectItem>
+              )) : "No Job Available"}
               </SelectGroup>
             </SelectContent>
           </Select>
         </div>
 
         {/* Buttons (Replacing Score) */}
-        <div className="ml-auto flex space-x-4">
-          <StatusButton status={selectedCandidate.status} />
-        </div>
+        <div className="flex gap-3">
+      <a
+        href={`mailto:${selectedCandidate.email}`}
+      >
+        <Button variant="outline" className="gap-2">
+          <Mail className="w-4 h-4" />
+          Send Email
+        </Button>
+      </a>
+      <Button variant="outline" className="gap-2" onClick={handleDownloadResume}>
+        <Download className="w-4 h-4" />
+        Download Resume
+      </Button>
+    </div>
       </div>
+       <div className="container mx-auto p-6 grid gap-6 md:grid-cols-[300px_1fr]">
+      <Experience />
+      <Skills />
+    </div>
 
       {/* Full-width Gray Background with Tabs and Buttons */}
       <div className="w-full px-6 py-4 bg-muted/30">
@@ -129,27 +160,28 @@ const StudentDetails = () => {
                 </TabsTrigger>
               </TabsList>
 
-              <div className="flex gap-3">
-                <Button variant="outline" className="gap-2">
-                  <Mail className="w-4 h-4" />
-                  Send Email
-                </Button>
-                <Button variant="outline" className="gap-2">
-                  <Download className="w-4 h-4" />
-                  Resume
-                </Button>
-              </div>
+              <div className="ml-auto flex space-x-4">
+          <StatusButton interviewData={interviewData} />
+        </div>
             </div>
 
             <TabsContent value="summary">
               <div className="p-4 bg-background rounded-lg">
-                <Summary />
+              {selectedInterview?.summary ? (
+              <Summary interview_summary={selectedInterview.summary} />
+            ) : (
+              <p>No summary available for this job.</p>
+            )}
               </div>
             </TabsContent>
 
             <TabsContent value="transcript">
               <div className="p-4 bg-background rounded-lg">
-                <Transcript />
+              {selectedInterview?.transcript ? (
+              <Transcript interview_transcript={selectedInterview.transcript} />
+            ) : (
+              <p>No transcript available for this job.</p>
+            )}
               </div>
             </TabsContent>
 
