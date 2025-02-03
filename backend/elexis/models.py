@@ -85,6 +85,9 @@ class Job(BaseModel):
     job_name = models.CharField(max_length=255)
     job_description = models.FileField(upload_to='job_descriptions/', blank=True)
     additional_data = models.TextField(blank=True)
+    location = models.CharField(max_length=255, blank=True)   #location field added
+    min_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  #min_ctc field added
+    max_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  #max_ctc field added
 
     def __str__(self):
         return self.job_name
