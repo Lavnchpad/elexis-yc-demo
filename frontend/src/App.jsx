@@ -11,6 +11,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { InterviewProvider } from './components/component/interview/InterviewContext';
 import MyProfile from './components/component/profile/MyProfile';
 import MyTeam from './components/component/profile/MyTeam';
+import JobsPage from './page/JobsPage'; // Assuming this is your job page component.
+import JobDetails from './components/component/jobs/jobsDetail/JobsDetails';
 
 const App = () => {
   return (
@@ -39,6 +41,8 @@ const App = () => {
           <Route index element={<ProtectedRoute><StudentDetails /></ProtectedRoute>} />
           <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
           <Route path="/my-team" element={<ProtectedRoute><MyTeam /></ProtectedRoute>} />
+          <Route path="/jobs" element={<ProtectedRoute><JobsPage /></ProtectedRoute>} /> {/* Add the jobs route here */}
+          <Route path="job/job-id" element={<ProtectedRoute><JobDetails /></ProtectedRoute>} /> {/* Add the jobs route here */}
         </Route>
 
         {/* Start Interview Route */}

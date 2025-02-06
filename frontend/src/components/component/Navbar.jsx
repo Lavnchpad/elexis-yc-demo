@@ -28,14 +28,14 @@ const Navbar = () => {
         {/* Logo */}
         <div className="flex items-center space-x-4">
           <img src={logo} className="w-20 h-auto"/>
-          <JobsProvider>
+          {/* <JobsProvider>
           <AddCandidate>
             <Button>Add Candidate</Button>
           </AddCandidate>
           <ManageJobs>
             <Button>Manage Jobs</Button>
           </ManageJobs>
-          </JobsProvider>
+          </JobsProvider> */}
         </div>
 
         {/* Spacer to push items to the right */}

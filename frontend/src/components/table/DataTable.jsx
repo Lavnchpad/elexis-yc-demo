@@ -13,6 +13,7 @@ import {
   getCoreRowModel,
   flexRender,
 } from '@tanstack/react-table';
+import './DataTable.css'
 
 const DataTable = ({
   columns,
@@ -38,10 +39,6 @@ const DataTable = ({
     getPaginationRowModel: hasPagination ? getPaginationRowModel() : undefined,
     getCoreRowModel: getCoreRowModel(),
   });
-397
-384
-417
-409
   return (
     <div>
       <Table className="data-table">

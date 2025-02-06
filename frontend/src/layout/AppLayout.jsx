@@ -1,23 +1,63 @@
-import Filter from "@/components/component/Filter";
-import Navbar from "@/components/component/Navbar";
-import Sidebar from "@/components/component/Sidebar";
 import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
+import Navbar from "@/components/component/Navbar";
+import { Button } from "@/components/ui/button";
+import { Home, Briefcase, ChevronLeft, ChevronRight } from "lucide-react";
 
 const AppLayout = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+
   return (
     <div className="flex flex-col h-screen">
-      <div className="">
-        <Navbar />
-      </div>
+      {/* Navbar */}
+      <Navbar />
+
+      {/* Main Content */}
       <div className="flex flex-1">
-        <div className="w-1/4 border-r p-4">
-          <Sidebar setSelectedCandidate={setSelectedCandidate} />
+        {/* Sidebar */}
+        <div
+          className={`transition-all duration-300 ${
+            isSidebarOpen ? "w-64" : "w-16"
+          } bg-black text-white`}
+        >
+          <div className="flex items-center justify-between p-4">
+            <h2
+              className={`font-bold text-lg ${
+                isSidebarOpen ? "block" : "hidden"
+              }`}
+            >
+              Menu
+            </h2>
+            <Button
+              variant="ghost"
+              className="p-1 text-gray-300 hover:text-white"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            >
+              {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+            </Button>
+          </div>
+          <nav className="space-y-2 px-4">
+            <Link
+              to="/"
+              className="flex items-center space-x-2 p-2 rounded hover:bg-gray-700"
+            >
+              <Home />
+              {isSidebarOpen && <span>Candidates</span>}
+            </Link>
+            <Link
+              to="/jobs"
+              className="flex items-center space-x-2 p-2 rounded hover:bg-gray-700"
+            >
+              <Briefcase />
+              {isSidebarOpen && <span>Jobs</span>}
+            </Link>
+          </nav>
         </div>
 
-        <div className="flex-1 p-4 bg-white-100 border-r border-gray-300">
-          <Outlet context={{ selectedCandidate }} />
+        {/* Page Content */}
+        <div className="flex-1 p-4">
+        <Outlet context={{ selectedCandidate }} />
         </div>
       </div>
     </div>
