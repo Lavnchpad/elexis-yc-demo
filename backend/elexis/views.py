@@ -70,10 +70,21 @@ class CandidateViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Candidate.objects.filter(recruiter=self.request.user.pk)
+        # return Candidate.objects.filter(recruiter=self.request.user.pk)
+        return Candidate.objects.filter(organization = self.request.user.organization)  #allowing recruiters to see all candidates of their organization
 
     def perform_create(self, serializer):
-        serializer.save(recruiter=self.request.user)
+        # serializer.save(recruiter=self.request.user)
+        serializer.save(
+            organization = self.request.user.organization,  #assign organization
+            created_by = self.request.user.id,   #assgin created_by
+            modified_by = self.request.user.id   #assign modified_by
+        )
+        
+    #function to update the modified_by field
+    def perform_update(self, serializer):
+        serializer.save(modified_by = self.request.user.id)
+        
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def create_joining_link(self, request, pk=None):
@@ -147,3 +158,17 @@ class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
     serializer_class = JobSerializer
     permission_classes = [IsAuthenticated]
+    
+    #allowing recruiters to see all jobs of their organization
+    def get_queryset(self):
+        return Job.objects.filter(organization = self.request.user.organization)
+    
+    def perform_create(self, serializer):
+        serializer.save(
+            organization = self.request.user.organization,
+            created_by = self.request.user.id,
+            modified_by = self.request.user.id
+        )
+        
+    def perform_update(self, serializer):
+        serializer.save(modified_by = self.request.user.id)

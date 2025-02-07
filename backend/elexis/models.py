@@ -10,9 +10,20 @@ class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_date = models.DateTimeField(auto_now_add=True, editable=False)
     modified_date = models.DateTimeField(auto_now=True)
+    
+    #added two new fields for auditing purpose
+    created_by = models.ForeignKey("Recruiter", related_name='has_created_%(class)s', on_delete=models.DO_NOTHING, blank=True, null=True)
+    modified_by = models.ForeignKey("Recruiter", related_name='has_modified_%(class)s', on_delete=models.DO_NOTHING, blank=True, null=True)
 
     class Meta:
         abstract = True
+
+#added new model (Organization)
+class Organization(BaseModel):
+    org_name = models.CharField(max_length=255)
+    
+    def __str__(self):
+        return self.org_name
 
 
 class RecruiterManager(BaseUserManager):
@@ -42,7 +53,10 @@ class Recruiter(AbstractUser, BaseModel):
     email = models.EmailField(_('email address'), unique=True)
     company_name = models.CharField(max_length=100, blank=True)
     name = models.CharField(max_length=100, blank=True)
-
+    organization = models.ForeignKey(           #foreign key for organization added
+        Organization, related_name="recruiters", on_delete=models.CASCADE, blank=False, null=False 
+    )
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -63,6 +77,11 @@ class Candidate(BaseModel):
 
     recruiter = models.ForeignKey('Recruiter', on_delete=models.CASCADE, related_name='candidates')
     job = models.ForeignKey('Job', on_delete=models.CASCADE, related_name='candidates', null=True, blank=True)
+    
+    #foreign key for organization added
+    organization = models.ForeignKey(
+        Organization, related_name="candidates", on_delete=models.CASCADE, blank=False, null=False 
+    )
     name = models.CharField(max_length=255)
     email = models.EmailField()
     phone_number = models.CharField(max_length=15, blank=True, null=True)
@@ -88,6 +107,11 @@ class Job(BaseModel):
     location = models.CharField(max_length=255, blank=True)   #location field added
     min_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  #min_ctc field added
     max_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  #max_ctc field added
+    
+    #foreign key for organization added
+    organization = models.ForeignKey(
+        Organization, related_name="jobs", on_delete=models.CASCADE, blank=False, null=False 
+    )
 
     def __str__(self):
         return self.job_name
