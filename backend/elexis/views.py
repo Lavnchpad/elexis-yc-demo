@@ -77,13 +77,14 @@ class CandidateViewSet(viewsets.ModelViewSet):
         # serializer.save(recruiter=self.request.user)
         serializer.save(
             organization = self.request.user.organization,  #assign organization
-            created_by = self.request.user.id,   #assgin created_by
-            modified_by = self.request.user.id   #assign modified_by
+            created_by = self.request.user,   #assgin created_by
+            modified_by = self.request.user,   #assign modified_by
+            recruiter = self.request.user
         )
         
     #function to update the modified_by field
     def perform_update(self, serializer):
-        serializer.save(modified_by = self.request.user.id)
+        serializer.save(modified_by = self.request.user)
         
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
@@ -129,6 +130,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
 
 class SignupView(APIView):
     def post(self, request):
+        print("Request",request.data)
         serializer = RecruiterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -166,9 +168,9 @@ class JobViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(
             organization = self.request.user.organization,
-            created_by = self.request.user.id,
-            modified_by = self.request.user.id
+            created_by = self.request.user,
+            modified_by = self.request.user
         )
         
     def perform_update(self, serializer):
-        serializer.save(modified_by = self.request.user.id)
+        serializer.save(modified_by = self.request.user)

@@ -5,13 +5,14 @@ from .models import Recruiter, Candidate, Job
 class RecruiterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recruiter
-        fields = ('id', 'email', 'name', 'company_name', 'password')
+        fields = ('id', 'email', 'name', 'company_name', 'password', 'organization')
         extra_kwargs = {
             'password': {'write_only': True},
             'email': {'required': True}
         }
 
     def create(self, validated_data):
+        print("Validated data", validated_data)
         return Recruiter.objects.create_user(**validated_data)
 
     def update(self, instance, validated_data):
