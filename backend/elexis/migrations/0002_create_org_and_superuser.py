@@ -4,31 +4,33 @@ from django.db import migrations, models
 import os
 
 
-def create_organization_and_superuser(apps, schema_editor):
+def create_organization(apps, schema_editor):
     # Get models
     Organization = apps.get_model("elexis", "Organization")
-    from django.contrib.auth import get_user_model
+    # from django.contrib.auth import get_user_model
 
     # Get environment variables
     org_name = os.getenv("ORG_NAME", "DefaultOrg")
-    email = os.getenv("SUPERUSER_EMAIL", "admin@example.com")
-    password = os.getenv("SUPERUSER_PASSWORD", "admin123")
-    first_name = os.getenv("SUPERUSER_FIRST_NAME", "Admin")
-    last_name = os.getenv("SUPERUSER_LAST_NAME", "User")
+    # email = os.getenv("SUPERUSER_EMAIL", "admin@example.com")
+    # password = os.getenv("SUPERUSER_PASSWORD", "admin123")
+    # first_name = os.getenv("SUPERUSER_FIRST_NAME", "Admin")
+    # last_name = os.getenv("SUPERUSER_LAST_NAME", "User")
     
     # Create or get Organization
     organization, created = Organization.objects.get_or_create(org_name=org_name)  # ✅ FIX
-
-    # Create Superuser if not already exists
-    User = get_user_model()
-    if not User.objects.filter(email=email).exists():
-        User.objects.create_superuser(
-            email=email,
-            password=password,
-            first_name=first_name,
-            last_name=last_name,
-            organization=organization  # ✅ FIX: Using the correct instance
-        )
+    print("Created = ", created)
+    print("Organization = ", organization);
+    
+    # # Create Superuser if not already exists
+    # User = get_user_model()
+    # if not User.objects.filter(email=email).exists():
+    #     User.objects.create_superuser(
+    #         email=email,
+    #         password=password,
+    #         first_name=first_name,
+    #         last_name=last_name,
+    #         organization=organization  # ✅ FIX: Using the correct instance
+    #     )
 
 
 class Migration(migrations.Migration):
@@ -38,5 +40,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(create_organization_and_superuser),
+        migrations.RunPython(create_organization),
     ]
