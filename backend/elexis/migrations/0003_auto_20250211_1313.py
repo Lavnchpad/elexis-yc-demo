@@ -17,18 +17,22 @@ def create_superuser(apps, schema_editor):
     
     # Create or get Organization
     organization = Organization.objects.get(org_name=org_name)  
-    print("Organization = ", organization);
-    
-    # Create Superuser if not already exists
+
+    # # Create Superuser if not already exists
     User = get_user_model()
     if not User.objects.filter(email=email).exists():
-        User.objects.create_superuser(
+        user =User(
             email=email,
-            password=password,
             first_name=first_name,
             last_name=last_name,
-            organization=organization  # ✅ FIX: Using the correct instance
+            organization_id=str(organization.id),
+            is_staff=True,
+            is_superuser=True
         )
+        user.set_password(password)
+        user.save(force_insert=True)
+
+
 
 class Migration(migrations.Migration):
     atomic = False
