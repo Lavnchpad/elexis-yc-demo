@@ -1,47 +1,43 @@
 from rest_framework import serializers
-from .models import Recruiter, Candidate, Job, Interview, User
+from .models import Recruiter, Candidate, Job, Interview
 
 
-class UserSerializer(serializers.ModelSerializer):
+class RecruiterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('id', 'email', 'name', 'password')
+        model = Recruiter
+        fields = ('id', 'email', 'name', 'company_name', 'password', 'organization')
         extra_kwargs = {
             'password': {'write_only': True},
             'email': {'required': True}
         }
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
-        return user
+        print("Validated data", validated_data)
+        return Recruiter.objects.create_user(**validated_data)
 
-
-class RecruiterSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-
-    class Meta:
-        model = Recruiter
-        fields = ('id', 'user', 'company_name')
-
-    def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user = User.objects.create_user(**user_data)
-        recruiter = Recruiter.objects.create(user=user, **validated_data)
-        return recruiter
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        if password:
+            instance.set_password(password)
+        return super().update(instance, validated_data)
 
 
 class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = '__all__'
-        read_only_fields = ('recruiter',)
+        # read_only_fields = ('recruiter',)
 
 
 class CandidateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Candidate
         fields = '__all__'
-        read_only_fields = ('recruiter',)
+        read_only_fields = ('recruiter','organization,')
+    def validate(self, data):
+        # Exclude 'organization' validation
+        data.pop('organization', None)
+        return data    
 
 
 class InterviewSerializer(serializers.ModelSerializer):

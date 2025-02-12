@@ -149,7 +149,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-AUTH_USER_MODEL = "elexis.User"
+AUTH_USER_MODEL = "elexis.Recruiter"
 
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {

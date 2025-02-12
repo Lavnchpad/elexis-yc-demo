@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import { Button } from "../../ui/button";
 import {
   Dialog,
@@ -24,13 +25,14 @@ import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import { Loader } from "lucide-react";
 
+// Validation schema
 const jobSchema = z.object({
-  title: z.string().min(1, { message: "Job title is required" }),
-  description: z.string().min(1, { message: "Job description is required" }),
+  job_name: z.string().min(1, { message: "Job name is required" }),
   location: z.string().min(1, { message: "Location is required" }),
-  maxCTC: z.string().min(1, { message: "Max CTC is required" }),
-  minCTC: z.string().min(1, { message: "Min CTC is required" }),
-  additionalInfo: z.string().optional(),
+  min_ctc: z.string().min(1, { message: "Min CTC is required" }),
+  max_ctc: z.string().min(1, { message: "Max CTC is required" }),
+  job_description: z.string().min(1, { message: "Description is required" }),
+  additional_data: z.string().optional(),
 });
 
 const ManageJobs = ({ children }) => {
@@ -40,23 +42,44 @@ const ManageJobs = ({ children }) => {
   const form = useForm({
     resolver: zodResolver(jobSchema),
     defaultValues: {
-      title: "",
-      description: "",
+      job_name: "",
       location: "",
-      maxCTC: "",
-      minCTC: "",
-      additionalInfo: "",
+      min_ctc: "",
+      max_ctc: "",
+      job_description: "",
+      additional_data: "",
     },
   });
 
   const onSubmit = async (data) => {
     setLoading(true);
+
     try {
-      console.log("Job data submitted:", data);
+      // Prepare form data for the POST request
+      const token = localStorage.getItem("authToken");
+
+      const formData = new FormData();
+      formData.append("job_name", data.job_name);
+      formData.append("location", data.location);
+      formData.append("min_ctc", data.min_ctc);
+      formData.append("max_ctc", data.max_ctc);
+      formData.append("job_description", data.job_description); // File input
+      if (data.additional_data) {
+        formData.append("additional_data", data.additional_data);
+      }
+
+      // Make the POST request
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/jobs/`, {
+        method: "POST",
+        body: formData,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log("Job created successfully:", response.data);
       form.reset();
       setOpen(false);
     } catch (error) {
-      console.error("Error handling job submission:", error);
+      console.error("Error creating job:", error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
@@ -78,12 +101,12 @@ const ManageJobs = ({ children }) => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="title"
+                  name="job_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Job Title</FormLabel>
+                      <FormLabel>Job Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter job title" {...field} />
+                        <Input placeholder="Enter job name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -104,7 +127,7 @@ const ManageJobs = ({ children }) => {
                 />
                 <FormField
                   control={form.control}
-                  name="minCTC"
+                  name="min_ctc"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Min CTC</FormLabel>
@@ -117,7 +140,7 @@ const ManageJobs = ({ children }) => {
                 />
                 <FormField
                   control={form.control}
-                  name="maxCTC"
+                  name="max_ctc"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Max CTC</FormLabel>
@@ -131,16 +154,12 @@ const ManageJobs = ({ children }) => {
               </div>
               <FormField
                 control={form.control}
-                name="description"
+                name="job_description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Job Description</FormLabel>
+                    <FormLabel>Job Description (File)</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Enter job description"
-                        {...field}
-                        rows={3}
-                      />
+                      <Input placeholder="Enter Job Description" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -148,7 +167,7 @@ const ManageJobs = ({ children }) => {
               />
               <FormField
                 control={form.control}
-                name="additionalInfo"
+                name="additional_data"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Additional Information</FormLabel>
@@ -168,7 +187,7 @@ const ManageJobs = ({ children }) => {
                   {loading ? (
                     <Loader className="animate-spin mr-2" size={16} />
                   ) : (
-                    "Create Job "
+                    "Create Job"
                   )}
                 </Button>
               </DialogFooter>
