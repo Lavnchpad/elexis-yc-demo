@@ -1,24 +1,25 @@
 import uuid
-
-from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext as _
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 
 class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    created_date = models.DateTimeField(auto_now_add=True, editable=False)
+    created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
     
-    #added two new fields for auditing purpose
-    created_by = models.ForeignKey("Recruiter", related_name='has_created_%(class)s', on_delete=models.DO_NOTHING, blank=True, null=True)
-    modified_by = models.ForeignKey("Recruiter", related_name='has_modified_%(class)s', on_delete=models.DO_NOTHING, blank=True, null=True)
+    created_by = models.ForeignKey(
+        "Recruiter", related_name='has_created_%(class)s', on_delete=models.DO_NOTHING, blank=True, null=True
+    )
+    modified_by = models.ForeignKey(
+        "Recruiter", related_name='has_modified_%(class)s', on_delete=models.DO_NOTHING, blank=True, null=True
+    )
 
     class Meta:
         abstract = True
 
-#added new model (Organization)
+
 class Organization(BaseModel):
     org_name = models.CharField(max_length=255)
     
@@ -27,9 +28,9 @@ class Organization(BaseModel):
 
 
 class RecruiterManager(BaseUserManager):
-    def create_user(self, email, password=None, organization=None,**extra_fields):
+    def create_user(self, email, password=None, organization=None, **extra_fields):
         if not email:
-            raise ValueError('The Email field must be set')
+            raise ValueError("The Email field must be set")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -46,16 +47,16 @@ class RecruiterManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self.create_user(email, password=password, organization=organization, **extra_fields)
+        return self.create_user(email, password=password, organization="550e8400e29b41d4a716446655440000", **extra_fields)
 
 
 class Recruiter(AbstractUser, BaseModel):
-    username = None  # Remove username field
+    username = None
     email = models.EmailField(_('email address'), unique=True)
     company_name = models.CharField(max_length=100, blank=True)
     name = models.CharField(max_length=100, blank=True)
-    organization = models.ForeignKey(           #foreign key for organization added
-        Organization, related_name="recruiters", on_delete=models.CASCADE, blank=False, null=False 
+    organization = models.ForeignKey(
+        Organization, related_name="recruiters", on_delete=models.CASCADE, blank=False, null=False
     )
     
     USERNAME_FIELD = 'email'
@@ -68,6 +69,41 @@ class Recruiter(AbstractUser, BaseModel):
 
 
 class Candidate(BaseModel):
+    recruiter = models.ForeignKey(
+        Recruiter, on_delete=models.CASCADE, related_name="candidates" , blank=False, null=False 
+    )
+    organization = models.ForeignKey(
+        Organization, related_name="candidates", on_delete=models.CASCADE, blank=False, null=False
+    )
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    resume = models.FileField(upload_to="resumes/", blank=True, null=True)
+    applied_for = models.CharField(max_length=100, blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Job(BaseModel):
+    recruiter = models.ForeignKey(
+        Recruiter, on_delete=models.CASCADE, related_name="jobs"
+    )
+    organization = models.ForeignKey(
+        Organization, related_name="jobs", on_delete=models.CASCADE
+    )
+    job_name = models.CharField(max_length=255)
+    job_description = models.TextField()
+    additional_data = models.TextField(blank=True)
+    location = models.CharField(max_length=255, blank=True)
+    min_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    max_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+    def __str__(self):
+        return self.job_name
+
+
+class Interview(BaseModel):
     STATUS_CHOICES = [
         ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
@@ -76,43 +112,26 @@ class Candidate(BaseModel):
         ('registered', 'Registered'),
     ]
 
-    recruiter = models.ForeignKey('Recruiter', on_delete=models.CASCADE, related_name='candidates')
-    job = models.ForeignKey('Job', on_delete=models.CASCADE, related_name='candidates', null=True, blank=True)
-    
-    #foreign key for organization added
-    organization = models.ForeignKey(
-        Organization, related_name="candidates", on_delete=models.CASCADE, blank=False, null=False 
+    candidate = models.ForeignKey(
+        Candidate, on_delete=models.CASCADE, related_name="interviews"
     )
-    name = models.CharField(max_length=255)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    interview_summary = models.FileField(upload_to='interview_summaries/', blank=True)
-    transcript = models.FileField(upload_to='transcripts/', blank=True)
-    applied_for = models.CharField(max_length=255)
-    proctoring_images = models.JSONField(default=list, blank=True)
-    is_interview_completed = models.BooleanField(default=False)
-    joining_link = models.URLField(blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True)
-    resume = models.FileField(upload_to='resumes/', blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Job(BaseModel):
-    job_name = models.CharField(max_length=255)
-    job_description = models.FileField(upload_to='job_descriptions/', blank=True)
-    additional_data = models.TextField(blank=True)
-    location = models.CharField(max_length=255, blank=True)   #location field added
-    min_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  #min_ctc field added
-    max_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  #max_ctc field added
-    
-    #foreign key for organization added
+    job = models.ForeignKey(
+        Job, on_delete=models.CASCADE, related_name="interviews"
+    )
+    scheduled_by = models.ForeignKey(
+        Recruiter, on_delete=models.CASCADE, related_name="scheduled_interviews"
+    )
     organization = models.ForeignKey(
-        Organization, related_name="jobs", on_delete=models.CASCADE, blank=False, null=False 
+        Organization, related_name="interviews", on_delete=models.CASCADE
+    )
+    date = models.DateField()
+    time = models.TimeField()
+    link = models.URLField(blank=True, null=True)
+    transcript = models.JSONField(default=dict, blank=True, null=True)
+    summary = models.JSONField(default=dict, blank=True, null=True)
+    status = models.CharField(
+        max_length=10, choices=STATUS_CHOICES, default='registered'
     )
 
     def __str__(self):
-        return self.job_name
+        return f"Interview for {self.candidate.name} - {self.job.job_name}"

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Recruiter, Candidate, Job
+from .models import Recruiter, Candidate, Job, Interview
 
 
 class RecruiterSerializer(serializers.ModelSerializer):
@@ -26,21 +26,36 @@ class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = '__all__'
+        # read_only_fields = ('recruiter',)
+
 
 class CandidateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Candidate
+        fields = '__all__'
+        read_only_fields = ('recruiter','organization,')
+    def validate(self, data):
+        # Exclude 'organization' validation
+        data.pop('organization', None)
+        return data    
+
+
+class InterviewSerializer(serializers.ModelSerializer):
+    candidate = CandidateSerializer(read_only=True)
     job = JobSerializer(read_only=True)
+    candidate_id = serializers.PrimaryKeyRelatedField(
+        queryset=Candidate.objects.all(), source='candidate', write_only=True
+    )
     job_id = serializers.PrimaryKeyRelatedField(
         queryset=Job.objects.all(), source='job', write_only=True
     )
 
     class Meta:
-        model = Candidate
+        model = Interview
         fields = '__all__'
-        read_only_fields = ('recruiter',)
+        read_only_fields = ('scheduled_by', 'link')
 
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-
-

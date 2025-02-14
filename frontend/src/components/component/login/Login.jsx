@@ -26,6 +26,7 @@ const LoginPage = () => {
         }),
       });
 
+      // console.log(response.json())
       // Check if the response is successful
       if (!response.ok) {
         throw new Error('Login failed. Please check your credentials.');
@@ -34,8 +35,10 @@ const LoginPage = () => {
       // Parse the response and get the token
       try{
       const data = await response.json();
-      console.log(data)
+      // console.log(data)
+      // console.log(data)
       const token = data.access; // Assuming the token is in `data.token`
+      console.log(token)
         localStorage.setItem('authToken', token);
       } catch(error){
         console.log(error)

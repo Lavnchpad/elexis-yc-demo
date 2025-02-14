@@ -13,6 +13,7 @@ import ManageJobs from "./jobs/ManageJobs";
 import { useNavigate } from "react-router-dom";
 import { JobsProvider } from "./jobs/JobsContext";
 import logo from "../../assets/images/logo.png";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const navigate = useNavigate(); // Initialize the navigation hook
@@ -58,6 +59,8 @@ const Navbar = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {/* <DropdownMenuItem>Profile</DropdownMenuItem> */}
+             <Link to="/my-profile"> <DropdownMenuItem  >My Profile</DropdownMenuItem></Link>
+             <Link to="/my-team"><DropdownMenuItem  >My Team</DropdownMenuItem></Link>
               <DropdownMenuItem  onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
