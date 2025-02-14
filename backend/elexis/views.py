@@ -25,7 +25,12 @@ class RecruiterViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.action == 'create':
             return Recruiter.objects.all()
-        return Recruiter.objects.filter(id=self.request.user.id)
+        
+        user = self.request.user  #get logged in user
+        if isinstance(user, Recruiter):
+            return Recruiter.objects.filter(organization = user.organization, is_superuser=False)
+        
+        # return Recruiter.objects.filter(id=self.request.user.id)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
