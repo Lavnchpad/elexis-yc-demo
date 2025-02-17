@@ -59,6 +59,11 @@ class Recruiter(AbstractUser, BaseModel):
         Organization, related_name="recruiters", on_delete=models.CASCADE, blank=False, null=False
     )
     
+    # New fields
+    is_admin = models.BooleanField(default=False)
+    can_manage_users = models.BooleanField(default=False)
+    can_manage_jobs = models.BooleanField(default=False)
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
