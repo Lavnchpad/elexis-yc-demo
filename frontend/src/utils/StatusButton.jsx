@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button"; // Assuming Button is a pre-bui
 import ScheduleDrive from "@/components/component/drive/ScheduleDrive";
 import { JobsContext } from "@/components/component/jobs/JobsContext";
 
-const StatusButton = ({ interviewData }) => {
+const StatusButton = ({ interviewData,selectedCandidate}) => {
+  console.log(interviewData)
   const statusPriority = {
     "accepted": 1,
     "pending": 2,
@@ -54,11 +55,11 @@ const StatusButton = ({ interviewData }) => {
           <Button className="px-6 py-3">Hold</Button>
         </>
       )}
-      <ScheduleDrive>
+      <ScheduleDrive selectedCandidate={selectedCandidate}>
             <Button className="px-6 py-3">Schedule</Button>
           </ScheduleDrive>
           {hasScheduledInterview && (
-        <ScheduleDrive value={true}>
+        <ScheduleDrive value={true} selectedCandidate={selectedCandidate}>
           <Button className="px-6 py-3">Reschedule</Button>
         </ScheduleDrive>
       )}

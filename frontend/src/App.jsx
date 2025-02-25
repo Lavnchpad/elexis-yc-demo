@@ -11,43 +11,59 @@ import { Toaster } from "@/components/ui/sonner";
 import { InterviewProvider } from './components/component/interview/InterviewContext';
 import MyProfile from './components/component/profile/MyProfile';
 import MyTeam from './components/component/profile/MyTeam';
-import JobsPage from './page/JobsPage'; // Assuming this is your job page component.
+import JobsPage from './page/JobsPage';
 import JobDetails from './components/component/jobs/jobsDetail/JobsDetails';
+import { UserProvider } from './components/component/recruiter/UserContext';
+import Analytics from './page/Analytics';
+import MyTeamDetails from './components/component/profile/MyTeamDetails';
+import InterviewFilter from './page/InterviewFilter';
 
 const App = () => {
   return (
     <BrowserRouter>
-      <Toaster richColors toastOptions={{}} />
-      <Routes>
-        {/* Login Route */}
-        <Route path="/login" element={<LoginPage />} />
+      <UserProvider> {/* Move UserProvider outside to wrap all routes */}
+        <Toaster richColors toastOptions={{}} />
+        <Routes>
+          {/* Login Route */}
+          <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected Routes with AppLayout */}
-        <Route
-          path="/"
-          element={
-            <CandidatesProvider>
-              <JobsProvider>
-                <InterviewProvider>
-                  <AppLayout>
-                    <Outlet /> {/* Outlet for rendering child routes */}
-                  </AppLayout>
-                </InterviewProvider>
-              </JobsProvider>
-            </CandidatesProvider>
-          }
-        >
-          {/* Nested Routes */}
-          <Route index element={<ProtectedRoute><StudentDetails /></ProtectedRoute>} />
-          <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
-          <Route path="/my-team" element={<ProtectedRoute><MyTeam /></ProtectedRoute>} />
-          <Route path="/jobs" element={<ProtectedRoute><JobsPage /></ProtectedRoute>} /> {/* Add the jobs route here */}
-          <Route path="job/job-id" element={<ProtectedRoute><JobDetails /></ProtectedRoute>} /> {/* Add the jobs route here */}
-        </Route>
+          {/* Protected Routes with AppLayout */}
+          <Route
+            path="/"
+            element={
+              <CandidatesProvider>
+                <JobsProvider>
+                  <InterviewProvider>
+                    <AppLayout>
+                      <Outlet /> {/* Outlet for rendering child routes */}
+                    </AppLayout>
+                  </InterviewProvider>
+                </JobsProvider>
+              </CandidatesProvider>
+            }
+          >
+            {/* Nested Routes */}
+            <Route index element={<ProtectedRoute><StudentDetails /></ProtectedRoute>} />
+            <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
+            <Route path="/my-team" element={<ProtectedRoute><MyTeam /></ProtectedRoute>} />
+            <Route path="/team-details/:memberId" element={<ProtectedRoute><MyTeamDetails /></ProtectedRoute>} />
+            <Route path="/jobs" element={<ProtectedRoute><JobsPage /></ProtectedRoute>} />
+            <Route path="/job/:jobId" element={<ProtectedRoute><JobDetails /></ProtectedRoute>} />
+            <Route path="/interviewFilter" element={<ProtectedRoute><InterviewFilter /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+          </Route>
 
-        {/* Start Interview Route */}
-        <Route path="/interviews/:interviewId/start" element={<StartInterview />} />
-      </Routes>
+          {/* Start Interview Route */}
+          <Route
+            path="/interviews/:interviewId/start"
+            element={
+              <ProtectedRoute>
+                <StartInterview />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </UserProvider>
     </BrowserRouter>
   );
 };

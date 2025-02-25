@@ -48,6 +48,7 @@ class LoginView(APIView):
                 return Response({
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
+                    'recruiter_id': str(user.id)
                 }, status=status.HTTP_200_OK)
             return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -92,6 +93,8 @@ class RecruiterViewSet(viewsets.ModelViewSet):
         })
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        data = request.data.copy()
+        data['organization'] = request.user.organization.id
         self.perform_destroy(instance)
         return Response({
             'message': 'Profile deleted successfully'
@@ -150,55 +153,90 @@ class CandidateViewSet(viewsets.ModelViewSet):
 
 
 class InterviewViewSet(viewsets.ModelViewSet):
-    queryset = Interview.objects.all()
-    serializer_class = InterviewSerializer
-    permission_classes = [IsAuthenticated]
+        queryset = Interview.objects.all()
+        serializer_class = InterviewSerializer
+        permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        if self.request.user.is_authenticated and hasattr(self.request.user, "recruiter_profile"):
-            return Interview.objects.filter(scheduled_by=self.request.user.recruiter_profile)
-        return Interview.objects.all()
+        def get_queryset(self):
+          queryset = Interview.objects.all()
 
-    def perform_create(self, serializer):
-        interview = serializer.save(scheduled_by=self.request.user.recruiter_profile)
-        interview.link = f"http://127.0.0.1:8001/interviews/{interview.id}/start/"
-        interview.save()
+        # Filter by the user (if authenticated and is a recruiter)
+          if self.request.user.is_authenticated and hasattr(self.request.user, "recruiter_profile"):
+              queryset = queryset.filter(scheduled_by=self.request.user.recruiter_profile)
 
-        subject = "Interview Scheduled"
-        message = (
-            f"Dear {interview.candidate.name},\n\n"
-            f"You have an interview scheduled for '{interview.job.title}' on {interview.date} at {interview.time}.\n"
-            f"Click here to join: {interview.link}\n\n"
-            f"Best regards,\n{interview.scheduled_by.company_name}"
-        )
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email])
+        # Filter by status query parameter
+          status = self.request.query_params.get("status")
+          if status:
+               queryset = queryset.filter(status=status)
 
-        return Response(
-            {"message": "Interview scheduled and email sent.", "link": interview.link},
-            status=status.HTTP_201_CREATED,
-        )
+          job_id = self.request.query_params.get("job")
+          if job_id:
+            queryset = queryset.filter(job__id=job_id)     
 
-    @action(detail=True, methods=["get"], permission_classes=[AllowAny])
-    def start(self, request, pk=None):
-        try:
-            interview = self.get_object()
-        except Interview.DoesNotExist:
-            return Response({"message": "Invalid link or interview not found."}, status=status.HTTP_404_NOT_FOUND)
+          return queryset
+        
+        def perform_create(self, serializer):
+         candidate = serializer.validated_data.get('candidate')  # Fetch the candidate data
+         if candidate:
+        # Set the organization based on the candidate's organization
+            organization = candidate.organization
+            interview = serializer.save(scheduled_by=self.request.user,organization=organization)
+            interview.link = f"http://127.0.0.1:8001/interviews/{interview.id}/start/"
+            print(interview)
+            interview.save()
 
-        current_time = now()
-        interview_start = make_aware(datetime.combine(interview.date, interview.time))
-        interview_end = interview_start + timedelta(hours=1)
+            subject = "Interview Scheduled"
+            message = (
+                f"Dear {interview.candidate.name},\n\n"
+                f"You have an interview scheduled for '{interview.job.job_name}' on {interview.date} at {interview.time}.\n"
+                f"Click here to join: {interview.link}\n\n"
+                f"Best regards,\n{interview.scheduled_by.company_name}"
+            )
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email])
 
-        if not (interview_start <= current_time <= interview_end):
             return Response(
-                {"message": "This link is not valid at this time. Please check your scheduled interview time."},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"message": "Interview scheduled and email sent.", "link": interview.link},
+                status=status.HTTP_201_CREATED,
             )
 
-        interview.link = None
-        interview.save()
+        @action(detail=True, methods=["get"], permission_classes=[AllowAny])
+        def start(self, request, pk=None):
+            interview = self.get_object()
 
-        return redirect("https://google.com")
+            current_time = now()
+            interview_start = make_aware(datetime.combine(interview.date, interview.time))
+            interview_end = interview_start + timedelta(hours=1)
+
+            if not (interview_start <= current_time <= interview_end):
+                return Response(
+                    {"message": "This link is not valid at this time. Please check your scheduled interview time."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            candidate = interview.candidate
+
+            data= {
+            "name":candidate.name,
+            "candidate_email": candidate.email,
+            "interviewer_email":candidate.recruiter.email,
+            "role":candidate.applied_for,
+            "company_name": candidate.recruiter.company_name,
+            "interviewer_name": candidate.recruiter.name,
+            "is_dashboard_request": True,
+            }
+
+            files = {
+                "resume": ("empty.pdf", BytesIO(b""), "application/pdf"),
+                "job_description": ("empty.pdf", BytesIO(b""), "application/pdf"),
+            }
+            
+            
+            
+            interview.link = None
+            interview.save()
+
+            response = requests.post("https://app.elexis.ai/start",data=data,files=files)
+            redirect_link = response.json().get("room_url")
+            return redirect(redirect_link)
 
 
 class JobViewSet(viewsets.ModelViewSet):
@@ -207,7 +245,7 @@ class JobViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Job.objects.filter(organization = self.request.user.organization)
+        return Job.objects.filter(organization = self.request.user.organization,is_disabled=False)
 
     def perform_create(self, serializer):
         serializer.save(

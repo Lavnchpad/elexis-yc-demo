@@ -5,10 +5,11 @@ from .models import Recruiter, Candidate, Job, Interview
 class RecruiterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recruiter
-        fields = ('id', 'email', 'name', 'company_name', 'password', 'organization')
+        fields = ('id', 'email', 'name', 'company_name', 'password', 'organization', 'is_admin', 'can_manage_users', 'can_manage_jobs')
         extra_kwargs = {
-            'password': {'write_only': True},
-            'email': {'required': True}
+            'password': {'write_only': True,'required': False},
+            'email': {'required': True},
+            'organization': {'read_only': True}
         }
 
     def create(self, validated_data):
@@ -34,7 +35,14 @@ class JobSerializer(serializers.ModelSerializer):
         validated_data['recruiter'] = self.context['request'].user  # Assign logged-in user
         print("Validated data", validated_data)
         return super().create(validated_data)
-
+    
+    # not working
+    # def update(self, instance, validated_data):
+    #     print("Updating Job:", instance.id, "With Data:", validated_data)
+    #     validated_data.pop('is_disabled', None)
+    #     return super().update(instance, validated_data)
+ 
+    
 
 class CandidateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -60,7 +68,7 @@ class InterviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Interview
         fields = '__all__'
-        read_only_fields = ('scheduled_by', 'link')
+        read_only_fields = ('scheduled_by', 'link','recruiter','organization')
 
 
 class LoginSerializer(serializers.Serializer):

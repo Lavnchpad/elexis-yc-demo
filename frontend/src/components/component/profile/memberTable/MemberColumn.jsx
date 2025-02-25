@@ -5,6 +5,7 @@ export const memberColumns = [
     {
         accessorKey: 'srNo',
         header: 'Sr No.',
+        cell: (info) => info.row.index + 1
       },
       {
         accessorKey: 'name',

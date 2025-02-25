@@ -6,8 +6,8 @@ import ExperienceDialog from "./ExperienceDialog"
 // import { ExperienceDialog } from "./experience-dialog"
 
 const experienceData = [
-  { title: "Experience", years: 13, months: 2 },
-  { title: "Relevant Work Experience", years: 10, months: 4 },
+  // { title: "Experience", years: 13, months: 2 },
+  // { title: "Relevant Work Experience", years: 10, months: 4 },
 ]
 
 const Experience = () => {
@@ -33,27 +33,31 @@ const Experience = () => {
 
   return (
     <div className="space-y-6">
-      {experienceData.map((exp) => (
-        <Card
-          key={exp.title}
-          className="cursor-pointer hover:bg-gray-50 transition-colors"
-          onClick={() => handleOpenDialog(exp.title, exp.years, exp.months)}
-        >
-          <CardContent className="pt-6">
-            <div>
-              <div className="text-sm text-muted-foreground">{exp.title}</div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-purple-500">{exp.years}</span>
-                <span className="text-xl">Years</span>
+      {experienceData && experienceData.length > 0 ? (
+        experienceData.map((exp) => (
+          <Card
+            key={exp.title}
+            className="cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => handleOpenDialog(exp.title, exp.years, exp.months)}
+          >
+            <CardContent className="pt-6">
+              <div>
+                <div className="text-sm text-muted-foreground">{exp.title}</div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-purple-500">{exp.years}</span>
+                  <span className="text-xl">Years</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-purple-500">{exp.months}</span>
+                  <span className="text-xl">Months</span>
+                </div>
               </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-purple-500">{exp.months}</span>
-                <span className="text-xl">Months</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        ))
+      ) : (
+        <div className="text-center text-gray-500">No experience data available.</div>
+      )}
       {/* <ExperienceDialog
         isOpen={dialogConfig.isOpen}
         onClose={handleCloseDialog}

@@ -69,6 +69,7 @@ const CandidatesProvider = ({ children }) => {
     } else {
       setloading(false); // If no token, don't load candidates
     }
+    localStorage.removeItem("jobState");
   }, []); // Empty dependency array makes sure it only runs once when the component mounts
 
   return (

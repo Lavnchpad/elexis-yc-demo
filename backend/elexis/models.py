@@ -47,7 +47,7 @@ class RecruiterManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self.create_user(email, password=password, organization="550e8400e29b41d4a716446655440000", **extra_fields)
+        return self.create_user(email, password=password, organization=organization, **extra_fields)
 
 
 class Recruiter(AbstractUser, BaseModel):
@@ -103,6 +103,7 @@ class Job(BaseModel):
     location = models.CharField(max_length=255, blank=True)
     min_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     max_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    is_disabled = models.BooleanField(default=False)
 
     def __str__(self):
         return self.job_name
