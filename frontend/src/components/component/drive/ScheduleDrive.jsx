@@ -34,11 +34,11 @@
       jobId: z.string().min(1, "Job role is required"),
     });
 
-    const ScheduleDrive = ({ children,value }) => {
+    const ScheduleDrive = ({ children,value,selectedCandidate }) => {
       const [loading, setLoading] = useState(false);
       const { jobs,fetchJobs} = useContext(JobsContext);
       // console.log(jobs)
-      const { selectedCandidate } = useOutletContext();
+      // console.log(selectedCandidate)
       const {interviewData, fetchInterviewDetails,setSelectedJob} = useContext(InterviewContext);
       const [interviewId, setInterviewId] = useState()
       const [open, setOpen] = useState(false);
@@ -64,6 +64,7 @@
           job_id: data.jobId,
           candidate_id: selectedCandidate.id,
         };
+        console.log(payload);
 
         try {
           const token = localStorage.getItem("authToken");
@@ -191,14 +192,14 @@
                     {interviewData && value? (
                       interviewData.map((interview) => (
                         <SelectItem key={interview.id} value={interview.job.id}>
-                          {interview.job.title}
+                          {interview.job.job_name}
                         </SelectItem>
                       ))
                       
                     )  :(
                       jobs.map((job) => (
                         <SelectItem key={job.id} value={job.id}>
-                          {job.title}
+                          {job.job_name}
                         </SelectItem>
                       ))
                     )}

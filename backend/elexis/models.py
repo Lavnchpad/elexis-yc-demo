@@ -8,88 +8,136 @@ class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
+    
+    created_by = models.ForeignKey(
+        "Recruiter", related_name='has_created_%(class)s', on_delete=models.DO_NOTHING, blank=True, null=True
+    )
+    modified_by = models.ForeignKey(
+        "Recruiter", related_name='has_modified_%(class)s', on_delete=models.DO_NOTHING, blank=True, null=True
+    )
 
     class Meta:
         abstract = True
 
 
-class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
+class Organization(BaseModel):
+    org_name = models.CharField(max_length=255)
+    
+    def __str__(self):
+        return self.org_name
+
+
+class RecruiterManager(BaseUserManager):
+    def create_user(self, email, password=None, organization=None, **extra_fields):
         if not email:
             raise ValueError("The Email field must be set")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
+        user.organization = organization
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-        return self.create_user(email, password, **extra_fields)
+    def create_superuser(self, email, password=None, organization=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email, password=password, organization=organization, **extra_fields)
 
 
-class User(AbstractUser, BaseModel):
+class Recruiter(AbstractUser, BaseModel):
     username = None
-    email = models.EmailField(unique=True)
-    name = models.CharField(max_length=100)
-
-    USERNAME_FIELD = "email"
+    email = models.EmailField(_('email address'), unique=True)
+    company_name = models.CharField(max_length=100, blank=True)
+    name = models.CharField(max_length=100, blank=True)
+    organization = models.ForeignKey(
+        Organization, related_name="recruiters", on_delete=models.CASCADE, blank=False, null=False
+    )
+    
+    # New fields
+    is_admin = models.BooleanField(default=False)
+    can_manage_users = models.BooleanField(default=False)
+    can_manage_jobs = models.BooleanField(default=False)
+    
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    objects = UserManager()
+    objects = RecruiterManager()
 
     def __str__(self):
         return self.email
 
 
-class Recruiter(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="recruiter_profile")
-    company_name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.user.name
-
-
 class Candidate(BaseModel):
-    recruiter = models.ForeignKey(Recruiter, on_delete=models.CASCADE, related_name="candidates")
+    recruiter = models.ForeignKey(
+        Recruiter, on_delete=models.CASCADE, related_name="candidates" , blank=False, null=False 
+    )
+    organization = models.ForeignKey(
+        Organization, related_name="candidates", on_delete=models.CASCADE, blank=False, null=False
+    )
     name = models.CharField(max_length=100)
     email = models.EmailField()
     resume = models.FileField(upload_to="resumes/", blank=True, null=True)
     applied_for = models.CharField(max_length=100, blank=True, null=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True) 
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
 
     def __str__(self):
         return self.name
 
 
 class Job(BaseModel):
-    recruiter = models.ForeignKey(Recruiter, on_delete=models.CASCADE, related_name="jobs")
-    title = models.CharField(max_length=255)
-    description = models.TextField()
+    recruiter = models.ForeignKey(
+        Recruiter, on_delete=models.CASCADE, related_name="jobs"
+    )
+    organization = models.ForeignKey(
+        Organization, related_name="jobs", on_delete=models.CASCADE
+    )
+    job_name = models.CharField(max_length=255)
+    job_description = models.TextField()
+    additional_data = models.TextField(blank=True)
+    location = models.CharField(max_length=255, blank=True)
+    min_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    max_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    is_disabled = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.title
+        return self.job_name
 
 
 class Interview(BaseModel):
     STATUS_CHOICES = [
-        ('accepted', 'Accepted'), 
+        ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
         ('scheduled', 'Scheduled'),
         ('hold', 'Hold'),
         ('registered', 'Registered'),
     ]
 
-    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name="interviews")
-    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="interviews")
-    scheduled_by = models.ForeignKey(Recruiter, on_delete=models.CASCADE, related_name="scheduled_interviews")
+    candidate = models.ForeignKey(
+        Candidate, on_delete=models.CASCADE, related_name="interviews"
+    )
+    job = models.ForeignKey(
+        Job, on_delete=models.CASCADE, related_name="interviews"
+    )
+    scheduled_by = models.ForeignKey(
+        Recruiter, on_delete=models.CASCADE, related_name="scheduled_interviews"
+    )
+    organization = models.ForeignKey(
+        Organization, related_name="interviews", on_delete=models.CASCADE
+    )
     date = models.DateField()
     time = models.TimeField()
     link = models.URLField(blank=True, null=True)
     transcript = models.JSONField(default=dict, blank=True, null=True)
     summary = models.JSONField(default=dict, blank=True, null=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='registered')
+    status = models.CharField(
+        max_length=10, choices=STATUS_CHOICES, default='registered'
+    )
 
     def __str__(self):
-        return f"Interview for {self.candidate.name} - {self.job.title}"
+        return f"Interview for {self.candidate.name} - {self.job.job_name}"

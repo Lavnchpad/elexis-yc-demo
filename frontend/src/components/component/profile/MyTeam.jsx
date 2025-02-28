@@ -1,23 +1,50 @@
-import DataTable from '@/components/table/DataTable'
-import React from 'react'
-import {memberColumns} from "../profile/memberTable/MemberColumn"
+import React, { useEffect, useState } from 'react';
+import DataTable from '@/components/table/DataTable';
+import { memberColumns } from "../profile/memberTable/MemberColumn";
+import { useUser } from '../recruiter/UserContext';
+import axios from 'axios';
 
 const MyTeam = () => {
+  const { user } = useUser(); // Get user data from context
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
+  console.log(data)
 
-    const data = [
-        { srNo: 1, name: 'Narayan das', email: 'narayan@elexis.com', accessDetails: 'Click Here' },
-        { srNo: 2, name: 'Supriya', email: 'supriya@elexis.com', accessDetails: 'Click Here' },
-        { srNo: 3, name: 'Vijaya Karpe', email: 'vijaya@elexis.com', accessDetails: 'Click Here' },
-        { srNo: 4, name: 'Dummy User 3', email: 'dummy1@elexis.com', accessDetails: 'Click Here' },
-        { srNo: 5, name: 'Dummy User 3', email: 'dummy3@elexis.com', accessDetails: 'Click Here' },
-        { srNo: 6, name: 'Dummy User 2', email: 'dummy2@elexis.com', accessDetails: 'Click Here' },
-      ];
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        setLoading(true); // Start loading
+        const token = localStorage.getItem('authToken'); // Get token from local storage
+
+        // API call to fetch team members
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/recruiters/`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Pass token in the headers
+          },
+        });
+
+        setData(response.data); // Set fetched data
+      } catch (error) {
+        console.error('Error fetching team members:', error);
+      } finally {
+        setLoading(false); // Stop loading
+      }
+    };
+
+    fetchTeamMembers();
+  }, []);
 
   return (
     <div>
-    <DataTable hasClick={false} hasPagination={false} columns={memberColumns} data={data} />
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <p>Loading...</p> {/* Add a spinner or custom loading indicator if preferred */}
+        </div>
+      ) : (
+        <DataTable hasClick={false} hasPagination={false} columns={memberColumns} data={data} />
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default MyTeam
+export default MyTeam;

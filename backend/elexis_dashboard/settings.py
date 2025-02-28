@@ -65,6 +65,7 @@ CORS_ALLOW_METHODS = [
     'GET',
     'POST',
     'PUT',
+    'DELETE',
     'OPTIONS',  # Make sure OPTIONS is included
 ]
 
@@ -149,7 +150,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-AUTH_USER_MODEL = "elexis.User"
+AUTH_USER_MODEL = "elexis.Recruiter"
 
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {

@@ -2,39 +2,40 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SkillBar } from "./SkillBar"
 
 const skillCategories = [
-  {
-    title: "Languages",
-    skills: [
-      { name: "C++", rating: 5 },
-      { name: "JAVA", rating: 5 },
-      { name: "JavaScript", rating: 5 },
-      { name: "Python", rating: 5 },
-      { name: "C#", rating: 5 },
-    ],
-  },
-  {
-    title: "Job Related Skills",
-    skills: [
-      { name: "Frontend Dev.", rating: 5 },
-      { name: "Backend Dev.", rating: 5 },
-      { name: "Databases", rating: 5 },
-      { name: "UI Design", rating: 5 },
-      { name: "ML/AI", rating: 5 },
-    ],
-  },
-  {
-    title: "Soft Skills",
-    skills: [
-      { name: "Public speaking", rating: 5 },
-      { name: "Team Work", rating: 5 },
-      { name: "Time Management", rating: 5 },
-      { name: "Leadership", rating: 4 },
-    ],
-  },
+  // {
+  //   title: "Languages",
+  //   skills: [
+  //     { name: "C++", rating: 5 },
+  //     { name: "JAVA", rating: 5 },
+  //     { name: "JavaScript", rating: 5 },
+  //     { name: "Python", rating: 5 },
+  //     { name: "C#", rating: 5 },
+  //   ],
+  // },
+  // {
+  //   title: "Job Related Skills",
+  //   skills: [
+  //     { name: "Frontend Dev.", rating: 5 },
+  //     { name: "Backend Dev.", rating: 5 },
+  //     { name: "Databases", rating: 5 },
+  //     { name: "UI Design", rating: 5 },
+  //     { name: "ML/AI", rating: 5 },
+  //   ],
+  // },
+  // {
+  //   title: "Soft Skills",
+  //   skills: [
+  //     { name: "Public speaking", rating: 5 },
+  //     { name: "Team Work", rating: 5 },
+  //     { name: "Time Management", rating: 5 },
+  //     { name: "Leadership", rating: 4 },
+  //   ],
+  // },
 ]
 
 const Experience = () => {
   return (
+    skillCategories.length > 0 ? (
     <Card>
       <CardHeader>
         <CardTitle>Skills</CardTitle>
@@ -57,6 +58,7 @@ const Experience = () => {
         </div>
       </CardContent>
     </Card>
+    ) : "No skills data available"
   )
 }
 export default Experience;
