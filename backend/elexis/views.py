@@ -42,6 +42,8 @@ class LoginView(APIView):
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
             user = authenticate(request, email=email, password=password)
+            user = Recruiter.objects.get(email=email)
+            # print(user.check_password(password))
             if user:
                 # Generate tokens
                 refresh = RefreshToken.for_user(user)

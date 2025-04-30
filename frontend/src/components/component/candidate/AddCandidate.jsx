@@ -40,6 +40,7 @@ const candidateSchema = z.object({
 const AddCandidate = ({ children }) => {
   const { candidates, setCandidates } = useContext(CandidatesContext);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
   const { jobs, fetchJobs } = useContext(JobsContext);
 
   const [loading, setLoading] = useState(false);
@@ -63,6 +64,9 @@ const AddCandidate = ({ children }) => {
   const uploadFile = (e) => {
     setSelectedFile(e.target.files[0]);
   };
+  const uploadPhoto = (e) => {
+    setSelectedPhoto(e.target.files[0]);
+  };
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -73,6 +77,7 @@ const AddCandidate = ({ children }) => {
     formData.append("email", data.email);
     formData.append("phone_number", data.phone || "");
     // if (data.profilePic?.[0]) formData.append("profile_picture", data.profilePic[0]);
+    formData.append("profile_photo", selectedPhoto);
     formData.append("resume", currentSelectedFile);
 
     try {
@@ -163,7 +168,7 @@ const AddCandidate = ({ children }) => {
                   <FormItem>
                     <FormLabel>Profile Picture</FormLabel>
                     <FormControl>
-                      <Input type="file" {...field} />
+                      <Input type="file" {...field} onChange={uploadPhoto}/>
                     </FormControl>
                   </FormItem>
                 )}

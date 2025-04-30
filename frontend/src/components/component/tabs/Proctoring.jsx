@@ -1,5 +1,5 @@
 import React from "react";
-import sample from "../../../assets/video/sample.mp4";
+import sample from "../../../assets/video/aditya_panchal_test_automation.mp4";
 import one from "../../../assets/images/one.png";
 import two from "../../../assets/images/two.png";
 import three from "../../../assets/images/three.png";

@@ -25,7 +25,7 @@ const Summary = ({interview_summary}) => {
             className="stroke-primary transition-all duration-300 ease-in-out"
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
-            strokeDashoffset={progress}
+            strokeDashoffset={circumference-progress}
             strokeLinecap="round"
             fill="none"
             cx="50"

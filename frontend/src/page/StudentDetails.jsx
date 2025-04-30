@@ -216,7 +216,7 @@ const StudentDetails = ({}) => {
                   >
                     <div className="relative w-12 h-12 mr-4">
                       <Avatar className="w-full h-full">
-                        <AvatarImage src={contact.avatar} alt={contact.name} />
+                        <AvatarImage src={contact.profile_photo} alt={contact.name} />
                         <AvatarFallback>
                           {contact.name.charAt(0)}
                         </AvatarFallback>
@@ -263,7 +263,7 @@ const StudentDetails = ({}) => {
                 <div className="flex items-center space-x-6">
                   <Avatar className="w-40 h-40 rounded-full">
                     <AvatarImage
-                      src={selectedCandidate.avatar}
+                      src={selectedCandidate.profile_photo}
                       alt={selectedCandidate.name}
                     />
                     <AvatarFallback>
@@ -339,8 +339,8 @@ const StudentDetails = ({}) => {
                 </div>
               </div>
               <div className="grid gap-6 md:grid-cols-[300px_1fr]">
-                <Experience />
-                <Skills />
+                <Experience experience={selectedInterview?.experience}/>
+                <Skills skills={selectedInterview?.skills}/>
               </div>
               <div className="w-full px-6 py-4 bg-muted/30">
                 <div className="flex items-center justify-between">

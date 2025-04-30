@@ -83,6 +83,7 @@ class Candidate(BaseModel):
     name = models.CharField(max_length=100)
     email = models.EmailField()
     resume = models.FileField(upload_to="resumes/", blank=True, null=True)
+    profile_photo = models.ImageField(upload_to="profile_photos", blank=True, null=True)
     applied_for = models.CharField(max_length=100, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
 
@@ -138,6 +139,8 @@ class Interview(BaseModel):
     status = models.CharField(
         max_length=10, choices=STATUS_CHOICES, default='registered'
     )
+    experience = models.JSONField(default=dict, blank=True, null=True)
+    skills = models.JSONField(default=dict, blank=True, null=True)
 
     def __str__(self):
         return f"Interview for {self.candidate.name} - {self.job.job_name}"

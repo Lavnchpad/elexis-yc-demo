@@ -2,15 +2,15 @@
 
 import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import ExperienceDialog from "./ExperienceDialog"
+// import ExperienceDialog from "./ExperienceDialog"
 // import { ExperienceDialog } from "./experience-dialog"
 
 const experienceData = [
-  // { title: "Experience", years: 13, months: 2 },
-  // { title: "Relevant Work Experience", years: 10, months: 4 },
+  { title: "Experience", years: 13, months: 2 },
+  { title: "Relevant Work Experience", years: 10, months: 4 },
 ]
 
-const Experience = () => {
+const Experience = ({experience}) => {
   const [dialogConfig, setDialogConfig] = useState({
     isOpen: false,
     title: "",
@@ -30,11 +30,13 @@ const Experience = () => {
   const handleCloseDialog = () => {
     setDialogConfig((prev) => ({ ...prev, isOpen: false }))
   }
-
+  if(experience === undefined) {
+    return <div className="text-center text-gray-500">No experience data available.</div>
+  }
   return (
     <div className="space-y-6">
-      {experienceData && experienceData.length > 0 ? (
-        experienceData.map((exp) => (
+      {experience && experience.length > 0 ? (
+        experience.map((exp) => (
           <Card
             key={exp.title}
             className="cursor-pointer hover:bg-gray-50 transition-colors"
