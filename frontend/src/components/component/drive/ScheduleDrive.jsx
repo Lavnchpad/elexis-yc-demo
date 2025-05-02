@@ -186,7 +186,7 @@
         }
       }}  value={field.value}>
                   <SelectTrigger>
-                    <SelectValue placeholder={jobs.length || interviewData.job.length ? "Select a job role" : "Loading jobs..."} />
+                    <SelectValue placeholder={jobs?.length || interviewData?.length ? "Select a job role" : "No jobs found"} />
                   </SelectTrigger>
                   <SelectContent>
                     {interviewData && value? (

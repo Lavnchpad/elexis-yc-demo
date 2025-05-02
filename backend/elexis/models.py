@@ -53,7 +53,7 @@ class RecruiterManager(BaseUserManager):
 class Recruiter(AbstractUser, BaseModel):
     username = None
     email = models.EmailField(_('email address'), unique=True)
-    company_name = models.CharField(max_length=100, blank=True)
+    company_name = models.CharField(max_length=100, blank=True, default="Default Company")
     name = models.CharField(max_length=100, blank=True)
     organization = models.ForeignKey(
         Organization, related_name="recruiters", on_delete=models.CASCADE, blank=False, null=False
@@ -141,6 +141,7 @@ class Interview(BaseModel):
     )
     experience = models.JSONField(default=dict, blank=True, null=True)
     skills = models.JSONField(default=dict, blank=True, null=True)
+    meeting_room = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return f"Interview for {self.candidate.name} - {self.job.job_name}"

@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Recruiter, Candidate, Job, Interview
+from elexis.utils.general import getHumanReadableTime
 from .serializers import (
     RecruiterSerializer,
     CandidateSerializer,
@@ -20,6 +21,13 @@ from .serializers import (
 )
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, now
+from django.shortcuts import redirect
+import requests
+import os
+from dotenv import load_dotenv      
+
+load_dotenv()
+CLIENT_URL = os.getenv("CLIENT_URL")
 
 
 class SignupView(APIView):
@@ -126,9 +134,10 @@ class CandidateViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def create_joining_link(self, request, pk=None):
+        base_url = self.request.build_absolute_uri('/')[:-1]
         candidate = self.get_object()
 
-        link = f"http://127.0.0.1:8000/elexis/candidate/{pk}/start_interview"
+        link = f"{base_url}/elexis/candidate/{pk}/start_interview"
         candidate.joining_link = link
         candidate.save()
 
@@ -177,13 +186,13 @@ class InterviewViewSet(viewsets.ModelViewSet):
 
           return queryset
         
-        def perform_create(self, serializer):
+        def perform_create(self,serializer):
          candidate = serializer.validated_data.get('candidate')  # Fetch the candidate data
          if candidate:
         # Set the organization based on the candidate's organization
             organization = candidate.organization
             interview = serializer.save(scheduled_by=self.request.user,organization=organization)
-            interview.link = f"http://127.0.0.1:8001/interviews/{interview.id}/start/"
+            interview.link = f"{CLIENT_URL}/interviews/{interview.id}/start/"
             print(interview)
             interview.save()
 
@@ -209,13 +218,23 @@ class InterviewViewSet(viewsets.ModelViewSet):
             interview_start = make_aware(datetime.combine(interview.date, interview.time))
             interview_end = interview_start + timedelta(hours=1)
 
-            if not (interview_start <= current_time <= interview_end):
+        # Case 1: Too early
+            if current_time < interview_start:
                 return Response(
-                    {"message": "This link is not valid at this time. Please check your scheduled interview time."},
+                    {"message": f"Your interview is scheduled at {getHumanReadableTime(interview_start)}. Please wait.",
+                     "isEarly": True},
+                    status=status.HTTP_200_OK,  # Or 403 if you want to block it
+                )
+
+        # Case 2: Too late
+            if current_time > interview_end:
+                return Response(
+                    {"message": "This interview link has expired. Please contact the recruiter to reschedule.",
+                     "isEarly": False},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            
             candidate = interview.candidate
-
             data= {
             "name":candidate.name,
             "candidate_email": candidate.email,
@@ -223,23 +242,44 @@ class InterviewViewSet(viewsets.ModelViewSet):
             "role":candidate.applied_for,
             "company_name": candidate.recruiter.company_name,
             "interviewer_name": candidate.recruiter.name,
+            "candidate_voice_clone": "India Accent (Female)",
             "is_dashboard_request": True,
             }
 
             files = {
-                "resume": ("empty.pdf", BytesIO(b""), "application/pdf"),
-                "job_description": ("empty.pdf", BytesIO(b""), "application/pdf"),
+                "resume": ("resume.pdf", candidate.resume.open("rb"), "application/pdf"),
+                "job_description": ("empty.pdf", candidate.resume.open("rb"), "application/pdf"),
             }
             
             
             
-            interview.link = None
-            interview.save()
+            
+            try:
+                response = requests.post("https://app.elexis.ai/start", data=data, files=files)
 
-            response = requests.post("https://app.elexis.ai/start",data=data,files=files)
-            redirect_link = response.json().get("room_url")
-            return redirect(redirect_link)
+                json_response = response.json()
+                print("Response:", json_response)
+                meeting_link = json_response.get("room_url");
+                if meeting_link:
+                    interview.meeting_room = meeting_link
+                    interview.link = None
+                    interview.save()
+                    return Response(
+                        {"message": "Interview starting...", "url": meeting_link},
+                        status=status.HTTP_200_OK
+                    )
+                else: 
+                    return Response(
+                        {"error": "Failed to retrieve meeting link."},
+                        status=status.HTTP_502_BAD_GATEWAY
+                    )
 
+            except Exception as e:
+                print("Request error:", e)
+                return Response(
+                    {"error": "Failed to start the interview. Please try again later."},
+                    status=status.HTTP_502_BAD_GATEWAY
+                )
 
 class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
