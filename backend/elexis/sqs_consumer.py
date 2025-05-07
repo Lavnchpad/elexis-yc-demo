@@ -92,14 +92,12 @@ def process_message(message_body):
 
         # Update the Interview instance with the transcript and summary
         try:
-            print("Summary data:", summary_json, type(summary_json), type(transcript_data))
+            print("Summary data:", summary_json, type(summary_json))
             rows_updated = Interview.objects.filter(meeting_room=interview_id).update(
-                #  TODO : Update the transcript field as string
-
-                transcript=json.dumps(transcript_data),
-                summary=json.dumps(summary_json),
-                skills = json.dumps(summary_json['skills']),
-                experience = json.dumps(summary_json['experience'])
+                transcript=(transcript_url),
+                summary=(summary_json),
+                skills = (summary_json['skills']),
+                experience =(summary_json['experience'])
             )
             if rows_updated:
                 print(f"Transcript and summary updated for Interview ID: {interview_id}: summaryjson::: {(summary_json)}")

@@ -35,7 +35,7 @@ const Experience = ({experience}) => {
   }
   return (
     <div className="space-y-6">
-      {experience && experience.length > 0 ? (
+      {Array.isArray(experience) ? (
         experience.map((exp) => (
           <Card
             key={exp.title}

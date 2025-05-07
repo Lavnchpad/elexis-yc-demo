@@ -134,7 +134,7 @@ class Interview(BaseModel):
     date = models.DateField()
     time = models.TimeField()
     link = models.URLField(blank=True, null=True)
-    transcript = models.JSONField(default=dict, blank=True, null=True)
+    transcript = models.URLField(blank=True, null=True)
     summary = models.JSONField(default=dict, blank=True, null=True)
     status = models.CharField(
         max_length=10, choices=STATUS_CHOICES, default='registered'

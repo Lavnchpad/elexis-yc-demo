@@ -55,7 +55,6 @@ const StudentDetails = ({}) => {
   const [selectedJobId, setSelectedJobId] = useState(null);
   // const location = useLocation();
   const navigate = useNavigate();
-
   const statusPriority = {
     accepted: 1,
     pending: 2,
@@ -375,9 +374,9 @@ const StudentDetails = ({}) => {
                     </div>
                     <TabsContent value="summary">
                       <div className="p-4 bg-background rounded-lg">
-                        {selectedInterview?.summary.length > 0 ? (
+                        {(selectedInterview?.summary) ? (
                           <Summary
-                            interview_summary={selectedInterview.summary[0]}
+                            interview_summary={selectedInterview.summary}
                           />
                         ) : (
                           <p>No summary available for this job.</p>
@@ -386,9 +385,9 @@ const StudentDetails = ({}) => {
                     </TabsContent>
                     <TabsContent value="transcript">
                       <div className="p-4 bg-background rounded-lg">
-                        {selectedInterview?.transcript.length > 0 ? (
+                        {selectedInterview?.transcript ? (
                           <Transcript
-                            interview_transcript={selectedInterview.transcript}
+                            interview_transcript_url={selectedInterview.transcript}
                           />
                         ) : (
                           <p>No transcript available for this job.</p>

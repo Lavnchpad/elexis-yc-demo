@@ -37,6 +37,32 @@ def generate_summary_data(data):
         details: A detailed explanation of the area
         suggestions: Suggestions questions that can be asked on how the candidate can improve in this area or recommendations for further assessments during interviews in a paragraph
 
+        skills: It should be an list of Dictionary and each item should be a dictionary with the following fields:
+        and example object of skills should look like this: [
+  {
+    title: "Languages",
+    skills: [
+      { name: "C++", rating: 5 },
+    ],
+  },
+  {
+    title: "Job Related Skills",
+    skills: [
+      { name: "Frontend Dev.", rating: 5 },
+      { name: "Backend Dev.", rating: 5 },
+    ],
+  },
+  {
+    title: "Soft Skills",
+    skills: [
+      { name: "Public speaking", rating: 5 },
+    ],
+  },
+]
+
+        
+        experience: It should be a list of dictionary based on the professional work experience of the candidate and each item should include name , years and months
+
         final_recommendation: List of points summarizing the overall recommendation regarding the candidate's potential fit for the position, including any conditions or next steps.
 
         Ensure the summary is clear, concise, and provides a holistic view of the candidate's capabilities, potential, and areas needing improvement.

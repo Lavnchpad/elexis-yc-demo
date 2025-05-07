@@ -38,13 +38,13 @@ const Experience = ({skills}) => {
     return "No skills data available"
   }
   return (
-    skills.length > 0 ? (
+    Array.isArray(skills) ? (
     <Card>
       <CardHeader>
         <CardTitle>Skills</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
           {skills.map((category) => (
             <div key={category.title} className="space-y-4">
               <h3 className="font-semibold">{category.title}</h3>

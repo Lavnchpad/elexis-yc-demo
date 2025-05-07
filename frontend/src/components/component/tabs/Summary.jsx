@@ -1,44 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
 const Summary = ({interview_summary}) => {
-  console.log(interview_summary)
-
   const {
     overall_impression = [],
     strengths = [],
     areas_for_improvement = [],
     final_recommendation = [],
   } = interview_summary;
-
-  const CircularGauge = ({ score, maxScore }) => {
-    const percentage = (score / maxScore) * 100;
-    const radius = 40;
-    const strokeWidth = 8;
-    const circumference = 2 * Math.PI * radius;
-    const progress = ((200 - percentage) / 100) * circumference;
-
-    return (
-      <div className="relative w-24 h-24">
-        <svg className="transform -rotate-90" width="100%" height="100%" viewBox="0 0 100 100">
-          <circle className="stroke-muted" strokeWidth={strokeWidth} fill="none" cx="50" cy="50" r={radius} />
-          <circle
-            className="stroke-primary transition-all duration-300 ease-in-out"
-            strokeWidth={strokeWidth}
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference-progress}
-            strokeLinecap="round"
-            fill="none"
-            cx="50"
-            cy="50"
-            r={radius}
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center text-primary font-medium text-lg">
-          {score}/5
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
@@ -61,8 +29,8 @@ const Summary = ({interview_summary}) => {
         </CardHeader>
         <CardContent>
           <ul className="list-disc pl-6 space-y-2">
-            {overall_impression.map((point, index) => (
-              <li key={index}>{point}</li>
+            {overall_impression.map((point) => (
+              <li key={point}>{point}</li>
             ))}
           </ul>
         </CardContent>
@@ -91,10 +59,10 @@ const Summary = ({interview_summary}) => {
         </CardHeader>
         <CardContent>
           <ul className="space-y-4">
-            {areas_for_improvement.map((area, index) => (
-              <li key={index}>
+            {areas_for_improvement.map((area) => (
+              <li key={area?.area}>
                 <strong>{area.area}</strong>: {area.details}
-                <p className="mt-2 text-sm text-muted">{area.suggestions}</p>
+                <p className="mt-2 text-sm font-thin">{area.suggestions}</p>
               </li>
             ))}
           </ul>
@@ -108,12 +76,41 @@ const Summary = ({interview_summary}) => {
         </CardHeader>
         <CardContent>
           <ul className="list-disc pl-6 space-y-2">
-            {final_recommendation.map((point, index) => (
-              <li key={index}>{point}</li>
+            {final_recommendation.map((point) => (
+              <li key={point}>{point}</li>
             ))}
           </ul>
         </CardContent>
       </Card>
+    </div>
+  );
+};
+const CircularGauge = ({ score, maxScore }) => {
+  const percentage = (score / maxScore) * 100;
+  const radius = 40;
+  const strokeWidth = 8;
+  const circumference = 2 * Math.PI * radius;
+  const progress = ((200 - percentage) / 100) * circumference;
+
+  return (
+    <div className="relative w-24 h-24">
+      <svg className="transform -rotate-90" width="100%" height="100%" viewBox="0 0 100 100">
+        <circle className="stroke-muted" strokeWidth={strokeWidth} fill="none" cx="50" cy="50" r={radius} />
+        <circle
+          className="stroke-primary transition-all duration-300 ease-in-out"
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference-progress}
+          strokeLinecap="round"
+          fill="none"
+          cx="50"
+          cy="50"
+          r={radius}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center text-primary font-medium text-lg">
+        {score}/5
+      </div>
     </div>
   );
 };
