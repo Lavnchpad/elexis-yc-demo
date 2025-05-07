@@ -21,7 +21,7 @@ def generate_summary_data(data):
         Transcription:
         {{data}}
 
-        Return the summary as a JSON object with these keys: 'overall_impression', 'strengths', 'areas_for_improvement', and 'final_recommendation'.
+        Return the summary as a JSON object with these keys: 'overall_impression', 'strengths', 'areas_for_improvement','skills' , 'experience' and 'final_recommendation'.
 
         Each section should contain the following information:
 
@@ -56,7 +56,9 @@ def generate_summary_data(data):
                 'overall_impression',
                 'strengths',
                 'areas_for_improvement',
-                'final_recommendation'
+                'final_recommendation',
+                'skills',
+                'experience'
             ]
 
             for key in required_keys:

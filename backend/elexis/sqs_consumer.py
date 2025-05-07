@@ -13,7 +13,7 @@ AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 SQS_QUEUE_URL = os.getenv("SQS_QUEUE_URL")
 AWS_REGION = os.getenv("AWS_REGION")
-
+AWS_SQS_ENDPOINT=os.getenv("AWS_SQS_ENDPOINT")
 
 def start_sqs_consumer():
     """
@@ -22,6 +22,7 @@ def start_sqs_consumer():
     """
     sqs_client = boto3.client(
         'sqs',
+        endpoint_url=AWS_SQS_ENDPOINT,
         region_name=AWS_REGION,
         aws_access_key_id=AWS_ACCESS_KEY_ID,
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY
@@ -69,6 +70,8 @@ def process_message(message_body):
         interview_id = message.get("interview_id")
         transcript_url = message.get("s3_file_url")
 
+        # {"s3_file_url":"http://elexis-s3-b2b.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","interview_id":"http://127.0.0.1:8000/interviews/419fd513-707c-4fb2-a2b9-980eff24d368/start/"}  for localstack use
+
         if not interview_id or not transcript_url:
             print(f"Invalid data in message: interview_id={interview_id}, transcript_url={transcript_url}")
             return
@@ -89,12 +92,17 @@ def process_message(message_body):
 
         # Update the Interview instance with the transcript and summary
         try:
-            rows_updated = Interview.objects.filter(id=interview_id).update(
-                transcript=transcript_data,
-                summary=summary_json
+            print("Summary data:", summary_json, type(summary_json), type(transcript_data))
+            rows_updated = Interview.objects.filter(meeting_room=interview_id).update(
+                #  TODO : Update the transcript field as string
+
+                transcript=json.dumps(transcript_data),
+                summary=json.dumps(summary_json),
+                skills = json.dumps(summary_json['skills']),
+                experience = json.dumps(summary_json['experience'])
             )
             if rows_updated:
-                print(f"Transcript and summary updated for Interview ID: {interview_id}")
+                print(f"Transcript and summary updated for Interview ID: {interview_id}: summaryjson::: {(summary_json)}")
             else:
                 print(f"Interview ID {interview_id} not found. No update performed.")
         except Exception as e:

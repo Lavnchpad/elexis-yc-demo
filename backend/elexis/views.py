@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate
-from django_filters import CharFilter, FilterSet
-from django_filters.rest_framework import DjangoFilterBackend
+# from django_filters import CharFilter, FilterSet
+# from django_filters.rest_framework import DjangoFilterBackend
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import redirect
@@ -258,8 +258,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 response = requests.post("https://app.elexis.ai/start", data=data, files=files)
 
                 json_response = response.json()
-                print("Response:", json_response)
-                meeting_link = json_response.get("room_url");
+                meeting_link = json_response.get("room_url")
                 if meeting_link:
                     interview.meeting_room = meeting_link
                     interview.link = None
