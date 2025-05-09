@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.db.models import JSONField
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
@@ -144,4 +145,15 @@ class Interview(BaseModel):
     meeting_room = models.URLField(blank=True, null=True)
 
     def __str__(self):
-        return f"Interview for {self.candidate.name} - {self.job.job_name}"
+        return f"Interview for {self.candidate.name} - {self.job.job_name} - {self.time} - id: {self.id}"
+
+class Snapshots(BaseModel):
+    interview = models.ForeignKey(
+        Interview, on_delete=models.CASCADE, related_name="interview"
+    )
+
+    video = JSONField(blank=True , null= True)
+    screenshots = JSONField(blank= True , null=True)
+
+    def __str__(self):
+        return f"name: {self.interview.candidate.name} InterviewId:{self.interview.id}"

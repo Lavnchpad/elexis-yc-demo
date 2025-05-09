@@ -17,6 +17,19 @@ const StatusButton = ({ interviewData,selectedCandidate}) => {
  const hasScheduledInterview = interviewData?.some(
   (interview) => interview.link || interview.time
 );
+async function changeInterviewStatus(type){
+ switch(type){
+  case 'accept':
+    console.log({type})
+    break
+  case 'reject':
+    console.log({type})
+    break
+  case 'hold':
+    console.log({type})
+    break
+ }
+}
   return (
     <div className="ml-auto flex space-x-4">
       {/* Conditionally render buttons based on the status */}
@@ -50,9 +63,9 @@ const StatusButton = ({ interviewData,selectedCandidate}) => {
       )}
       {status === "registered" && (
         <>
-          <Button className="px-6 py-3">Accept</Button>
-          <Button className="px-6 py-3">Reject</Button>
-          <Button className="px-6 py-3">Hold</Button>
+          <Button className="px-6 py-3 bg-green-600" onClick={()=>changeInterviewStatus('accept')} type='button'>Accept</Button>
+          <Button className="px-6 py-3 bg-red-500" onClick={()=>changeInterviewStatus('reject')} type='button'>Reject</Button>
+          <Button className="px-6 py-3 bg-yellow-600" onClick={()=>changeInterviewStatus('hold')} type='button'>Hold</Button>
         </>
       )}
       <ScheduleDrive selectedCandidate={selectedCandidate}>

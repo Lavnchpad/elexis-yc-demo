@@ -38,7 +38,7 @@ import StudentDetailsSkeleton from "@/components/component/Loader/StudentDetails
 import Experience from "@/components/component/candidate/skills-experience/Experience";
 import Skills from "@/components/component/candidate/skills-experience/Skills";
 import AddCandidate from "@/components/component/candidate/AddCandidate";
-import { useLocation } from "react-router-dom";
+import ErrorBoundary from "@/utils/ErrorBoundary";
 const StudentDetails = ({}) => {
   const [activeTab, setActiveTab] = useState("summary");
   const [loading, setLoading] = useState(true);
@@ -375,9 +375,11 @@ const StudentDetails = ({}) => {
                     <TabsContent value="summary">
                       <div className="p-4 bg-background rounded-lg">
                         {(selectedInterview?.summary) ? (
-                          <Summary
-                            interview_summary={selectedInterview.summary}
-                          />
+                          <ErrorBoundary>
+                            <Summary
+                              interview_summary={selectedInterview.summary}
+                            />
+                          </ErrorBoundary>
                         ) : (
                           <p>No summary available for this job.</p>
                         )}
@@ -386,9 +388,11 @@ const StudentDetails = ({}) => {
                     <TabsContent value="transcript">
                       <div className="p-4 bg-background rounded-lg">
                         {selectedInterview?.transcript ? (
+                        <ErrorBoundary >
                           <Transcript
                             interview_transcript_url={selectedInterview.transcript}
                           />
+                          </ErrorBoundary>
                         ) : (
                           <p>No transcript available for this job.</p>
                         )}
@@ -399,7 +403,9 @@ const StudentDetails = ({}) => {
                         <h2 className="text-lg font-semibold mb-2">
                           Video Recording
                         </h2>
-                        <Proctoring />
+                        <ErrorBoundary >
+                          <Proctoring details = {selectedInterview?.snapshots?.[0]}/>
+                        </ErrorBoundary>
                       </div>
                     </TabsContent>
                   </Tabs>

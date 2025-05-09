@@ -29,8 +29,8 @@ const Summary = ({interview_summary}) => {
         </CardHeader>
         <CardContent>
           <ul className="list-disc pl-6 space-y-2">
-            {overall_impression.map((point) => (
-              <li key={point}>{point}</li>
+            {overall_impression?.map((point, index) => (
+              <li key={"overallimpression"+index}>{point?.point}</li>
             ))}
           </ul>
         </CardContent>
@@ -44,8 +44,8 @@ const Summary = ({interview_summary}) => {
         <CardContent>
           <ul className="space-y-4">
             {strengths.map((strength, index) => (
-              <li key={index}>
-                <strong>{strength.strength}</strong>: {strength.example} (Rating: {strength.rating}/5)
+              <li key={"strengths"+index}>
+                <strong>{strength?.strength}</strong>: {strength?.example} (Rating: {strength?.rating}/5)
               </li>
             ))}
           </ul>
@@ -59,8 +59,8 @@ const Summary = ({interview_summary}) => {
         </CardHeader>
         <CardContent>
           <ul className="space-y-4">
-            {areas_for_improvement.map((area) => (
-              <li key={area?.area}>
+            {areas_for_improvement.map((area, index) => (
+              <li key={"areasforimprovement"+index}>
                 <strong>{area.area}</strong>: {area.details}
                 <p className="mt-2 text-sm font-thin">{area.suggestions}</p>
               </li>
@@ -76,8 +76,8 @@ const Summary = ({interview_summary}) => {
         </CardHeader>
         <CardContent>
           <ul className="list-disc pl-6 space-y-2">
-            {final_recommendation.map((point) => (
-              <li key={point}>{point}</li>
+            {final_recommendation?.map((point, index) => (
+              <li key={'finalrecommendation'+index}>{point?.point}</li>
             ))}
           </ul>
         </CardContent>

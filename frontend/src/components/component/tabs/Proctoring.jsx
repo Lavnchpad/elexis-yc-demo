@@ -1,12 +1,7 @@
-import React from "react";
-import sample from "../../../assets/video/sample.mp4";
-import one from "../../../assets/images/one.png";
-import two from "../../../assets/images/two.png";
-import three from "../../../assets/images/three.png";
-import four from "../../../assets/images/four.png";
 
-const Proctoring = () => {
-  const snapshots = [one, two, three, four];
+const Proctoring = ({details}) => {
+  // const snapshots = [one, two, three, four];
+  let {video=[], screenshots=[]} = details;
   return (
       <div className="video-container">
       {/* Video Player */}
@@ -14,7 +9,7 @@ const Proctoring = () => {
         <video
           width="100%"
           controls
-          src={sample} // Use your video URL here
+          src={video?.[0] || ''} // Use your video URL here
           alt="Sample Video"
         >
           Your browser does not support the video tag.
@@ -26,8 +21,8 @@ const Proctoring = () => {
 
       {/* Snapshots Below Video */}
       <div className="snapshots">
-        {snapshots.map((snapshot, index) => (
-          <div key={index} className="snapshot-wrapper">
+        {screenshots?.map((snapshot, index) => (
+              <div key={index} className="snapshot-wrapper" >
             <img
               src={snapshot}
               alt={`Snapshot ${index + 1}`}

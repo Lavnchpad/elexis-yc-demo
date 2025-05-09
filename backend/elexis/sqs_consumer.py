@@ -12,7 +12,7 @@ load_dotenv()
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 SQS_QUEUE_URL = os.getenv("SQS_QUEUE_URL")
-AWS_REGION = os.getenv("AWS_REGION")
+AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
 AWS_SQS_ENDPOINT=os.getenv("AWS_SQS_ENDPOINT")
 
 def start_sqs_consumer():
@@ -23,7 +23,7 @@ def start_sqs_consumer():
     sqs_client = boto3.client(
         'sqs',
         endpoint_url=AWS_SQS_ENDPOINT,
-        region_name=AWS_REGION,
+        region_name=AWS_REGION_NAME,
         aws_access_key_id=AWS_ACCESS_KEY_ID,
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY
     )
@@ -67,13 +67,12 @@ def process_message(message_body):
     try:
         message = json.loads(message_body)
 
-        interview_id = message.get("interview_id")
+        room_url = message.get("room_url")
         transcript_url = message.get("s3_file_url")
 
-        # {"s3_file_url":"http://elexis-s3-b2b.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","interview_id":"http://127.0.0.1:8000/interviews/419fd513-707c-4fb2-a2b9-980eff24d368/start/"}  for localstack use
-
-        if not interview_id or not transcript_url:
-            print(f"Invalid data in message: interview_id={interview_id}, transcript_url={transcript_url}")
+        # {"s3_file_url":"http://elexis.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"http://127.0.0.1:8000/interviews/419fd513-707c-4fb2-a2b9-980eff24d368/start/"}  for localstack use
+        if not room_url or not transcript_url:
+            print(f"Invalid data in message: interview_id={room_url}, transcript_url={transcript_url}")
             return
 
         # Fetch transcript data from S3
@@ -92,19 +91,18 @@ def process_message(message_body):
 
         # Update the Interview instance with the transcript and summary
         try:
-            print("Summary data:", summary_json, type(summary_json))
-            rows_updated = Interview.objects.filter(meeting_room=interview_id).update(
+            rows_updated = Interview.objects.filter(meeting_room=room_url).update(
                 transcript=(transcript_url),
                 summary=(summary_json),
                 skills = (summary_json['skills']),
                 experience =(summary_json['experience'])
             )
             if rows_updated:
-                print(f"Transcript and summary updated for Interview ID: {interview_id}: summaryjson::: {(summary_json)}")
+                print(f"Transcript and summary updated for Interview ID: {room_url}: summaryjson::: {(summary_json)}")
             else:
-                print(f"Interview ID {interview_id} not found. No update performed.")
+                print(f"Interview ID {room_url} not found. No update performed.")
         except Exception as e:
-            print(f"Error updating database for Interview ID {interview_id}: {e}")
+            print(f"Error updating database for Interview ID {room_url}: {e}")
 
     except json.JSONDecodeError:
         print(f"Invalid message format: {message_body}")

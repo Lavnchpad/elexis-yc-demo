@@ -193,7 +193,6 @@ class InterviewViewSet(viewsets.ModelViewSet):
             organization = candidate.organization
             interview = serializer.save(scheduled_by=self.request.user,organization=organization)
             interview.link = f"{CLIENT_URL}/interviews/{interview.id}/start/"
-            print(interview)
             interview.save()
 
             subject = "Interview Scheduled"
@@ -239,16 +238,17 @@ class InterviewViewSet(viewsets.ModelViewSet):
             "name":candidate.name,
             "candidate_email": candidate.email,
             "interviewer_email":candidate.recruiter.email,
-            "role":candidate.applied_for,
+            "role":interview.job.job_name,
             "company_name": candidate.recruiter.company_name,
             "interviewer_name": candidate.recruiter.name,
             "candidate_voice_clone": "India Accent (Female)",
             "is_dashboard_request": True,
+            "language" : 'english'
             }
 
             files = {
                 "resume": ("resume.pdf", candidate.resume.open("rb"), "application/pdf"),
-                "job_description": ("empty.pdf", candidate.resume.open("rb"), "application/pdf"),
+                "job_description": ("pythondev.pdf",open("static/desc.pdf", "rb"), "application/pdf"),
             }
             
             
@@ -258,6 +258,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 response = requests.post("https://app.elexis.ai/start", data=data, files=files)
 
                 json_response = response.json()
+                print("JSON response of meeting url:::", json_response)
                 meeting_link = json_response.get("room_url")
                 if meeting_link:
                     interview.meeting_room = meeting_link

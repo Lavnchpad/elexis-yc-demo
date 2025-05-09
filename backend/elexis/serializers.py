@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Recruiter, Candidate, Job, Interview
+from .models import Recruiter, Candidate, Job, Interview, Snapshots
 
 
 class RecruiterSerializer(serializers.ModelSerializer):
@@ -54,6 +54,10 @@ class CandidateSerializer(serializers.ModelSerializer):
         data.pop('organization', None)
         return data    
 
+class SnapshotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Snapshots
+        fields = '__all__'
 
 class InterviewSerializer(serializers.ModelSerializer):
     candidate = CandidateSerializer(read_only=True)
@@ -64,11 +68,14 @@ class InterviewSerializer(serializers.ModelSerializer):
     job_id = serializers.PrimaryKeyRelatedField(
         queryset=Job.objects.all(), source='job', write_only=True
     )
-
+    snapshots = serializers.SerializerMethodField()
     class Meta:
         model = Interview
         fields = '__all__'
         read_only_fields = ('scheduled_by', 'link','recruiter','organization')
+    def get_snapshots(self, obj):
+        snapshots = Snapshots.objects.filter(interview=obj)
+        return SnapshotSerializer(snapshots, many=True).data
 
 
 class LoginSerializer(serializers.Serializer):
