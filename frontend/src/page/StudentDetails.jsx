@@ -40,6 +40,7 @@ import Experience from "@/components/component/candidate/skills-experience/Exper
 import Skills from "@/components/component/candidate/skills-experience/Skills";
 import AddCandidate from "@/components/component/candidate/AddCandidate";
 import ErrorBoundary from "@/utils/ErrorBoundary";
+import { toast } from "sonner";
 const StudentDetails = ({ }) => {
   const [activeTab, setActiveTab] = useState("summary");
   const [loading, setLoading] = useState(true);
@@ -72,6 +73,15 @@ const StudentDetails = ({ }) => {
       link.click();
     }
   };
+
+  function copyLink(text) {
+    if (!text) {
+      toast.error('Interview Link is not available at the moment!')
+      return;
+    }
+    navigator.clipboard.writeText();
+    toast.success('Link copied!')
+  }
 
   useEffect(() => {
     if (selectedCandidate) {
@@ -283,7 +293,7 @@ const StudentDetails = ({ }) => {
                     </p>
                         {selectedInterview?.link && selectedInterview?.status !== InterviewStatus.ENDED &&
                           <p className="mt-2 flex items-center text-muted-foreground">
-                            <Copy className="mr-2 w-5 h-5 cursor-pointer" onClick={() => navigator.clipboard.writeText(selectedInterview?.link)} />
+                            <Copy className="mr-2 w-5 h-5 cursor-pointer" onClick={() => copyLink(selectedInterview?.link)} />
                             Interview Link
                           </p>
                         }
