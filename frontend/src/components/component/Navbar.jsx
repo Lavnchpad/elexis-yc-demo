@@ -7,15 +7,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Bell } from "lucide-react";
-import { Button } from "../ui/button";
-import AddCandidate from "./candidate/AddCandidate";
-import ManageJobs from "./jobs/ManageJobs";
 import { useNavigate } from "react-router-dom";
-import { JobsProvider } from "./jobs/JobsContext";
 import logo from "../../assets/images/logo.png";
+import { Link } from "react-router-dom";
+import { useUser } from './recruiter/UserContext';
 
 const Navbar = () => {
   const navigate = useNavigate(); // Initialize the navigation hook
+  const { user } = useUser();
 
   const handleLogout = () => {
     localStorage.removeItem("authToken"); // Clear the auth token
@@ -27,14 +26,14 @@ const Navbar = () => {
         {/* Logo */}
         <div className="flex items-center space-x-4">
           <img src={logo} className="w-20 h-auto"/>
-          <JobsProvider>
+          {/* <JobsProvider>
           <AddCandidate>
             <Button>Add Candidate</Button>
           </AddCandidate>
           <ManageJobs>
             <Button>Manage Jobs</Button>
           </ManageJobs>
-          </JobsProvider>
+          </JobsProvider> */}
         </div>
 
         {/* Spacer to push items to the right */}
@@ -45,7 +44,11 @@ const Navbar = () => {
 
         {/* Notification and Avatar */}
         <div className="flex items-center space-x-4">
-          <Bell className="cursor-pointer" />
+        <div className="flex flex-col items-end">
+            <p className="text-lg font-semibold">{user?.name}</p>
+            <p className="text-sm font-light">{user?.email}</p>
+            {/* <NavbarSelect /> */}
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Avatar>
@@ -56,11 +59,15 @@ const Navbar = () => {
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
+            {/* {user.name} */}
             <DropdownMenuContent>
               {/* <DropdownMenuItem>Profile</DropdownMenuItem> */}
+             <Link to="/my-profile"> <DropdownMenuItem  >My Profile</DropdownMenuItem></Link>
+             <Link to="/my-team"><DropdownMenuItem  >My Team</DropdownMenuItem></Link>
               <DropdownMenuItem  onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <Bell className="cursor-pointer" />
         </div>
       </div>
     </nav>

@@ -40,13 +40,15 @@ const CandidatesProvider = ({ children }) => {
 
   const addAvatarsToCandidates = async (candidates) => {
     setLoadingAvatars(true);
-
+    const allowedIndices = [1, 3, 5, 6, 7, 8, 11, 13, 15, 24];
     try {
       const updatedCandidates = await Promise.all(
         candidates.map(async (candidate) => {
-          const avatarResponse = await fetch("https://randomuser.me/api/?gender=male");
+          const avatarResponse = await fetch("https://mighty.tools/mockmind-api/?category=popular&nocache=1736359714029");
           const avatarData = await avatarResponse.json();
-          const avatarUrl = avatarData.results[0]?.picture?.large;
+          const randomIndex = allowedIndices[Math.floor(Math.random() * allowedIndices.length)];
+          console.log(randomIndex)
+          const avatarUrl = avatarData.data[2];
           return { ...candidate, avatar: avatarUrl };
         })
       );
@@ -67,6 +69,7 @@ const CandidatesProvider = ({ children }) => {
     } else {
       setloading(false); // If no token, don't load candidates
     }
+    localStorage.removeItem("jobState");
   }, []); // Empty dependency array makes sure it only runs once when the component mounts
 
   return (

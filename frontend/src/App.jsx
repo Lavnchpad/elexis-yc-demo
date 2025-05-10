@@ -1,26 +1,71 @@
-import React from 'react'
-import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route, BrowserRouter, Outlet } from 'react-router-dom';
 import StudentDetails from './page/StudentDetails';
 import AppLayout from './layout/AppLayout';
 import LoginPage from './components/component/login/Login';
 import ProtectedRoute from './components/component/ProtectedRoute';
 import CandidatesProvider from './components/component/candidate/CandidatesContext';
+import { JobsProvider } from './components/component/jobs/JobsContext';
+import StartInterview from './page/StartInterview';
+import { Toaster } from "@/components/ui/sonner";
+import { InterviewProvider } from './components/component/interview/InterviewContext';
+import MyProfile from './components/component/profile/MyProfile';
+import MyTeam from './components/component/profile/MyTeam';
+import JobsPage from './page/JobsPage';
+import JobDetails from './components/component/jobs/jobsDetail/JobsDetails';
+import { UserProvider } from './components/component/recruiter/UserContext';
+import Analytics from './page/Analytics';
+import MyTeamDetails from './components/component/profile/MyTeamDetails';
+import InterviewFilter from './page/InterviewFilter';
+
 const App = () => {
   return (
-    // <CandidatesProvider>
     <BrowserRouter>
-      <Routes>
-      <Route path="/login" element={<LoginPage />} />
-        <Route path='/' element={<CandidatesProvider><AppLayout /></CandidatesProvider>} children={
-          
-          [
-            <Route path="/" element={ <ProtectedRoute><StudentDetails /></ProtectedRoute>} />,
-          ]
-        }>
-        </Route>
-    </Routes>
-    </BrowserRouter>
-  )
-}
+      <UserProvider> {/* Move UserProvider outside to wrap all routes */}
+        <Toaster richColors toastOptions={{}} />
+        <Routes>
+          {/* Login Route */}
+          <Route path="/login" element={<LoginPage />} />
 
-export default App
+          {/* Protected Routes with AppLayout */}
+          <Route
+            path="/"
+            element={
+              <CandidatesProvider>
+                <JobsProvider>
+                  <InterviewProvider>
+                    <AppLayout>
+                      <Outlet /> {/* Outlet for rendering child routes */}
+                    </AppLayout>
+                  </InterviewProvider>
+                </JobsProvider>
+              </CandidatesProvider>
+            }
+          >
+            {/* Nested Routes */}
+            <Route index element={<ProtectedRoute><StudentDetails /></ProtectedRoute>} />
+            <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
+            <Route path="/my-team" element={<ProtectedRoute><MyTeam /></ProtectedRoute>} />
+            <Route path="/team-details/:memberId" element={<ProtectedRoute><MyTeamDetails /></ProtectedRoute>} />
+            <Route path="/jobs" element={<ProtectedRoute><JobsPage /></ProtectedRoute>} />
+            <Route path="/job/:jobId" element={<ProtectedRoute><JobDetails /></ProtectedRoute>} />
+            <Route path="/interviewFilter" element={<ProtectedRoute><InterviewFilter /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+          </Route>
+
+          {/* Start Interview Route */}
+          <Route
+            path="/interviews/:interviewId/start"
+            element={
+              <ProtectedRoute>
+                <StartInterview />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </UserProvider>
+    </BrowserRouter>
+  );
+};
+
+export default App;

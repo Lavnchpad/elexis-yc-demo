@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // To redirect after login
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Import axios
+import { useUser } from '../recruiter/UserContext';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // Hook to handle navigation
+  const { setUser } = useUser();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -14,40 +17,35 @@ const LoginPage = () => {
     setError('');
 
     try {
-      // Make the API call to the /login endpoint
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/login/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      });
+      // Login API call using axios
+      const loginResponse = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/login/`,
+        { email, password },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
 
-      // Check if the response is successful
-      if (!response.ok) {
-        throw new Error('Login failed. Please check your credentials.');
-      }
+      const { access: token, recruiter_id } = loginResponse.data;
+      localStorage.setItem('authToken', token); // Save token in localStorage
 
-      // Parse the response and get the token
-      try{
-      const data = await response.json();
-      console.log(data)
-      const token = data.access; // Assuming the token is in `data.token`
-        localStorage.setItem('authToken', token);
-      } catch(error){
-        console.log(error)
-      }
-      // Store the token in localStorage
+      // Fetch user details using axios
+      const userResponse = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/recruiters/${recruiter_id}/`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      // Redirect to another page (e.g., dashboard) upon successful login
-      navigate('/'); // Change this route based on your app's routes
-    } catch (error) {
-      setError(error.message); // Set the error message if login fails
+      const userData = userResponse.data;
+      localStorage.setItem('user', JSON.stringify(userData));
+      navigate('/'); // Redirect to home page
+    } catch (err) {
+      console.log(err)
+      setError(err.response?.data?.detail || 'Login failed. Please try again.'); // Better error handling
     } finally {
-      setLoading(false); // Stop the loading spinner
+      setLoading(false);
     }
   };
 
@@ -63,7 +61,6 @@ const LoginPage = () => {
           <input
             type="email"
             id="email"
-            name="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-2 border rounded-md"
@@ -80,7 +77,6 @@ const LoginPage = () => {
           <input
             type="password"
             id="password"
-            name="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-2 border rounded-md"
@@ -97,7 +93,9 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full p-2 bg-blue-600 text-white rounded-md"
+            className={`w-full p-2 text-white rounded-md ${
+              loading ? 'bg-gray-400' : 'bg-blue-600'
+            }`}
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
