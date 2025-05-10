@@ -116,6 +116,8 @@ class Interview(BaseModel):
         ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
         ('scheduled', 'Scheduled'),
+        ('started' , 'Started'),
+        ('ended', 'Ended'),
         ('hold', 'Hold'),
         ('registered', 'Registered'),
     ]

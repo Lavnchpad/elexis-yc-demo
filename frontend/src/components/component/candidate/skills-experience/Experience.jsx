@@ -36,9 +36,9 @@ const Experience = ({experience}) => {
   return (
     <div className="space-y-6">
       {Array.isArray(experience) && experience.length > 0 ? (
-        experience.map((exp) => (
+        experience.map((exp, index) => (
           <Card
-            key={exp.title}
+            key={exp.title + index}
             className="cursor-pointer hover:bg-gray-50 transition-colors"
             onClick={() => handleOpenDialog(exp.title, exp.years, exp.months)}
           >

@@ -208,6 +208,20 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 {"message": "Interview scheduled and email sent.", "link": interview.link},
                 status=status.HTTP_201_CREATED,
             )
+         
+        def perform_update(self, serializer):
+            interview = serializer.save()
+            self._update_status_fields(interview)
+            interview.save()
+
+        def _update_status_fields(self, interview):
+            # Prioritize 'ended' > 'started' > 'scheduled'
+            if interview.transcript:
+                interview.status = 'ended'
+            elif interview.meeting_room and interview.status != 'started':
+                interview.status = 'started'
+            elif (interview.link and interview.status != 'scheduled' and not interview.meeting_room) :
+                interview.status = 'scheduled'
 
         @action(detail=True, methods=["get"], permission_classes=[AllowAny])
         def start(self, request, pk=None):
@@ -250,9 +264,6 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 "resume": ("resume.pdf", candidate.resume.open("rb"), "application/pdf"),
                 "job_description": ("pythondev.pdf",open("static/desc.pdf", "rb"), "application/pdf"),
             }
-            
-            
-            
             
             try:
                 response = requests.post("https://app.elexis.ai/start", data=data, files=files)
