@@ -25,6 +25,8 @@ from django.shortcuts import redirect
 import requests
 import os
 from dotenv import load_dotenv      
+# from django.core.files.storage import default_storage
+# print("default storage is::: ",default_storage.__class__)
 
 load_dotenv()
 CLIENT_URL = os.getenv("CLIENT_URL")
@@ -110,7 +112,6 @@ class RecruiterViewSet(viewsets.ModelViewSet):
             'message': 'Profile deleted successfully'
         }, status=status.HTTP_204_NO_CONTENT)
 
-
 class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all()
     serializer_class = CandidateSerializer
@@ -193,6 +194,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             organization = candidate.organization
             interview = serializer.save(scheduled_by=self.request.user,organization=organization)
             interview.link = f"{CLIENT_URL}/interviews/{interview.id}/start/"
+            self._update_status_fields(interview)
             interview.save()
 
             subject = "Interview Scheduled"
@@ -257,12 +259,13 @@ class InterviewViewSet(viewsets.ModelViewSet):
             "interviewer_name": candidate.recruiter.name,
             "candidate_voice_clone": "India Accent (Female)",
             "is_dashboard_request": True,
-            "language" : 'english'
+            "language" : 'english',
+            "job_description_text": candidate.job.job_description
             }
 
             files = {
                 "resume": ("resume.pdf", candidate.resume.open("rb"), "application/pdf"),
-                "job_description": ("pythondev.pdf",open("static/desc.pdf", "rb"), "application/pdf"),
+                # "job_description": ("pythondev.pdf",open("static/desc.pdf", "rb"), "application/pdf"),
             }
             
             try:

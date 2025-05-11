@@ -18,7 +18,7 @@ const CandidatesProvider = ({ children }) => {
         return;
       }
 
-      const response = await fetch("http://127.0.0.1:8000/candidates/", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/candidates/`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -44,12 +44,12 @@ const CandidatesProvider = ({ children }) => {
     try {
       const updatedCandidates = await Promise.all(
         candidates.map(async (candidate) => {
-          const avatarResponse = await fetch("https://mighty.tools/mockmind-api/?category=popular&nocache=1736359714029");
-          const avatarData = await avatarResponse.json();
-          const randomIndex = allowedIndices[Math.floor(Math.random() * allowedIndices.length)];
-          console.log(randomIndex)
-          const avatarUrl = avatarData.data[2];
-          return { ...candidate, avatar: avatarUrl };
+          // const avatarResponse = await fetch("https://mighty.tools/mockmind-api/?category=popular&nocache=1736359714029");
+          // const avatarData = await avatarResponse.json();
+          // const randomIndex = allowedIndices[Math.floor(Math.random() * allowedIndices.length)];
+          // console.log(randomIndex)
+          // const avatarUrl = avatarData.data[2];
+          return { ...candidate, avatar: '' };
         })
       );
 

@@ -1,6 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
 const Summary = ({interview_summary}) => {
+  if (!Object.keys(interview_summary).length > 0) {
+    return <>No Summary data available yet</>;
+  }
   const {
     overall_impression = [],
     strengths = [],

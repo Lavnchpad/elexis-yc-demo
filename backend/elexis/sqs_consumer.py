@@ -70,7 +70,7 @@ def process_message(message_body):
         room_url = message.get("room_url")
         transcript_url = message.get("s3_file_url")
 
-        # {"s3_file_url":"http://elexis.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"http://127.0.0.1:8000/interviews/419fd513-707c-4fb2-a2b9-980eff24d368/start/"}  for localstack use
+        # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://google.com"}
         if not room_url or not transcript_url:
             print(f"Invalid data in message: interview_id={room_url}, transcript_url={transcript_url}")
             return
@@ -94,6 +94,7 @@ def process_message(message_body):
             rows_updated = Interview.objects.filter(meeting_room=room_url).update(
                 transcript=(transcript_url),
                 summary=(summary_json),
+                status='ended',
                 skills = (summary_json['skills']),
                 experience =(summary_json['experience'])
             )

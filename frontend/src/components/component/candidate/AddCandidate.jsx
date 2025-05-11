@@ -168,7 +168,7 @@ const AddCandidate = ({ children }) => {
                   <FormItem>
                     <FormLabel>Profile Picture</FormLabel>
                     <FormControl>
-                      <Input type="file" {...field} onChange={uploadPhoto}/>
+                      <Input type="file" {...field} onChange={uploadPhoto} accept="image/*" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -180,7 +180,7 @@ const AddCandidate = ({ children }) => {
                   <FormItem>
                     <FormLabel>Resume</FormLabel>
                     <FormControl>
-                      <Input type="file" onChange={uploadFile}/>
+                      <Input type="file" onChange={uploadFile} accept=".pdf,.doc" />
                     </FormControl>
                   </FormItem>
                 )}

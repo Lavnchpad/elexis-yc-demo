@@ -10,6 +10,7 @@ import {
   Download,
   Phone,
   Copy,
+  LucideAlarmClock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,6 @@ import AddCandidate from "@/components/component/candidate/AddCandidate";
 import ErrorBoundary from "@/utils/ErrorBoundary";
 import { toast } from "sonner";
 const StudentDetails = ({ }) => {
-  const [activeTab, setActiveTab] = useState("summary");
   const [loading, setLoading] = useState(true);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const { candidates, loading: candidatesLoading } =
@@ -68,7 +68,7 @@ const StudentDetails = ({ }) => {
   const handleDownloadResume = () => {
     if (selectedCandidate?.resume) {
       const link = document.createElement("a");
-      link.href = selectedCandidate.resume;
+      link.href = selectedCandidate.resume?.url;;
       link.download = "resume.pdf";
       link.click();
     }
@@ -79,8 +79,8 @@ const StudentDetails = ({ }) => {
       toast.error('Interview Link is not available at the moment!')
       return;
     }
-    navigator.clipboard.writeText();
-    toast.success('Link copied!')
+    navigator.clipboard.writeText(text);
+    toast.success(`Link copied! ${text}`);
   }
 
   useEffect(() => {
@@ -292,10 +292,16 @@ const StudentDetails = ({ }) => {
                       {selectedCandidate.phone_number}
                     </p>
                         {selectedInterview?.link && selectedInterview?.status !== InterviewStatus.ENDED &&
+                          <>
                           <p className="mt-2 flex items-center text-muted-foreground">
                             <Copy className="mr-2 w-5 h-5 cursor-pointer" onClick={() => copyLink(selectedInterview?.link)} />
                             Interview Link
                           </p>
+                          <p className="mt-2 flex items-center text-muted-foreground">
+                            <LucideAlarmClock className="mr-2 w-5 h-5" />
+                            {selectedInterview?.time}
+                          </p>
+                        </>
                         }
                   </div>
                 </div>
@@ -337,7 +343,7 @@ const StudentDetails = ({ }) => {
                   </Select>
                 </div>
                     <div className="flex gap-2">
-                  <a href={`mailto:${selectedCandidate.email}`}>
+                      <a href={`mailto:${selectedCandidate?.email}`} onClick={handleMailToFallback}>
                     <Button variant="outline" className="gap-2">
                       <Mail className="w-4 h-4" />
                       Send Email
@@ -418,11 +424,11 @@ const StudentDetails = ({ }) => {
                     <TabsContent value="proctoring">
                       <div className="p-4 bg-background rounded-lg">
                         <h2 className="text-lg font-semibold mb-2">
-                          Video Recording
+                              {selectedInterview?.snapshots?.[0] ? "Video Recording" : "No Data available yet!"}
                         </h2>
-                        <ErrorBoundary >
+                            <ErrorBoundary >
                               <Proctoring details={selectedInterview?.snapshots?.[0]} />
-                        </ErrorBoundary>
+                            </ErrorBoundary>
                       </div>
                     </TabsContent>
                   </Tabs>
@@ -434,6 +440,19 @@ const StudentDetails = ({ }) => {
       </div>
     </>
   );
+};
+
+function handleMailToFallback() {
+  const email = selectedCandidate?.email;
+  const mailtoLink = `mailto:${email}`;
+
+  // Check if mailto link is supported (in case of no email client)
+  if (navigator.canShare && navigator.canShare({ url: mailtoLink })) {
+    window.location.href = mailtoLink;
+  } else {
+    alert("Please use a desktop email client or open Gmail directly.");
+    // You can also add a direct link to a web-based email service (like Gmail).
+  }
 };
 
 export default StudentDetails;

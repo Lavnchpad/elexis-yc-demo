@@ -72,7 +72,7 @@ async function changeInterviewStatus(type){
           </Button>
         </>
       )}
-      {status === "registered" && selectedInterview?.status == InterviewStatus.ENDED && (
+      {status === "registered" && selectedInterview?.status === InterviewStatus.ENDED && (
         <>
           <Button className="px-6 py-3 bg-green-600" onClick={() => changeInterviewStatus(InterviewStatus.ACCEPTED)} type='button'>Accept</Button>
           <Button className="px-6 py-3 bg-red-500" onClick={() => changeInterviewStatus(InterviewStatus.REJECTED)} type='button'>Reject</Button>
