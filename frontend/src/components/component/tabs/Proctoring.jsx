@@ -22,6 +22,10 @@ const Proctoring = ({details}) => {
       </div>
 
       {/* Snapshot Heading */}
+      {
+        screenshots?.length > 0 &&
+        <>
+
       <h2 className="text-left my-4 text-xl font-semibold">Snapshots</h2>
 
       {/* Snapshots Below Video */}
@@ -36,6 +40,8 @@ const Proctoring = ({details}) => {
           </div>
         ))}
       </div>
+        </>
+      }
 
       {/* Styles */}
       <style jsx>{`

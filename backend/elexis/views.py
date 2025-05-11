@@ -260,7 +260,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             "candidate_voice_clone": "India Accent (Female)",
             "is_dashboard_request": True,
             "language" : 'english',
-            "job_description_text": candidate.job.job_description
+            "job_description_text": interview.job.job_description
             }
 
             files = {

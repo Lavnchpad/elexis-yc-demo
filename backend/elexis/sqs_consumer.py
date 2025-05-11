@@ -1,4 +1,4 @@
-from elexis.models import Interview
+from elexis.models import Interview, Snapshots
 from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3
 from elexis.utils.summary_generation import generate_summary
 import boto3
@@ -70,9 +70,25 @@ def process_message(message_body):
         room_url = message.get("room_url")
         transcript_url = message.get("s3_file_url")
 
+        type = message.get("type")
+
+        if type=="proctor":
+            interview = Interview.objects.get(meeting_room=room_url)
+            if not interview :
+                print(f"No matching interview found for meeting_room : {room_url}")
+                return
+            snapshot = Snapshots.objects.create(
+            interview=interview,
+            video=[message.get("video_url")])
+            if snapshot:
+                print(f"Snapshot details updated for {interview.id}")
+                return
+                
+                
         # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://google.com"}
-        if not room_url or not transcript_url:
-            print(f"Invalid data in message: interview_id={room_url}, transcript_url={transcript_url}")
+        # {"type":"proctor","video":"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4","room_url":"https://google.com"}
+        elif not room_url or not transcript_url:
+            print(f"Invalid data in message: meeting_room={room_url}, transcript_url={transcript_url}")
             return
 
         # Fetch transcript data from S3
@@ -99,11 +115,11 @@ def process_message(message_body):
                 experience =(summary_json['experience'])
             )
             if rows_updated:
-                print(f"Transcript and summary updated for Interview ID: {room_url}: summaryjson::: {(summary_json)}")
+                print(f"Transcript and summary updated for meeting_room: {room_url}: summaryjson::: {(summary_json)}")
             else:
                 print(f"Interview ID {room_url} not found. No update performed.")
         except Exception as e:
-            print(f"Error updating database for Interview ID {room_url}: {e}")
+            print(f"Error updating database for room {room_url}: {e}")
 
     except json.JSONDecodeError:
         print(f"Invalid message format: {message_body}")
