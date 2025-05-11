@@ -25,6 +25,8 @@ from django.shortcuts import redirect
 import requests
 import os
 from dotenv import load_dotenv      
+# from django.core.files.storage import default_storage
+# print("default storage is::: ",default_storage.__class__)
 
 load_dotenv()
 CLIENT_URL = os.getenv("CLIENT_URL")
@@ -110,7 +112,6 @@ class RecruiterViewSet(viewsets.ModelViewSet):
             'message': 'Profile deleted successfully'
         }, status=status.HTTP_204_NO_CONTENT)
 
-
 class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all()
     serializer_class = CandidateSerializer
@@ -193,6 +194,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             organization = candidate.organization
             interview = serializer.save(scheduled_by=self.request.user,organization=organization)
             interview.link = f"{CLIENT_URL}/interviews/{interview.id}/start/"
+            self._update_status_fields(interview)
             interview.save()
 
             subject = "Interview Scheduled"
@@ -208,6 +210,20 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 {"message": "Interview scheduled and email sent.", "link": interview.link},
                 status=status.HTTP_201_CREATED,
             )
+         
+        def perform_update(self, serializer):
+            interview = serializer.save()
+            self._update_status_fields(interview)
+            interview.save()
+
+        def _update_status_fields(self, interview):
+            # Prioritize 'ended' > 'started' > 'scheduled'
+            if interview.transcript:
+                interview.status = 'ended'
+            elif interview.meeting_room and interview.status != 'started':
+                interview.status = 'started'
+            elif (interview.link and interview.status != 'scheduled' and not interview.meeting_room) :
+                interview.status = 'scheduled'
 
         @action(detail=True, methods=["get"], permission_classes=[AllowAny])
         def start(self, request, pk=None):
@@ -243,16 +259,14 @@ class InterviewViewSet(viewsets.ModelViewSet):
             "interviewer_name": candidate.recruiter.name,
             "candidate_voice_clone": "India Accent (Female)",
             "is_dashboard_request": True,
-            "language" : 'english'
+            "language" : 'english',
+            "job_description_text": interview.job.job_description
             }
 
             files = {
                 "resume": ("resume.pdf", candidate.resume.open("rb"), "application/pdf"),
-                "job_description": ("pythondev.pdf",open("static/desc.pdf", "rb"), "application/pdf"),
+                # "job_description": ("pythondev.pdf",open("static/desc.pdf", "rb"), "application/pdf"),
             }
-            
-            
-            
             
             try:
                 response = requests.post("https://app.elexis.ai/start", data=data, files=files)

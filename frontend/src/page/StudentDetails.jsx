@@ -9,6 +9,8 @@ import {
   Mail,
   Download,
   Phone,
+  Copy,
+  LucideAlarmClock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -22,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import StatusButton from "@/utils/StatusButton";
+import StatusButton, { InterviewStatus } from "@/utils/StatusButton";
 import Filter from "@/components/component/Filter";
 import { InterviewContext } from "@/components/component/interview/InterviewContext";
 import {
@@ -39,8 +41,8 @@ import Experience from "@/components/component/candidate/skills-experience/Exper
 import Skills from "@/components/component/candidate/skills-experience/Skills";
 import AddCandidate from "@/components/component/candidate/AddCandidate";
 import ErrorBoundary from "@/utils/ErrorBoundary";
-const StudentDetails = ({}) => {
-  const [activeTab, setActiveTab] = useState("summary");
+import { toast } from "sonner";
+const StudentDetails = ({ }) => {
   const [loading, setLoading] = useState(true);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const { candidates, loading: candidatesLoading } =
@@ -66,11 +68,20 @@ const StudentDetails = ({}) => {
   const handleDownloadResume = () => {
     if (selectedCandidate?.resume) {
       const link = document.createElement("a");
-      link.href = selectedCandidate.resume;
+      link.href = selectedCandidate.resume?.url;;
       link.download = "resume.pdf";
       link.click();
     }
   };
+
+  function copyLink(text) {
+    if (!text) {
+      toast.error('Interview Link is not available at the moment!')
+      return;
+    }
+    navigator.clipboard.writeText(text);
+    toast.success(`Link copied! ${text}`);
+  }
 
   useEffect(() => {
     if (selectedCandidate) {
@@ -83,7 +94,7 @@ const StudentDetails = ({}) => {
 
   useEffect(() => {
     const savedState = JSON.parse(localStorage.getItem("jobState"));
-  
+
     if (savedState) {
       setSelectedJobId(savedState.jobId);
       setSelectedStatus(savedState.status);
@@ -94,7 +105,7 @@ const StudentDetails = ({}) => {
       localStorage.removeItem("jobState");
     }
   }, []);
-  
+
   useEffect(() => {
     if (selectedJobId && interviewData.length > 0) {
       const interview = interviewData.find(i => i.job.id === selectedJobId);
@@ -151,15 +162,15 @@ const StudentDetails = ({}) => {
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
-        candidate => 
+        candidate =>
           candidate.name.toLowerCase().includes(searchLower) ||
           candidate.email.toLowerCase().includes(searchLower)
       );
     }
 
     if (selectedStatus !== "all") {
-      filtered = filtered.filter(candidate => 
-        candidate.interviews.some(interview => 
+      filtered = filtered.filter(candidate =>
+        candidate.interviews.some(interview =>
           interview.status === selectedStatus &&
           (!selectedJobId || interview.job.id === selectedJobId)
         )
@@ -202,15 +213,14 @@ const StudentDetails = ({}) => {
                 filteredCandidates.map((contact) => (
                   <li
                     key={contact.id}
-                    className={`flex items-center p-4 rounded-lg shadow-sm hover:scale-105 transition-transform duration-300 ease-in-out ${
-                      contact.status === "accepted"
+                    className={`flex items-center p-4 rounded-lg shadow-sm hover:scale-105 transition-transform duration-300 ease-in-out ${contact.status === "accepted"
                         ? "bg-[#E5F2E6]"
                         : contact.status === "rejected"
                         ? "bg-[#FFE5E5]"
                         : contact.status === "pending"
-                        ? "bg-[#FFFFE5]"
-                        : "bg-[#E5E5FF]"
-                    }`}
+                          ? "bg-[#FFFFE5]"
+                          : "bg-[#E5E5FF]"
+                      }`}
                     onClick={() => handleCandidateClick(contact)}
                   >
                     <div className="relative w-12 h-12 mr-4">
@@ -281,12 +291,24 @@ const StudentDetails = ({}) => {
                       <Phone className="mr-2 w-5 h-5" />
                       {selectedCandidate.phone_number}
                     </p>
+                        {selectedInterview?.link && selectedInterview?.status !== InterviewStatus.ENDED &&
+                          <>
+                          <p className="mt-2 flex items-center text-muted-foreground">
+                            <Copy className="mr-2 w-5 h-5 cursor-pointer" onClick={() => copyLink(selectedInterview?.link)} />
+                            Interview Link
+                          </p>
+                          <p className="mt-2 flex items-center text-muted-foreground">
+                            <LucideAlarmClock className="mr-2 w-5 h-5" />
+                            {selectedInterview?.time}
+                          </p>
+                        </>
+                        }
                   </div>
                 </div>
                 <div className="ml-auto flex flex-col gap-2 w-1/4">
                   <Select
-                  //  disabled={!!selectedJobId}
-                   
+                        //  disabled={!!selectedJobId}
+
                     onValueChange={(value) => {
                       const interview = interviewData.find(
                         (interview) => interview.job.id === value
@@ -296,32 +318,32 @@ const StudentDetails = ({}) => {
                     value={selectedInterview?.job.id || ""}
                   >
                     <SelectTrigger>
-                    <SelectValue placeholder="Select a job role">
-        {selectedInterview ? 
-          `${selectedInterview.job.job_name}${selectedJobId ? " (Preselected)" : ""}` : 
-          "Select a job role"
-        }
-      </SelectValue>
+                          <SelectValue placeholder="Select a job role">
+                            {selectedInterview ?
+                              `${selectedInterview.job.job_name}${selectedJobId ? " (Preselected)" : ""}` :
+                              "Select a job role"
+                            }
+                          </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
                         {interviewData.length > 0
                           ? interviewData.map((interview) => (
-                              <SelectItem
-                                key={interview.job.id}
-                                value={interview.job.id}
-                              >
-                                {interview.job.job_name}
-                                {selectedJobId === interview.job.id}
-                              </SelectItem>
-                            ))
+                            <SelectItem
+                              key={interview.job.id}
+                              value={interview.job.id}
+                            >
+                              {interview.job.job_name}
+                              {selectedJobId === interview.job.id}
+                            </SelectItem>
+                          ))
                           : "No Job Available"}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex gap-3">
-                  <a href={`mailto:${selectedCandidate.email}`}>
+                    <div className="flex gap-2">
+                      <a href={`mailto:${selectedCandidate?.email}`} onClick={handleMailToFallback}>
                     <Button variant="outline" className="gap-2">
                       <Mail className="w-4 h-4" />
                       Send Email
@@ -338,8 +360,8 @@ const StudentDetails = ({}) => {
                 </div>
               </div>
               <div className="grid gap-6 md:grid-cols-[300px_1fr]">
-                <Experience experience={selectedInterview?.experience}/>
-                <Skills skills={selectedInterview?.skills}/>
+                    <Experience experience={selectedInterview?.experience} />
+                    <Skills skills={selectedInterview?.skills} />
               </div>
               <div className="w-full px-6 py-4 bg-muted/30">
                 <div className="flex items-center justify-between">
@@ -369,6 +391,7 @@ const StudentDetails = ({}) => {
                         <StatusButton
                           interviewData={interviewData}
                           selectedCandidate={selectedCandidate}
+                              selectedInterview={selectedInterview}
                         />
                       </div>
                     </div>
@@ -388,10 +411,10 @@ const StudentDetails = ({}) => {
                     <TabsContent value="transcript">
                       <div className="p-4 bg-background rounded-lg">
                         {selectedInterview?.transcript ? (
-                        <ErrorBoundary >
-                          <Transcript
-                            interview_transcript_url={selectedInterview.transcript}
-                          />
+                              <ErrorBoundary >
+                                <Transcript
+                                  interview_transcript_url={selectedInterview.transcript}
+                                />
                           </ErrorBoundary>
                         ) : (
                           <p>No transcript available for this job.</p>
@@ -401,11 +424,11 @@ const StudentDetails = ({}) => {
                     <TabsContent value="proctoring">
                       <div className="p-4 bg-background rounded-lg">
                         <h2 className="text-lg font-semibold mb-2">
-                          Video Recording
+                              {selectedInterview?.snapshots?.[0] ? "Video Recording" : "No Data available yet!"}
                         </h2>
-                        <ErrorBoundary >
-                          <Proctoring details = {selectedInterview?.snapshots?.[0]}/>
-                        </ErrorBoundary>
+                            <ErrorBoundary >
+                              <Proctoring details={selectedInterview?.snapshots?.[0]} />
+                            </ErrorBoundary>
                       </div>
                     </TabsContent>
                   </Tabs>
@@ -417,6 +440,19 @@ const StudentDetails = ({}) => {
       </div>
     </>
   );
+};
+
+function handleMailToFallback() {
+  const email = selectedCandidate?.email;
+  const mailtoLink = `mailto:${email}`;
+
+  // Check if mailto link is supported (in case of no email client)
+  if (navigator.canShare && navigator.canShare({ url: mailtoLink })) {
+    window.location.href = mailtoLink;
+  } else {
+    alert("Please use a desktop email client or open Gmail directly.");
+    // You can also add a direct link to a web-based email service (like Gmail).
+  }
 };
 
 export default StudentDetails;

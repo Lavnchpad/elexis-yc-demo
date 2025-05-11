@@ -1,22 +1,31 @@
 
 const Proctoring = ({details}) => {
   // const snapshots = [one, two, three, four];
+  if (!details) {
+    return null
+  }
   let {video=[], screenshots=[]} = details;
   return (
       <div className="video-container">
       {/* Video Player */}
       <div className="video-player">
+        {video?.[0] &&
         <video
           width="100%"
           controls
-          src={video?.[0] || ''} // Use your video URL here
+            src={video[0] || ''} // Use your video URL here
           alt="Sample Video"
         >
           Your browser does not support the video tag.
         </video>
+        }
       </div>
 
       {/* Snapshot Heading */}
+      {
+        screenshots?.length > 0 &&
+        <>
+
       <h2 className="text-left my-4 text-xl font-semibold">Snapshots</h2>
 
       {/* Snapshots Below Video */}
@@ -31,6 +40,8 @@ const Proctoring = ({details}) => {
           </div>
         ))}
       </div>
+        </>
+      }
 
       {/* Styles */}
       <style jsx>{`
