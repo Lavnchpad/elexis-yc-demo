@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
+# export DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
 
 # Apply database migrations
 echo "Apply database migrations"
