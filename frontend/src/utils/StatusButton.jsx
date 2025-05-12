@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button"; // Assuming Button is a pre-built component
 import ScheduleDrive from "@/components/component/drive/ScheduleDrive";
-import axios from "axios";
+import axios from "../utils/api";
 import { toast } from "sonner";
 
 
@@ -20,12 +20,8 @@ async function changeInterviewStatus(type){
     }
     const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/interviews/${selectedInterview.id}/`, {
+      const response = await axios.patch(`/interviews/${selectedInterview.id}/`, {
         "status": type,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
       })
       return response.data
     } catch (error) {

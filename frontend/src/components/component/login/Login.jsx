@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Import axios
+import axios from '../../../utils/api'; // Import axios
 import { useUser } from '../recruiter/UserContext';
 
 const LoginPage = () => {
@@ -19,9 +19,8 @@ const LoginPage = () => {
     try {
       // Login API call using axios
       const loginResponse = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/login/`,
+        `/login/`,
         { email, password },
-        { headers: { 'Content-Type': 'application/json' } }
       );
 
       const { access: token, recruiter_id } = loginResponse.data;

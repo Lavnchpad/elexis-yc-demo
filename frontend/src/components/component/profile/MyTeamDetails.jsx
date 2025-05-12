@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../../utils/api";
 
 const formSchema = z.object({
   name: z.string(),
@@ -47,12 +47,7 @@ const MyTeamDetails = () => {
         // Fetch recruiter details
         const token = localStorage.getItem("authToken");
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/recruiters/${memberId}/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          `/recruiters/${memberId}/`
         );
 
         const {
