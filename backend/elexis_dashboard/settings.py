@@ -74,6 +74,7 @@ CORS_ALLOW_METHODS = [
     'OPTIONS',  # Make sure OPTIONS is included
 ]
 
+CSRF_TRUSTED_ORIGINS = ["*"]
 
 ROOT_URLCONF = 'elexis_dashboard.urls'
 
