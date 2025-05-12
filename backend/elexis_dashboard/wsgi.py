@@ -13,11 +13,9 @@ import threading
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'elexis_dashboard.settings')
+application = get_wsgi_application()
 
 from elexis.sqs_consumer import start_sqs_consumer
-
-
-
 threading.Thread(target=start_sqs_consumer, daemon=True).start()
 
-application = get_wsgi_application()
+
