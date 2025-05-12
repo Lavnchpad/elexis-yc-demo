@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '../utils/api';
 
 const JobsPage = () => {
   const [data, setData] = useState([]); // State to store fetched job data
@@ -18,11 +18,7 @@ const JobsPage = () => {
   const fetchJobs = async () => {
     try {
       setLoading(true); // Show loader
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/jobs/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
-      });
+      const response = await axios.get(`/jobs/`);
       setData(response.data); // Set fetched data
     } catch (err) {
       setError('Failed to load jobs data. Please try again later.');
@@ -46,12 +42,7 @@ const JobsPage = () => {
 
     try {
       setLoading(true); // Show loader during deletion
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/jobs/${jobId}/`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
-      });
+      await axios.delete(`/jobs/${jobId}/`);
       alert('Job deleted successfully.');
       fetchJobs(); // Refresh the job list
     } catch (error) {

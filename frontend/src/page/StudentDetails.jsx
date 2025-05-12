@@ -392,6 +392,7 @@ const StudentDetails = ({ }) => {
                           interviewData={interviewData}
                           selectedCandidate={selectedCandidate}
                               selectedInterview={selectedInterview}
+                              setSelectedInterview={setSelectedInterview}
                         />
                       </div>
                     </div>

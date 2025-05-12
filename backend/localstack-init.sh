@@ -7,7 +7,15 @@ source /app/.env
 echo "Setting up S3 bucket and SQS queue in LocalStack..."
 
 # Create S3 bucket using the settings from the .env file
+# aws --endpoint-url=http://localhost:4566 --region ${AWS_REGION_NAME} s3 mb s3://${AWS_STORAGE_BUCKET_NAME} \
+#   --acl private
+
 aws --endpoint-url=http://localhost:4566 --region ${AWS_REGION_NAME} s3 mb s3://${AWS_STORAGE_BUCKET_NAME}
+
+# 2. Explicitly set the bucket to private (default is private, but you can enforce it)
+aws --endpoint-url=http://localhost:4566 --region ${AWS_REGION_NAME} s3api put-bucket-acl \
+  --bucket ${AWS_STORAGE_BUCKET_NAME} \
+  --acl private
 
 # Apply CORS configuration for S3 bucket using environment variables
 aws --endpoint-url=http://localhost:4566 --region ${AWS_REGION_NAME} s3api put-bucket-cors \

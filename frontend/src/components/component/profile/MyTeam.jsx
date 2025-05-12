@@ -14,15 +14,8 @@ const MyTeam = () => {
     const fetchTeamMembers = async () => {
       try {
         setLoading(true); // Start loading
-        const token = localStorage.getItem('authToken'); // Get token from local storage
-
         // API call to fetch team members
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/recruiters/`, {
-          headers: {
-            Authorization: `Bearer ${token}`, // Pass token in the headers
-          },
-        });
-
+        const response = await axios.get(`/recruiters/`);
         setData(response.data); // Set fetched data
       } catch (error) {
         console.error('Error fetching team members:', error);

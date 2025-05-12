@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 from datetime import timedelta
 from pathlib import Path
-import dotenv
+from dotenv import load_dotenv
 import os
 
-dotenv.load_dotenv()
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -228,7 +228,7 @@ AWS_S3_ENDPOINT_URL = os.getenv("AWS_S3_ENDPOINT_URL")
 AWS_S3_REGION_NAME = os.getenv("AWS_REGION_NAME")
 AWS_S3_ADDRESSING_STYLE = "path"  # important for LocalStack
 # Optional: Make uploaded files publicly accessible
-AWS_DEFAULT_ACL = "public-read"
+# AWS_DEFAULT_ACL = "public-read"
 
 
 # Email

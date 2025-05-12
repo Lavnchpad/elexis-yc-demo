@@ -1,11 +1,11 @@
 import React from "react";
 import { Button } from "@/components/ui/button"; // Assuming Button is a pre-built component
 import ScheduleDrive from "@/components/component/drive/ScheduleDrive";
-import axios from "axios";
+import axios from "../utils/api";
 import { toast } from "sonner";
 
 
-const StatusButton = ({ interviewData, selectedCandidate, selectedInterview }) => {
+const StatusButton = ({ interviewData, selectedCandidate, selectedInterview, setSelectedInterview }) => {
 
   const status = interviewData?.map((i) => i.status).sort((a, b) => statusPriority[a] - statusPriority[b])[0]
  const hasScheduledInterview = interviewData?.some(
@@ -20,12 +20,8 @@ async function changeInterviewStatus(type){
     }
     const token = localStorage.getItem("authToken");
     try {
-      const response = await axios.patch(`${import.meta.env.VITE_API_BASE_URL}/interviews/${selectedInterview.id}/`, {
+      const response = await axios.patch(`/interviews/${selectedInterview.id}/`, {
         "status": type,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
       })
       return response.data
     } catch (error) {
@@ -36,7 +32,8 @@ async function changeInterviewStatus(type){
    case 'accepted':
    case 'rejected':
   case 'hold':
-     await updateInterViewStaus(type)
+     const interviewData = await updateInterViewStaus(type)
+     setSelectedInterview(interviewData);
      break;
    default:
      console.log('invalid type')
@@ -75,13 +72,9 @@ async function changeInterviewStatus(type){
           </Button>
         </>
       )}
-      {(
-        <>
-          <Button className="px-6 py-3 bg-green-600" onClick={() => changeInterviewStatus(InterviewStatus.ACCEPTED)} type='button'>Accept</Button>
-          <Button className="px-6 py-3 bg-red-500" onClick={() => changeInterviewStatus(InterviewStatus.REJECTED)} type='button'>Reject</Button>
-          <Button className="px-6 py-3 bg-yellow-600" onClick={() => changeInterviewStatus(InterviewStatus.HOLD)} type='button'>Hold</Button>
-        </>
-      )}
+      {selectedInterview?.status !== InterviewStatus.ACCEPTED && <Button className="px-6 py-3 bg-green-600" onClick={() => changeInterviewStatus(InterviewStatus.ACCEPTED)} type='button'>Accept</Button>}
+      {selectedInterview?.status !== InterviewStatus.REJECTED && <Button className="px-6 py-3 bg-red-500" onClick={() => changeInterviewStatus(InterviewStatus.REJECTED)} type='button'>Reject</Button>}
+      {selectedInterview?.status !== InterviewStatus.HOLD && <Button className="px-6 py-3 bg-yellow-600" onClick={() => changeInterviewStatus(InterviewStatus.HOLD)} type='button'>Hold</Button>}
       <div>
 
       </div>

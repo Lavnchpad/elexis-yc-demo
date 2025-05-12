@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../../../utils/api";
 import logo from "../../../../assets/images/logo.png";
 import { CircleArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -25,14 +25,8 @@ const JobDetails = () => {
     const fetchJobDetails = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("authToken"); // Get token from local storage
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/jobs/${jobId}/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, // Pass token in the headers
-            },
-          }
+          `/jobs/${jobId}/`
         );
         setJobData(response.data);
       } catch (error) {

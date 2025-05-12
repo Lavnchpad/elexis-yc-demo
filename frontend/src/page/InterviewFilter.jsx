@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import axios from "axios";
+import axios from "../utils/api";
 import { Badge } from "@/components/ui/badge";
 import DataTable from "@/components/table/DataTable";
 import { InterviewColumn } from "@/components/component/interviewData/InterviewColumn";
@@ -16,13 +16,14 @@ const InterviewFilter = () => {
     const fetchInterviews = async () => {
       try {
         setLoading(true);
+        console.log("Interview Filter API Called:::")
         const token = localStorage.getItem("authToken"); // Get token from local storage
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/interviews/`, 
+          `/interviews/`, 
           {
-            headers: {
-              Authorization: `Bearer ${token}`, // Pass token in the headers
-            },
+            // headers: {
+            //   Authorization: `Bearer ${token}`, // Pass token in the headers
+            // },
             params: {
               job: jobId,
               status: status,
