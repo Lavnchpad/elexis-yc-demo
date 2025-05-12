@@ -14,6 +14,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 SQS_QUEUE_URL = os.getenv("SQS_QUEUE_URL")
 AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
 AWS_SQS_ENDPOINT=os.getenv("AWS_SQS_ENDPOINT")
+AWS_STORAGE_BUCKET_NAME=os.getenv("AWS_STORAGE_BUCKET_NAME")
 
 def start_sqs_consumer():
     """
@@ -93,7 +94,7 @@ def process_message(message_body):
 
         # Fetch transcript data from S3
         try:
-            transcript_data = get_file_data_from_s3(transcript_url)
+            transcript_data = get_file_data_from_s3(AWS_STORAGE_BUCKET_NAME,transcript_url.split('/')[-1])
         except Exception as e:
             print(f"Error fetching transcript data from S3: {e}")
             return
