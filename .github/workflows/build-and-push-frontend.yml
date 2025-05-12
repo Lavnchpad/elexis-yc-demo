@@ -35,7 +35,7 @@ jobs:
         ECR_REPOSITORY: elexis-b2b-dashboard-frontend
         IMAGE_TAG: soltech
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./frontend
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./frontend --build-arg VITE_API_BASE_URL=https://api.soltech.elexis.ai
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
   # deploy-changes-to-eb:
   #   needs: build-and-push-image
