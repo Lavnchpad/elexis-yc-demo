@@ -278,7 +278,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             }
             
             try:
-                response = requests.post("https://app.elexis.ai/start", data=data, files=files)
+                response = requests.post(f"{settings.BOT_HOSTNAME}/start", data=data, files=files)
 
                 json_response = response.json()
                 print("JSON response of meeting url:::", json_response)
