@@ -1,4 +1,4 @@
-name: Build API Gateway Container
+name: Build Frontend Container
 on:
   pull_request:
     types:
@@ -35,7 +35,7 @@ jobs:
         ECR_REPOSITORY: elexis-b2b-dashboard-frontend
         IMAGE_TAG: demo
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./backend
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./frontend
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
   # deploy-changes-to-eb:
   #   needs: build-and-push-image

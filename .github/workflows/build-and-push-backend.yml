@@ -1,4 +1,4 @@
-name: Build API Gateway Container
+name: Build Backend Container
 on:
   pull_request:
     types:
