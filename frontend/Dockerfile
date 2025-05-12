@@ -6,7 +6,7 @@ COPY . .
 RUN rm nginx.conf
 
 FROM node:18-alpine AS builder
-ENV NODE_ENV=production
+# ENV NODE_ENV=production
 
 # Add a work directory
 WORKDIR /app
