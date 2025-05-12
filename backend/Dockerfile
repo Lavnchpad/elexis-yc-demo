@@ -1,5 +1,5 @@
 # Fetching official base image for python
-FROM python:3.9-alpine AS web
+FROM python:3.10-alpine AS web
 
 # Setting up the work directory
 WORKDIR /home/app/

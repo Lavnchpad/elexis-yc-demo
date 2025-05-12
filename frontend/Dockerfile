@@ -13,7 +13,7 @@ WORKDIR /app
 # Cache and Install dependencies
 COPY package.json .
 COPY package-lock.json .
-RUN npm i --production --legacy-peer-deps
+RUN npm i
 COPY --from=scratchpad /app/  ./  
 
 ARG VITE_API_BASE_URL
