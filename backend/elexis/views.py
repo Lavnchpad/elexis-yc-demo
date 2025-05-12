@@ -218,7 +218,12 @@ class InterviewViewSet(viewsets.ModelViewSet):
 
         def _update_status_fields(self, interview):
             # Prioritize 'ended' > 'started' > 'scheduled'
-            if interview.transcript:
+
+            final_statuses = {'ended', 'accepted', 'rejected', 'hold'}      
+            if interview.status in final_statuses:
+                print('Ended already')
+                return
+            elif interview.transcript and interview.status not in final_statuses:
                 interview.status = 'ended'
             elif interview.meeting_room and interview.status != 'started':
                 interview.status = 'started'
@@ -243,6 +248,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
 
         # Case 2: Too late
             if current_time > interview_end:
+                print("current time:::", current_time , interview_end)
                 return Response(
                     {"message": "This interview link has expired. Please contact the recruiter to reschedule.",
                      "isEarly": False},
