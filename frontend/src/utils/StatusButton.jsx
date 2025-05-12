@@ -8,38 +8,37 @@ import { toast } from "sonner";
 const StatusButton = ({ interviewData, selectedCandidate, selectedInterview, setSelectedInterview }) => {
 
   const status = interviewData?.map((i) => i.status).sort((a, b) => statusPriority[a] - statusPriority[b])[0]
- const hasScheduledInterview = interviewData?.some(
-  (interview) => interview.link || interview.time
-);
+  const hasScheduledInterview = interviewData?.some(
+    (interview) => interview.link || interview.time
+  );
 
-async function changeInterviewStatus(type){
-  async function updateInterViewStaus(type) {
-    if (!type || !selectedInterview?.id) {
-      toast.error("Please select an Interview")
-      return;
+  async function changeInterviewStatus(type) {
+    async function updateInterViewStaus(type) {
+      if (!type || !selectedInterview?.id) {
+        toast.error("Please select an Interview")
+        return;
+      }
+      try {
+        const response = await axios.patch(`/interviews/${selectedInterview.id}/`, {
+          "status": type,
+        })
+        return response.data
+      } catch (error) {
+        throw error
+      }
     }
-    const token = localStorage.getItem("authToken");
-    try {
-      const response = await axios.patch(`/interviews/${selectedInterview.id}/`, {
-        "status": type,
-      })
-      return response.data
-    } catch (error) {
-      throw error
+    switch (type) {
+      case 'accepted':
+      case 'rejected':
+      case 'hold':
+        const interviewData = await updateInterViewStaus(type)
+        setSelectedInterview(interviewData);
+        break;
+      default:
+        console.log('invalid type')
+
     }
   }
- switch(type){
-   case 'accepted':
-   case 'rejected':
-  case 'hold':
-     const interviewData = await updateInterViewStaus(type)
-     setSelectedInterview(interviewData);
-     break;
-   default:
-     console.log('invalid type')
-
- }
-}
   console.log({ status: selectedInterview?.status })
   return (
     <div className="ml-auto flex space-x-4">
@@ -78,11 +77,11 @@ async function changeInterviewStatus(type){
       <div>
 
       </div>
-      <ScheduleDrive selectedCandidate={selectedCandidate}>
-            <Button className="px-6 py-3">Schedule</Button>
-          </ScheduleDrive>
-          {hasScheduledInterview && (
-        <ScheduleDrive value={true} selectedCandidate={selectedCandidate}>
+      <ScheduleDrive selectedCandidate={selectedCandidate} scheduleInterview={true}>
+        <Button className="px-6 py-3">Schedule</Button>
+      </ScheduleDrive>
+      {hasScheduledInterview && (
+        <ScheduleDrive value={true} selectedCandidate={selectedCandidate} scheduleInterview={false}>
           <Button className="px-6 py-3">Reschedule</Button>
         </ScheduleDrive>
       )}

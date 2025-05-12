@@ -11,6 +11,8 @@ import {
   Phone,
   Copy,
   LucideAlarmClock,
+  Calendar,
+  SatelliteDishIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -214,8 +216,8 @@ const StudentDetails = ({ }) => {
                   <li
                     key={contact.id}
                     className={`flex items-center p-4 rounded-lg shadow-sm hover:scale-105 transition-transform duration-300 ease-in-out ${contact.status === "accepted"
-                        ? "bg-[#E5F2E6]"
-                        : contact.status === "rejected"
+                      ? "bg-[#E5F2E6]"
+                      : contact.status === "rejected"
                         ? "bg-[#FFE5E5]"
                         : contact.status === "pending"
                           ? "bg-[#FFFFE5]"
@@ -293,15 +295,29 @@ const StudentDetails = ({ }) => {
                     </p>
                         {selectedInterview?.link && selectedInterview?.status !== InterviewStatus.ENDED &&
                           <>
-                          <p className="mt-2 flex items-center text-muted-foreground">
-                            <Copy className="mr-2 w-5 h-5 cursor-pointer" onClick={() => copyLink(selectedInterview?.link)} />
-                            Interview Link
-                          </p>
-                          <p className="mt-2 flex items-center text-muted-foreground">
-                            <LucideAlarmClock className="mr-2 w-5 h-5" />
-                            {selectedInterview?.time}
-                          </p>
-                        </>
+                            <p className="mt-2 flex items-center text-muted-foreground">
+                              <Copy className="mr-2 w-5 h-5 cursor-pointer" onClick={() => copyLink(selectedInterview?.link)} />
+                              Interview Link
+                            </p>
+
+                          </>
+                        }
+                        {
+                          selectedInterview &&
+                          <>
+                            <p className="mt-2 flex items-center text-muted-foreground">
+                              <Calendar className="mr-2 w-5 h-5" />
+                              {selectedInterview?.date}
+                            </p>
+                            <p className="mt-2 flex items-center text-muted-foreground">
+                              <LucideAlarmClock className="mr-2 w-5 h-5" />
+                              {selectedInterview?.time}
+                            </p>
+                            <p className="mt-2 flex items-center text-muted-foreground">
+                              <SatelliteDishIcon className="mr-2 w-5 h-5" />
+                              {selectedInterview?.status}
+                            </p>
+                          </>
                         }
                   </div>
                 </div>
@@ -311,11 +327,11 @@ const StudentDetails = ({ }) => {
 
                     onValueChange={(value) => {
                       const interview = interviewData.find(
-                        (interview) => interview.job.id === value
+                        (interview) => interview.id === value
                       );
                       setSelectedInterview(interview);
                     }}
-                    value={selectedInterview?.job.id || ""}
+                        value={selectedInterview?.id || ""}
                   >
                     <SelectTrigger>
                           <SelectValue placeholder="Select a job role">
@@ -330,11 +346,10 @@ const StudentDetails = ({ }) => {
                         {interviewData.length > 0
                           ? interviewData.map((interview) => (
                             <SelectItem
-                              key={interview.job.id}
-                              value={interview.job.id}
+                              key={interview.id}
+                              value={interview.id}
                             >
                               {interview.job.job_name}
-                              {selectedJobId === interview.job.id}
                             </SelectItem>
                           ))
                           : "No Job Available"}
@@ -343,7 +358,7 @@ const StudentDetails = ({ }) => {
                   </Select>
                 </div>
                     <div className="flex gap-2">
-                      <a href={`mailto:${selectedCandidate?.email}`} onClick={handleMailToFallback}>
+                      <a href={`mailto:${selectedCandidate?.email}`}>
                     <Button variant="outline" className="gap-2">
                       <Mail className="w-4 h-4" />
                       Send Email
