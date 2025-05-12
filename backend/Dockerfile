@@ -24,7 +24,7 @@ COPY ./requirements.txt ./
 
 # Upgrading pip version
 RUN pip install --upgrade pip
-
+RUN pip install grpcio --only-binary=grpcio
 # Installing dependencies
 RUN pip install gunicorn
 
