@@ -9,11 +9,12 @@ https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/
 
 import os
 import threading
-
+from whitenoise.django import DjangoWhiteNoise
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'elexis_dashboard.settings')
 application = get_wsgi_application()
+application = DjangoWhiteNoise(application)
 
 from elexis.sqs_consumer import start_sqs_consumer
 threading.Thread(target=start_sqs_consumer, daemon=True).start()
