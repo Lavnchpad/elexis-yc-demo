@@ -204,7 +204,10 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 f"Click here to join: {interview.link}\n\n"
                 f"Best regards,\n{interview.scheduled_by.company_name}"
             )
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email])
+            try:
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email])
+            except Exception as e:
+                print("Email can't be sent", e)
 
             return Response(
                 {"message": "Interview scheduled and email sent.", "link": interview.link},
