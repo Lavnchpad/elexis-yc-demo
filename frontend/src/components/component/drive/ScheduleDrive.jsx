@@ -27,6 +27,7 @@ import { JobsContext } from "../jobs/JobsContext";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
 import { InterviewContext } from "../interview/InterviewContext";
+import { InterviewStatus } from "@/utils/StatusButton";
 
 const scheduleSchema = z
   .object({
@@ -243,7 +244,7 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                             </SelectTrigger>
                             <SelectContent>
                               {interviewData && value ? (
-                                interviewData.map((interview) => (
+                                interviewData.filter(interview => ![InterviewStatus.ACCEPTED, InterviewStatus.ENDED, InterviewStatus.REJECTED, InterviewStatus.HOLD].includes(interview.status)).map((interview) => (
                                   <SelectItem key={interview.id} value={interview.id}>
                                     {interview.job.job_name}
                                   </SelectItem>
