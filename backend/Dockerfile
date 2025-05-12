@@ -17,6 +17,8 @@ RUN apk update
 # Installing python3
 RUN apk add python3-dev
 
+RUN apk add --no-cache g++
+RUN apk add --no-cache build-base
 # Copying requirement file
 COPY ./requirements.txt ./
 
