@@ -18,6 +18,7 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 
 # Quick-start development settings - unsuitable for production
@@ -74,7 +75,8 @@ CORS_ALLOW_METHODS = [
     'OPTIONS',  # Make sure OPTIONS is included
 ]
 
-# CSRF_TRUSTED_ORIGINS = ["*"]
+CSRF_TRUSTED_ORIGINS = ["http://dashboard-backend", "http://dashboard-backend", 
+    "https://api.soltech.elexis.ai", "http://api.soltech.elexis.ai"]
 
 ROOT_URLCONF = 'elexis_dashboard.urls'
 
