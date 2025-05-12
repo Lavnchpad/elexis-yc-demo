@@ -2,9 +2,10 @@ import React from "react";
 import { Button } from "@/components/ui/button"; // Assuming Button is a pre-built component
 import ScheduleDrive from "@/components/component/drive/ScheduleDrive";
 import axios from "axios";
+import { toast } from "sonner";
+
 
 const StatusButton = ({ interviewData, selectedCandidate, selectedInterview }) => {
-  console.log({ interviewData, selectedCandidate, selectedInterview })
 
   const status = interviewData?.map((i) => i.status).sort((a, b) => statusPriority[a] - statusPriority[b])[0]
  const hasScheduledInterview = interviewData?.some(
@@ -14,6 +15,7 @@ const StatusButton = ({ interviewData, selectedCandidate, selectedInterview }) =
 async function changeInterviewStatus(type){
   async function updateInterViewStaus(type) {
     if (!type || !selectedInterview?.id) {
+      toast.error("Please select an Interview")
       return;
     }
     const token = localStorage.getItem("authToken");
@@ -41,17 +43,18 @@ async function changeInterviewStatus(type){
 
  }
 }
+  console.log({ status: selectedInterview?.status })
   return (
     <div className="ml-auto flex space-x-4">
       {/* Conditionally render buttons based on the status */}
-      {status === InterviewStatus.ACCEPTED && (
+      {selectedInterview?.status === InterviewStatus.ACCEPTED && (
         <>
           <Button className="px-6 py-3" disabled>
             Accepted
           </Button>
         </>
       )}
-      {status === InterviewStatus.REJECTED && (
+      {selectedInterview?.status === InterviewStatus.REJECTED && (
         <>
           <Button className="px-6 py-3" disabled>
             Rejected
@@ -65,14 +68,14 @@ async function changeInterviewStatus(type){
           </Button>
         </>
       )} */}
-      {status === InterviewStatus.HOLD && (
+      {selectedInterview?.status === InterviewStatus.HOLD && (
         <>
           <Button className="px-6 py-3" disabled>
             On Hold
           </Button>
         </>
       )}
-      {status === "registered" && selectedInterview?.status === InterviewStatus.ENDED && (
+      {(
         <>
           <Button className="px-6 py-3 bg-green-600" onClick={() => changeInterviewStatus(InterviewStatus.ACCEPTED)} type='button'>Accept</Button>
           <Button className="px-6 py-3 bg-red-500" onClick={() => changeInterviewStatus(InterviewStatus.REJECTED)} type='button'>Reject</Button>
