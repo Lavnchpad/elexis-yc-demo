@@ -21,6 +21,7 @@ const LoginPage = () => {
       const loginResponse = await axios.post(
         `/login/`,
         { email, password },
+        { skipAuth: true }
       );
 
       const { access: token, recruiter_id } = loginResponse.data;
