@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DataTable from '@/components/table/DataTable';
 import { memberColumns } from "../profile/memberTable/MemberColumn";
 import { useUser } from '../recruiter/UserContext';
-import axios from 'axios';
+import axios from '../../../utils/api';
 
 const MyTeam = () => {
   const { user } = useUser(); // Get user data from context

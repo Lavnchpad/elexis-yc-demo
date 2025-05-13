@@ -13,6 +13,7 @@ import {
   LucideAlarmClock,
   Calendar,
   SatelliteDishIcon,
+  View,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -69,10 +70,11 @@ const StudentDetails = ({ }) => {
 
   const handleDownloadResume = () => {
     if (selectedCandidate?.resume) {
-      const link = document.createElement("a");
-      link.href = selectedCandidate.resume?.url;;
-      link.download = "resume.pdf";
-      link.click();
+      window.open(selectedCandidate.resume, "_blank");
+      // const link = document.createElement("a");
+      // link.href = selectedCandidate.resume;
+      // link.download = "resume.pdf";
+      // link.click();
     }
   };
 
@@ -369,8 +371,8 @@ const StudentDetails = ({ }) => {
                     className="gap-2"
                     onClick={handleDownloadResume}
                   >
-                    <Download className="w-4 h-4" />
-                    Download Resume
+                        <View className="w-4 h-4" />
+                        View Resume
                   </Button>
                 </div>
               </div>
