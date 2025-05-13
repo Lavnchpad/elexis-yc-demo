@@ -288,7 +288,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             "interviewer_email":candidate.recruiter.email,
             "role":interview.job.job_name,
             "company_name": candidate.recruiter.company_name,
-            "interviewer_name": candidate.recruiter.name,
+            "interviewer_name": "Arya",
             "candidate_voice_clone": "India Accent (Female)",
             "is_dashboard_request": True,
             "language" : 'english',
