@@ -57,9 +57,7 @@ const App = () => {
           <Route
             path="/interviews/:interviewId/start"
             element={
-              // <ProtectedRoute>
-                <StartInterview />
-              // </ProtectedRoute>
+              <StartInterview />
             }
           />
         </Routes>
