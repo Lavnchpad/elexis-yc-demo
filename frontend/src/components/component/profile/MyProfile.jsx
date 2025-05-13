@@ -6,8 +6,28 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import axios from "../../../utils/api"
+import { useEffect, useState } from "react"
+import ToggleButton from "../resuable/ToggleButton"
 
 export default function MyProfile() {
+  const [personalDetails, setPersonalDetails] = useState(); // the logged in recruiter
+  useEffect(() => {
+    (async () => {
+      try {
+        const userDetailsFromLocalStorage = JSON.parse(localStorage.getItem("user"))
+        if (!userDetailsFromLocalStorage?.id) {
+          window.location.href = '/login'
+          return;
+        }
+        const userDetails = await getRecriterDetails(userDetailsFromLocalStorage?.id);
+        setPersonalDetails(userDetails)
+        console.log({ userDetails })
+      } catch (error) {
+
+      }
+    })()
+  }, [])
   return (
     <div className="min-h-screen">
       <header className="flex items-center gap-4 p-4 ">
@@ -59,7 +79,7 @@ export default function MyProfile() {
                   />
                   <AvatarFallback>DU</AvatarFallback>
                 </Avatar>
-                <h2 className="text-2xl font-bold">Dummy User1 Test</h2>
+                <h2 className="text-2xl font-bold">{personalDetails?.company_name || ""}</h2>
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
@@ -67,40 +87,56 @@ export default function MyProfile() {
                   <Label htmlFor="name" className="">
                     Name:
                   </Label>
-                  <Input id="name"  className="border-gray-200 shadow-sm" />
+                  <Input disabled id="name" className="border-gray-200 shadow-sm" value={personalDetails?.name || ""} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="">
                     Email:
                   </Label>
-                  <Input id="email" type="email"  className="border-gray-200 shadow-sm" />
+                  <Input disabled id="email" type="email" className="border-gray-200 shadow-sm" value={personalDetails?.email || ""} />
                 </div>
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="phone" className="">
                     Phone number:
                   </Label>
-                  <Input id="phone" type="tel"  className="border-gray-200 shadow-sm" />
-                </div>
+                  <Input id="phone" type="tel"  className="border-gray-200 shadow-sm" value={userDetails?.phone} />
+                </div> */}
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="dob" className="">
                     Date of birth:
                   </Label>
                   <Input id="dob" type="date"  className="border-gray-200 shadow-sm" />
-                </div>
+                </div> */}
 
                 <div className="space-y-2">
                   <Label htmlFor="recovery" className="">
                     Recovery email:
                   </Label>
                   <Input
+                    disabled
                     id="recovery"
                     type="email"
                     className="border-gray-200 shadow-sm"
                   />
                 </div>
+              </div>
+              <div className="space-y-2 mt-2">
+
+                <ToggleButton
+                  handleToggleChange={(e) => { }}
+                  label={"Modify Users"}
+                  isChecked={personalDetails?.can_manage_users}
+                  disabled={true} // Toggle is disabled if the current user is not an admin
+                />
+                <ToggleButton
+                  handleToggleChange={(e) => { }}
+                  label={"Modify Jobs"}
+                  isChecked={personalDetails?.can_manage_jobs}
+                  disabled={true} // Toggle is disabled if the current user is not an admin
+                />
               </div>
 
               <div className="mt-8 flex justify-end">
@@ -126,3 +162,11 @@ export default function MyProfile() {
   )
 }
 
+async function getRecriterDetails(id) {
+  try {
+    const response = await axios.get(`/recruiters/${id}/`)
+    return response.data;
+  } catch (error) {
+    console.log('Error fetching recriter details')
+  }
+}

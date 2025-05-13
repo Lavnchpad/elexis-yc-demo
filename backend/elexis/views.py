@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
 # from django_filters import CharFilter, FilterSet
 # from django_filters.rest_framework import DjangoFilterBackend
+from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import redirect
@@ -30,6 +31,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 CLIENT_URL = os.getenv("CLIENT_URL")
+AWS_STORAGE_BUCKET_NAME= os.getenv("AWS_STORAGE_BUCKET_NAME")
 
 
 class SignupView(APIView):
@@ -148,7 +150,6 @@ class CandidateViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-
     @action(detail=True, methods=["post"], permission_classes=[AllowAny])
     def start_interview(self, request, pk=None):
         candidate = self.get_object()
@@ -162,6 +163,28 @@ class CandidateViewSet(viewsets.ModelViewSet):
         candidate.joining_link = None
         candidate.save()
         return redirect("https://www.google.com")
+    
+    @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated],url_path="signed-urls")
+    def get_signed_urls(self, request, pk=None):
+        try:
+            candidate = self.get_object()
+
+            want_resume = request.query_params.get("resume") == "true"
+            want_photo = request.query_params.get("profile_photo") == "true"
+            urls={}
+            if want_photo and candidate.profile_photo :
+                # urls["profile_photo"] = generate_signed_url(AWS_STORAGE_BUCKET_NAME,candidate.profile_photo.url,3600)
+                urls["profile_photo"]= candidate.profile_photo.url
+            if want_resume and candidate.resume:
+                # urls["resume"] = generate_signed_url(AWS_STORAGE_BUCKET_NAME,candidate.resume.url,3600)
+                urls["resume"]= candidate.resume.url
+            if not urls:
+                return Response({"error": "No requested files available."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(urls)
+
+        except Exception as e:
+            print("Error in Candidateviewset ---> get_signed_urls meythod:::", e)
+            return Response({"error": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class InterviewViewSet(viewsets.ModelViewSet):
