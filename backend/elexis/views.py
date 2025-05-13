@@ -273,7 +273,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             }
 
             files = {
-                "resume": ("resume.pdf", candidate.resume.open("rb"), "application/pdf"),
+                "resume": ("resume.pdf", candidate.resume.file, "application/pdf"),
                 # "job_description": ("pythondev.pdf",open("static/desc.pdf", "rb"), "application/pdf"),
             }
             
