@@ -70,7 +70,10 @@ Please regenerate the response correctly.
         response = model.generate_content(base_prompt if attempt == 0 else feedback_prompt + base_prompt)
 
         try:
+            
             content = response.text.strip()
+            if content.startswith("```"):
+                content = content.strip("`").split("\n", 1)[1].rsplit("\n", 1)[0].strip()
 
             # Try to parse it
             try:

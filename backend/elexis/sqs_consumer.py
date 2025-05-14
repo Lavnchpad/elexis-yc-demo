@@ -7,7 +7,6 @@ import json
 import time
 from dotenv import load_dotenv
 import os
-
 load_dotenv()
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -106,7 +105,7 @@ def process_message(message_body):
                 transcript_url,
                 qa_data
             )
-            transcript_data = qa_data
+            transcript_data = raw_transcript
         except Exception as e:
             print(f"Error fetching transcript data from S3: {e}")
             return
