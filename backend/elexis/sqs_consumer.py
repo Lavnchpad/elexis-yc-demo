@@ -1,6 +1,7 @@
 from elexis.models import Interview, Snapshots
-from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3
+from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3, put_dict_as_json_to_s3
 from elexis.utils.summary_generation import generate_summary
+from elexis.utils.convert_transcript_format import convert
 import boto3
 import json
 import time
@@ -94,7 +95,18 @@ def process_message(message_body):
 
         # Fetch transcript data from S3
         try:
-            transcript_data = get_file_data_from_s3(AWS_TRANSCRIPT_BUCKET_NAME,transcript_url.split('/')[-1])
+            raw_transcript = get_file_data_from_s3(AWS_TRANSCRIPT_BUCKET_NAME,transcript_url.split('/')[-1])
+            qa_data = convert(raw_transcript)
+            if not qa_data:
+                print(f"Empty or invalid conversion for transcript: {transcript_url}")
+                return
+            transcript_url = transcript_url.split('/')[-1] + ".json"
+            put_dict_as_json_to_s3(
+                AWS_TRANSCRIPT_BUCKET_NAME,
+                transcript_url,
+                qa_data
+            )
+            transcript_data = qa_data
         except Exception as e:
             print(f"Error fetching transcript data from S3: {e}")
             return

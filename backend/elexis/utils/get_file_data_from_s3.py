@@ -1,6 +1,7 @@
 import boto3
 import os
 import dotenv
+import json
 dotenv.load_dotenv()
 s3 = boto3.client(
     's3',
@@ -13,6 +14,17 @@ def get_file_data_from_s3(bucket,key):
     # s3 = boto3.client('s3')  # uses env vars automatically
     response = s3.get_object(Bucket=bucket, Key=key)
     return response['Body'].read().decode('utf-8')
+
+def put_dict_as_json_to_s3(bucket, key, data):
+
+    s3.put_object(
+                Bucket=bucket,
+                Key=key,
+                Body=json.dumps(data, indent=2).encode('utf-8'),
+                ContentType='application/json'
+            )
+
+
 def generate_signed_url(bucket_name, object_key, expires_in=3600):
     try:
         url = s3.generate_presigned_url(
