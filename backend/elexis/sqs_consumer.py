@@ -1,12 +1,12 @@
 from elexis.models import Interview, Snapshots
-from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3
+from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3, put_dict_as_json_to_s3
 from elexis.utils.summary_generation import generate_summary
+from elexis.utils.convert_transcript_format import convert
 import boto3
 import json
 import time
 from dotenv import load_dotenv
 import os
-
 load_dotenv()
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -94,7 +94,19 @@ def process_message(message_body):
 
         # Fetch transcript data from S3
         try:
-            transcript_data = get_file_data_from_s3(AWS_TRANSCRIPT_BUCKET_NAME,transcript_url.split('/')[-1])
+            full_s3_url = transcript_url
+            raw_transcript = get_file_data_from_s3(AWS_TRANSCRIPT_BUCKET_NAME,transcript_url.split('/')[-1])
+            qa_data = convert(raw_transcript)
+            if not qa_data:
+                print(f"Empty or invalid conversion for transcript: {transcript_url}")
+                return
+            transcript_url = transcript_url.split('/')[-1] + ".json"
+            put_dict_as_json_to_s3(
+                AWS_TRANSCRIPT_BUCKET_NAME,
+                transcript_url,
+                qa_data
+            )
+            transcript_data = raw_transcript
         except Exception as e:
             print(f"Error fetching transcript data from S3: {e}")
             return
@@ -109,7 +121,7 @@ def process_message(message_body):
         # Update the Interview instance with the transcript and summary
         try:
             rows_updated = Interview.objects.filter(meeting_room=room_url).update(
-                transcript=(transcript_url),
+                transcript=(full_s3_url+".json"),
                 summary=(summary_json),
                 status='ended',
                 skills = (summary_json['skills']),

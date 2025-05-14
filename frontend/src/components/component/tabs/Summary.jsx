@@ -33,7 +33,7 @@ const Summary = ({interview_summary}) => {
         <CardContent>
           <ul className="list-disc pl-6 space-y-2">
             {overall_impression?.map((point, index) => (
-              <li key={"overallimpression"+index}>{point?.point}</li>
+              <li key={"overallimpression"+index}>{point}</li>
             ))}
           </ul>
         </CardContent>
@@ -80,7 +80,7 @@ const Summary = ({interview_summary}) => {
         <CardContent>
           <ul className="list-disc pl-6 space-y-2">
             {final_recommendation?.map((point, index) => (
-              <li key={'finalrecommendation'+index}>{point?.point}</li>
+              <li key={'finalrecommendation'+index}>{point}</li>
             ))}
           </ul>
         </CardContent>

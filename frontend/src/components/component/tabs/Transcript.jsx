@@ -27,10 +27,10 @@ const Transcript = ({ interview_transcript_url}) => {
         {transcript?.map((item, index) => (
           <AccordionItem key={index} value={`item-${index}`}>
             <AccordionTrigger className="text-left">
-              {item.interview}
+              {item.question}
             </AccordionTrigger>
             <AccordionContent>
-              {item.candidate}
+              {item.answer}
             </AccordionContent>
           </AccordionItem>
         ))}
