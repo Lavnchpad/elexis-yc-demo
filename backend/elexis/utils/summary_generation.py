@@ -25,7 +25,7 @@ def generate_summary_data(data):
 
         Each section should contain the following information:
 
-        overall_impression: List of points summarizing the general impression of the candidate, including communication skills, demeanor, and fit for the company culture.
+        overall_impression: (List of Strings) List of points summarizing the general impression of the candidate, including communication skills, demeanor, and fit for the company culture.
 
         strengths: Each item should be a dictionary with the following fields:
         strength: The specific strength of the candidate
@@ -63,15 +63,15 @@ def generate_summary_data(data):
         
         experience: It should be a list of dictionary based on the professional work experience of the candidate and each item should include name , years and months
 
-        final_recommendation: List of points summarizing the overall recommendation regarding the candidate's potential fit for the position, including any conditions or next steps.
-
+        final_recommendation: (List of Strings) List of points summarizing the overall recommendation regarding the candidate's potential fit for the position, including any conditions or next steps.
+       
         Ensure the summary is clear, concise, and provides a holistic view of the candidate's capabilities, potential, and areas needing improvement.
 
         '''
     while True:
         try:
             prompt = prompt_template.replace("{{data}}", data)
-            model = genai.GenerativeModel('gemini-1.5-flash-8b',
+            model = genai.GenerativeModel('gemini-2.0-flash',
                                           generation_config={"response_mime_type": "application/json"})
             chat = model.start_chat(history=[])
             response = chat.send_message(prompt)
