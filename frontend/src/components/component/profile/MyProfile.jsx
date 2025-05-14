@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import axios from "../../../utils/api"
 import { useEffect, useState } from "react"
 import ToggleButton from "../resuable/ToggleButton"
+import Changepassword from "./components/ChangePassword"
 
 export default function MyProfile() {
   const [personalDetails, setPersonalDetails] = useState(); // the logged in recruiter
@@ -145,11 +146,12 @@ export default function MyProfile() {
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="account" className="p-4">
+        {/* <TabsContent value="account" className="p-4"> */}
           {/* Account Settings content here */}
-        </TabsContent>
+        {/* </TabsContent> */}
         <TabsContent value="security" className="p-4">
           {/* Security content here */}
+          <Changepassword />
         </TabsContent>
         <TabsContent value="privacy" className="p-4">
           {/* Privacy content here */}
