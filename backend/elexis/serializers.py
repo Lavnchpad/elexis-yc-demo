@@ -1,7 +1,10 @@
 from rest_framework import serializers
 from .models import Recruiter, Candidate, Job, Interview, Snapshots
-
-
+from elexis.utils.get_file_data_from_s3 import generate_signed_url
+from dotenv import load_dotenv
+import os
+load_dotenv()
+AWS_TRANSCRIPT_BUCKET_NAME=os.getenv("AWS_TRANSCRIPT_BUCKET_NAME")
 class RecruiterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recruiter
@@ -69,6 +72,7 @@ class InterviewSerializer(serializers.ModelSerializer):
         queryset=Job.objects.all(), source='job', write_only=True
     )
     snapshots = serializers.SerializerMethodField()
+    transcript = serializers.SerializerMethodField() 
     class Meta:
         model = Interview
         fields = '__all__'
@@ -76,6 +80,15 @@ class InterviewSerializer(serializers.ModelSerializer):
     def get_snapshots(self, obj):
         snapshots = Snapshots.objects.filter(interview=obj)
         return SnapshotSerializer(snapshots, many=True).data
+    
+    def get_transcript(self, obj):
+        if not obj.transcript:
+            return None
+
+        try:
+            return generate_signed_url(AWS_TRANSCRIPT_BUCKET_NAME, obj.transcript.replace("://", "").split("/", 1)[-1])
+        except:
+            return None
 
 
 class LoginSerializer(serializers.Serializer):
