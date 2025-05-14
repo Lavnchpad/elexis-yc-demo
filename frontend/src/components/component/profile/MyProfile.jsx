@@ -42,12 +42,12 @@ export default function MyProfile() {
           >
             Personal Info
           </TabsTrigger>
-          <TabsTrigger
+          {/* <TabsTrigger
             value="account"
             className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-4"
           >
             Account Settings
-          </TabsTrigger>
+          </TabsTrigger> */}
           <TabsTrigger
             value="security"
             className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-4"
@@ -139,9 +139,9 @@ export default function MyProfile() {
                 />
               </div>
 
-              <div className="mt-8 flex justify-end">
+              {/* <div className="mt-8 flex justify-end">
                 <Button className=" text-white px-8">Save Changes</Button>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
         </TabsContent>

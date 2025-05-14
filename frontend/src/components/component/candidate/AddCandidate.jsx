@@ -77,7 +77,7 @@ const AddCandidate = ({ children }) => {
     formData.append("email", data.email);
     formData.append("phone_number", data.phone || "");
     // if (data.profilePic?.[0]) formData.append("profile_picture", data.profilePic[0]);
-    formData.append("profile_photo", selectedPhoto);
+    selectedPhoto && formData.append("profile_photo", selectedPhoto);
     formData.append("resume", currentSelectedFile);
 
     try {
