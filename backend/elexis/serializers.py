@@ -17,7 +17,6 @@ class RecruiterSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        print("Validated data", validated_data)
         return Recruiter.objects.create_user(**validated_data)
 
     def update(self, instance, validated_data):
