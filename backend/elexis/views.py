@@ -19,6 +19,7 @@ from .serializers import (
     JobSerializer,
     InterviewSerializer,
     LoginSerializer,
+    ChangePasswordSerializer
 )
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, now
@@ -54,8 +55,6 @@ class LoginView(APIView):
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
             user = authenticate(request, email=email, password=password)
-            user = Recruiter.objects.get(email=email)
-            # print(user.check_password(password))
             if user:
                 # Generate tokens
                 refresh = RefreshToken.for_user(user)
@@ -113,6 +112,17 @@ class RecruiterViewSet(viewsets.ModelViewSet):
         return Response({
             'message': 'Profile deleted successfully'
         }, status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def change_password(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+
+        return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
 
 class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all()

@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import axios from "../../../utils/api"
 import { useEffect, useState } from "react"
 import ToggleButton from "../resuable/ToggleButton"
+import Changepassword from "./components/ChangePassword"
 
 export default function MyProfile() {
   const [personalDetails, setPersonalDetails] = useState(); // the logged in recruiter
@@ -42,12 +43,12 @@ export default function MyProfile() {
           >
             Personal Info
           </TabsTrigger>
-          <TabsTrigger
+          {/* <TabsTrigger
             value="account"
             className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-4"
           >
             Account Settings
-          </TabsTrigger>
+          </TabsTrigger> */}
           <TabsTrigger
             value="security"
             className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-4"
@@ -139,17 +140,18 @@ export default function MyProfile() {
                 />
               </div>
 
-              <div className="mt-8 flex justify-end">
+              {/* <div className="mt-8 flex justify-end">
                 <Button className=" text-white px-8">Save Changes</Button>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="account" className="p-4">
+        {/* <TabsContent value="account" className="p-4"> */}
           {/* Account Settings content here */}
-        </TabsContent>
+        {/* </TabsContent> */}
         <TabsContent value="security" className="p-4">
           {/* Security content here */}
+          <Changepassword />
         </TabsContent>
         <TabsContent value="privacy" className="p-4">
           {/* Privacy content here */}

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Recruiter, Candidate, Job, Interview, Snapshots
+from django.contrib.auth.password_validation import validate_password
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from dotenv import load_dotenv
 import os
@@ -16,7 +17,6 @@ class RecruiterSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        print("Validated data", validated_data)
         return Recruiter.objects.create_user(**validated_data)
 
     def update(self, instance, validated_data):
@@ -46,7 +46,21 @@ class JobSerializer(serializers.ModelSerializer):
     #     return super().update(instance, validated_data)
  
     
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, validators=[validate_password])
 
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        print("User", user , value)
+        if not user.check_password(value):
+            raise serializers.ValidationError("Old password is not correct")
+        return value
+
+    def validate(self, attrs):
+        if attrs['old_password'] == attrs['new_password']:
+            raise serializers.ValidationError("New password must be different from the old password.")
+        return attrs
 class CandidateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Candidate
