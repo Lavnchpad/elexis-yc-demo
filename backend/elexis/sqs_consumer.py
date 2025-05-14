@@ -94,6 +94,7 @@ def process_message(message_body):
 
         # Fetch transcript data from S3
         try:
+            full_s3_url = transcript_url
             raw_transcript = get_file_data_from_s3(AWS_TRANSCRIPT_BUCKET_NAME,transcript_url.split('/')[-1])
             qa_data = convert(raw_transcript)
             if not qa_data:
@@ -120,7 +121,7 @@ def process_message(message_body):
         # Update the Interview instance with the transcript and summary
         try:
             rows_updated = Interview.objects.filter(meeting_room=room_url).update(
-                transcript=(transcript_url),
+                transcript=(full_s3_url+".json"),
                 summary=(summary_json),
                 status='ended',
                 skills = (summary_json['skills']),
