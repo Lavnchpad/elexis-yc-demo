@@ -55,6 +55,8 @@ export default function Changepassword() {
         }
     }
     return (
+        <div className='space-y-2'>
+            <h2 className='text-xl font-bold text-center'>Change Password</h2>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -99,5 +101,6 @@ export default function Changepassword() {
                 <Button type="submit" disable={isPending}>Save Changes</Button>
             </form>
         </Form>
+        </div>
     )
 }

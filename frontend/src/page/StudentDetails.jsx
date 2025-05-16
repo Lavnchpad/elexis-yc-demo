@@ -7,7 +7,6 @@ import {
   Clock,
   FileSearch,
   Mail,
-  Download,
   Phone,
   Copy,
   LucideAlarmClock,
@@ -71,10 +70,6 @@ const StudentDetails = ({ }) => {
   const handleDownloadResume = () => {
     if (selectedCandidate?.resume) {
       window.open(selectedCandidate.resume, "_blank");
-      // const link = document.createElement("a");
-      // link.href = selectedCandidate.resume;
-      // link.download = "resume.pdf";
-      // link.click();
     }
   };
 
@@ -416,11 +411,11 @@ const StudentDetails = ({ }) => {
                     <TabsContent value="summary">
                       <div className="p-4 bg-background rounded-lg">
                         {(selectedInterview?.summary) ? (
-                          <ErrorBoundary>
+                              <ErrorBoundary>
                             <Summary
                               interview_summary={selectedInterview.summary}
                             />
-                          </ErrorBoundary>
+                              </ErrorBoundary>
                         ) : (
                           <p>No summary available for this job.</p>
                         )}
