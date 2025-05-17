@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
 # from django_filters import CharFilter, FilterSet
 # from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.exceptions import PermissionDenied
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from django.core.mail import send_mail
 from django.conf import settings
@@ -11,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Recruiter, Candidate, Job, Interview
+from .models import Recruiter, Candidate, Job, Interview, JobRequirement
 from elexis.utils.general import getHumanReadableTime
 from .serializers import (
     RecruiterSerializer,
@@ -19,7 +20,8 @@ from .serializers import (
     JobSerializer,
     InterviewSerializer,
     LoginSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer,
+    JobRequirementSerializer
 )
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, now
@@ -343,7 +345,7 @@ class JobViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Job.objects.filter(organization = self.request.user.organization,is_disabled=False)
+        return Job.objects.filter(organization = self.request.user.organization,is_disabled=False).prefetch_related('requirements')
 
     def perform_create(self, serializer):
         serializer.save(
@@ -354,3 +356,15 @@ class JobViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save(modified_by = self.request.user)
+
+class JobRequirementViewSet(viewsets.ModelViewSet):
+    serializer_class = JobRequirementSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = JobRequirement.objects.all()
+    def get_queryset(self):
+        return JobRequirement.objects.filter(job__organization = self.request.user.organization).select_related('job')
+    def perform_create(self, serializer):
+        job = serializer.validated_data['job']
+        if job.organization != self.request.user.organization:
+            raise PermissionDenied("You cannot add requirements to this job.")
+        serializer.save()

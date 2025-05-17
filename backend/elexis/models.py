@@ -3,6 +3,8 @@ from django.db import models
 from django.db.models import JSONField
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 
 class BaseModel(models.Model):
@@ -112,6 +114,7 @@ class Job(BaseModel):
 
     def __str__(self):
         return self.job_name
+# topics that must be evaluated and  represented visually
 
 
 class Interview(BaseModel):
@@ -162,3 +165,32 @@ class Snapshots(BaseModel):
 
     def __str__(self):
         return f"name: {self.interview.candidate.name} InterviewId:{self.interview.id}"
+
+class JobRequirement(BaseModel):
+    job = models.ForeignKey(
+        Job, on_delete=models.CASCADE, related_name="requirements"
+    )
+    requirement =  models.CharField(max_length=255)
+    weightage =  models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="value should be between 1 & 5 , this suggest how much importance this criteria has for the specific job role",
+        default=1
+    )
+    def __str__(self):
+        return f"{self.job.job_name} - {self.requirement}"
+class JobRequirementEvaluation(BaseModel):
+    candidate = models.ForeignKey(
+        Candidate, on_delete=models.CASCADE , related_name='jobrequirementevaluation'
+    )
+    # TODO : Discuss with AP whether we need to add the below or not
+    # interview = models.ForeignKey(
+    #     Interview, on_delete=models.DO_NOTHING, related_name='evaluation'
+    # )
+    jobRequirement = models.ForeignKey(JobRequirement , on_delete=models.CASCADE , related_name="jobrequirement")
+    rating = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(100)],
+        help_text="value should be between 1 to 100, suggests how good the candidate is for the specific requirement",
+    )
+
+    def __str__(self):
+        return f"{self.jobRequirement.job.job_name} -{self.jobRequirement.requirement} - {self.candidate.name}"

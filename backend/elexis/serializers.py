@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Recruiter, Candidate, Job, Interview, Snapshots
+from .models import Recruiter, Candidate, Job, Interview, Snapshots , JobRequirement
 from django.contrib.auth.password_validation import validate_password
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from dotenv import load_dotenv
@@ -25,25 +25,23 @@ class RecruiterSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         return super().update(instance, validated_data)
 
-
+class JobRequirementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobRequirement
+        fields = ['id', 'requirement', 'weightage']
 class JobSerializer(serializers.ModelSerializer):
+    requirements = JobRequirementSerializer(many=True, read_only=True)
     class Meta:
         model = Job
         fields = '__all__'
-        read_only_fields = ('recruiter', 'organization')
-        # fields = ['job_name', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description']  # Explicitly define the fields you want to include
+        # read_only_fields = ('recruiter', 'organization')
+        fields = ['job_name', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description','requirements']  # Explicitly define the fields you want to include
         # exclude = ('recruiter', 'organization')  # Exclude from input but keep in the model
     def create(self, validated_data):
         # Add recruiter automatically (assuming current user is the recruiter)
         validated_data['recruiter'] = self.context['request'].user  # Assign logged-in user
         print("Validated data", validated_data)
         return super().create(validated_data)
-    
-    # not working
-    # def update(self, instance, validated_data):
-    #     print("Updating Job:", instance.id, "With Data:", validated_data)
-    #     validated_data.pop('is_disabled', None)
-    #     return super().update(instance, validated_data)
  
     
 class ChangePasswordSerializer(serializers.Serializer):

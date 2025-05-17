@@ -140,5 +140,8 @@ def generate_summary(transcript_data):
 
 
 
+# requirements::: [{'id': 'c9d98190-d1a4-4b57-8412-4343f47a6ee2', 'requirement': 'React Devtools', 'weightage': 2}, {'id': '407b25ce-bb47-4c01-9b3f-656b48ab1842', 'requirement': 'Nextjs', 'weightage': 3}]
+def evaluateRequirements(transcript , requirements): # This method should return a data which should be serialised and stored directly in JobRequirementEvaluation 
+    pass
 
 

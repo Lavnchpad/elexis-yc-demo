@@ -1,6 +1,7 @@
-from elexis.models import Interview, Snapshots
+from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementEvaluation
 from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3, put_dict_as_json_to_s3
 from elexis.utils.summary_generation import generate_summary
+from elexis.serializers import JobRequirementSerializer
 from elexis.utils.convert_transcript_format import convert
 import boto3
 import json
@@ -86,7 +87,7 @@ def process_message(message_body):
                 return
                 
                 
-        # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://google.com"}
+        # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://googly.com"}
         # {"type":"proctor","video":"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4","room_url":"https://google.com"}
         elif not room_url or not transcript_url:
             print(f"Invalid data in message: meeting_room={room_url}, transcript_url={transcript_url}")
@@ -120,14 +121,30 @@ def process_message(message_body):
 
         # Update the Interview instance with the transcript and summary
         try:
-            rows_updated = Interview.objects.filter(meeting_room=room_url).update(
-                transcript=(full_s3_url+".json"),
-                summary=(summary_json),
-                status='ended',
-                skills = (summary_json['skills']),
-                experience =(summary_json['experience'])
-            )
-            if rows_updated:
+            interview = Interview.objects.get(meeting_room=room_url)
+
+            # Access job_id before update , later 
+            jobId = interview.job.id
+            # I need all the requirements for this job id
+            requirementQuerySet = JobRequirement.objects.filter(job_id = jobId)
+            requirements = JobRequirementSerializer(requirementQuerySet, many = True).data
+
+            print("requirements:::", requirements) # got all the requirements for this jobId
+            requirementEvaluation = evaluateRequirements(transcript_data, requirements)
+
+# meeting room se interview milega , interview se job , job se requirements, requiremenetEvaluation mil gaya , toh har ek requirement ke against ek record store kardo requiremenetEvaluation table pe
+
+
+
+            # Update fields
+            interview.transcript = full_s3_url + ".json"
+            interview.summary = summary_json
+            interview.status = 'ended'
+            interview.skills = summary_json['skills']
+            interview.experience = summary_json['experience']
+            interview.save()
+
+            if interview:
                 print(f"Transcript and summary updated for meeting_room: {room_url}: summaryjson::: {(summary_json)}")
             else:
                 print(f"Interview ID {room_url} not found. No update performed.")
