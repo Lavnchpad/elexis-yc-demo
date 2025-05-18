@@ -8,14 +8,12 @@ from .views import (
     InterviewViewSet,
     SignupView,
     LoginView,
-    JobRequirementViewSet
 )
 
 router = DefaultRouter()
 router.register(r'recruiters', RecruiterViewSet)
 router.register(r'candidates', CandidateViewSet)
 router.register(r'jobs', JobViewSet)
-router.register(r'requirements',JobRequirementViewSet)
 router.register(r'interviews', InterviewViewSet)
 
 urlpatterns = [

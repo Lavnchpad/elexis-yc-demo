@@ -21,7 +21,6 @@ from .serializers import (
     InterviewSerializer,
     LoginSerializer,
     ChangePasswordSerializer,
-    JobRequirementSerializer
 )
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, now
@@ -353,18 +352,5 @@ class JobViewSet(viewsets.ModelViewSet):
             created_by = self.request.user,
             modified_by = self.request.user
         )
-
     def perform_update(self, serializer):
         serializer.save(modified_by = self.request.user)
-
-class JobRequirementViewSet(viewsets.ModelViewSet):
-    serializer_class = JobRequirementSerializer
-    permission_classes = [IsAuthenticated]
-    queryset = JobRequirement.objects.all()
-    def get_queryset(self):
-        return JobRequirement.objects.filter(job__organization = self.request.user.organization).select_related('job')
-    def perform_create(self, serializer):
-        job = serializer.validated_data['job']
-        if job.organization != self.request.user.organization:
-            raise PermissionDenied("You cannot add requirements to this job.")
-        serializer.save()

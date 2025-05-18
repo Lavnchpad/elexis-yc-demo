@@ -28,20 +28,38 @@ class RecruiterSerializer(serializers.ModelSerializer):
 class JobRequirementSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobRequirement
-        fields = ['id', 'requirement', 'weightage']
+        fields = ['requirement', 'weightage']
 class JobSerializer(serializers.ModelSerializer):
-    requirements = JobRequirementSerializer(many=True, read_only=True)
+    requirements = JobRequirementSerializer(many=True)
     class Meta:
         model = Job
         fields = '__all__'
-        # read_only_fields = ('recruiter', 'organization')
-        fields = ['job_name', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description','requirements']  # Explicitly define the fields you want to include
+        read_only_fields = ('recruiter', 'organization')
+        fields = ['job_name','id', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description','requirements','recruiter', 'organization']  # Explicitly define the fields you want to include
         # exclude = ('recruiter', 'organization')  # Exclude from input but keep in the model
+    
     def create(self, validated_data):
         # Add recruiter automatically (assuming current user is the recruiter)
         validated_data['recruiter'] = self.context['request'].user  # Assign logged-in user
-        print("Validated data", validated_data)
-        return super().create(validated_data)
+        requirements_data = validated_data.pop('requirements')
+        job = Job.objects.create(**validated_data)
+        if requirements_data is not None:
+            for req in requirements_data:
+                JobRequirement.objects.create(job=job, **req)
+        return job
+    def update(self, instance, validated_data):
+        requirements_data = validated_data.pop('requirements', None)
+        # Update job fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        # Update job requirements (optional logic)
+        if requirements_data is not None:
+            instance.requirements.all().delete()
+            for req_data in requirements_data:
+                JobRequirement.objects.create(job=instance, **req_data)
+
+        return instance
  
     
 class ChangePasswordSerializer(serializers.Serializer):

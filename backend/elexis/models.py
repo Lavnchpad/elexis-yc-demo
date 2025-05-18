@@ -191,6 +191,7 @@ class JobRequirementEvaluation(BaseModel):
         validators=[MinValueValidator(1), MaxValueValidator(100)],
         help_text="value should be between 1 to 100, suggests how good the candidate is for the specific requirement",
     )
+    remarks = models.TextField(default="")
 
     def __str__(self):
         return f"{self.jobRequirement.job.job_name} -{self.jobRequirement.requirement} - {self.candidate.name}"

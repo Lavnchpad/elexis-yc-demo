@@ -3,6 +3,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "../../ui/button";
+import axios from "../../../utils/api";
 import {
   Dialog,
   DialogContent,
@@ -33,8 +34,8 @@ const jobSchema = z.object({
   job_description: z.string().min(1, { message: "Description is required" }),
   topics: z.array(
     z.object({
-      topic: z.string().nonempty("Topic is required"),
-      weight: z.string().nonempty("weight is required"),
+      requirement: z.string().nonempty("Topic is required"),
+      weightage: z.string().nonempty("weight is required"),
     })
   ),
 
@@ -53,7 +54,7 @@ const ManageJobs = ({ onJobCreated, children }) => {
       min_ctc: "",
       max_ctc: "",
       job_description: "",
-      topics: [{ topic: "", weight: "" }]
+      topics: [{ requirement: "", weightage: "" }]
       // additional_data: "",
     },
   });
@@ -73,40 +74,26 @@ const ManageJobs = ({ onJobCreated, children }) => {
       alert("You do not have permission to manage jobs.");
       return;
     }
-
     setLoading(true);
-
     try {
-      const token = localStorage.getItem("authToken");
-
-      const formData = new FormData();
-      formData.append("job_name", data.job_name);
-      formData.append("location", data.location);
-      formData.append("min_ctc", data.min_ctc);
-      formData.append("max_ctc", data.max_ctc);
-      formData.append("job_description", data.job_description);
-      if (data.additional_data) {
-        formData.append("additional_data", data.additional_data);
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/jobs/`, {
-        method: "POST",
-        body: formData,
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
+      const { job_name, location, min_ctc, max_ctc, job_description } = data;
+      await axios.post(`/jobs/`, {
+        job_name,
+        location,
+        min_ctc,
+        max_ctc, job_description,
+        requirements: data.topics
+      },
+      );
         if (onJobCreated) {
           onJobCreated();
         }
-        console.log("Job created successfully:", await response.json());
         form.reset();
         setOpen(false);
-      } else {
-        throw new Error("Failed to create job.");
-      }
+
     } catch (error) {
       console.error("Error creating job:", error);
+      throw new Error("Failed to create job.");
     } finally {
       setLoading(false);
     }
@@ -244,7 +231,7 @@ const ManageJobs = ({ onJobCreated, children }) => {
                         >
                           <FormField
                             control={form.control}
-                            name={`topics.${i}.topic`}
+                            name={`topics.${i}.requirement`}
                             rules={{ required: "Topic is required" }}
                             render={({ field }) => (
                               <FormItem>
@@ -260,7 +247,7 @@ const ManageJobs = ({ onJobCreated, children }) => {
 
                             <FormField
                               control={form.control}
-                              name={`topics.${i}.weight`}
+                              name={`topics.${i}.weightage`}
                               rules={{
                                 required: "Weight is required",
                                 min: { value: 0, message: "Minimum is 0" },

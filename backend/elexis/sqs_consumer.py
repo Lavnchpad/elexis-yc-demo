@@ -113,11 +113,11 @@ def process_message(message_body):
             return
 
         # Generate summary from transcript data
-        try:
-            summary_json = generate_summary(transcript_data)
-        except Exception as e:
-            print(f"Error generating summary for transcript: {e}")
-            return
+        # try:
+        #     summary_json = generate_summary(transcript_data)
+        # except Exception as e:
+        #     print(f"Error generating summary for transcript: {e}")
+        #     return
 
         # Update the Interview instance with the transcript and summary
         try:
@@ -127,10 +127,8 @@ def process_message(message_body):
             jobId = interview.job.id
             # I need all the requirements for this job id
             requirementQuerySet = JobRequirement.objects.filter(job_id = jobId)
-            requirements = JobRequirementSerializer(requirementQuerySet, many = True).data
-
-            print("requirements:::", requirements) # got all the requirements for this jobId
-            requirementEvaluation = evaluateRequirements(transcript_data, requirements)
+            specialEvaluationMetrics = JobRequirementSerializer(requirementQuerySet, many = True).data
+            summary_json = generate_summary(transcript_data, specialEvaluationMetrics)
 
 # meeting room se interview milega , interview se job , job se requirements, requiremenetEvaluation mil gaya , toh har ek requirement ke against ek record store kardo requiremenetEvaluation table pe
 
@@ -145,7 +143,7 @@ def process_message(message_body):
             interview.save()
 
             if interview:
-                print(f"Transcript and summary updated for meeting_room: {room_url}: summaryjson::: {(summary_json)}")
+                print(f"Transcript and summary updated for meeting_room: {room_url}: summaryjson::: Evaaalu{(summary_json)}")
             else:
                 print(f"Interview ID {room_url} not found. No update performed.")
         except Exception as e:

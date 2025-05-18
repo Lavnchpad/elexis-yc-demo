@@ -2,7 +2,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "../../../../utils/api";
-import logo from "../../../../assets/images/logo.png";
 import { CircleArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -15,7 +14,6 @@ const JobDetails = () => {
   const navigateBack = () => {
     navigate(-1);
   };
-  console.log(jobData);
   const handleNavigation = (jobId, status) => {
     localStorage.setItem("jobState", JSON.stringify({ jobId, status }));
     navigate("/", { state: { jobId, status } });
