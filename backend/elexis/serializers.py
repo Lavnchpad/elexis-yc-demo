@@ -28,7 +28,7 @@ class RecruiterSerializer(serializers.ModelSerializer):
 class JobRequirementSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobRequirement
-        fields = ['requirement', 'weightage']
+        fields = ['id','requirement', 'weightage']
 class JobSerializer(serializers.ModelSerializer):
     requirements = JobRequirementSerializer(many=True)
     class Meta:

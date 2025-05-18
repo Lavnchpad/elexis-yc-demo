@@ -186,7 +186,7 @@ class JobRequirementEvaluation(BaseModel):
     # interview = models.ForeignKey(
     #     Interview, on_delete=models.DO_NOTHING, related_name='evaluation'
     # )
-    jobRequirement = models.ForeignKey(JobRequirement , on_delete=models.CASCADE , related_name="jobrequirement")
+    job_requirement = models.ForeignKey(JobRequirement , on_delete=models.CASCADE , related_name="jobrequirement")
     rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(100)],
         help_text="value should be between 1 to 100, suggests how good the candidate is for the specific requirement",
@@ -194,4 +194,4 @@ class JobRequirementEvaluation(BaseModel):
     remarks = models.TextField(default="")
 
     def __str__(self):
-        return f"{self.jobRequirement.job.job_name} -{self.jobRequirement.requirement} - {self.candidate.name}"
+        return f"{self.job_requirement.job.job_name} -{self.job_requirement.requirement} - {self.candidate.name}"

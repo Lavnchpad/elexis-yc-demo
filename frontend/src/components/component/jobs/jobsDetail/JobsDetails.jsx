@@ -95,8 +95,8 @@ const JobDetails = () => {
                   <h1 className="font-semibold text-primaryButtonColor text-lg">
                     Key Information
                   </h1>
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-2 justify-items-stretch">
-                    <div>
+                  <div className="grid grid-cols-1 gap-y-4 gap-x-2 justify-items-stretch">
+                    <div className="flex gap-4 items-center">
                       <p className="text-base font-semibold text-primaryButtonColor">
                         CTC Range
                       </p>
@@ -104,7 +104,21 @@ const JobDetails = () => {
                         {jobData.min_ctc}-{jobData.max_ctc}
                       </p>
                     </div>
-                    <div>
+                    {/* <p className="font-semibold">Important evaluation metrics</p> */}
+                    {/* <div className="grid grid-cols-2 justify-items-stretch text-center">
+                      <p className="font-semibold underline">
+                        Topic
+                      </p>
+                      <p className="font-semibold underline">Weight</p>
+                      {jobData.requirements?.map(requirement => (
+                        <>
+                          <div>{requirement.requirement}</div>
+                          <div>{requirement.weightage}</div>
+                        </>
+
+                      ))}
+                    </div> */}
+                    {/* <div>
                       <p className="text-base font-semibold text-primaryButtonColor gap-4">
                         Interview
                       </p>
@@ -123,8 +137,8 @@ const JobDetails = () => {
                       >
                         Rejected
                       </Badge>
-                    </div>
-                    <div>
+                    </div> */}
+                    {/* <div>
                       <p className="text-base font-semibold text-primaryButtonColor">
                         Candidates
                       </p>
@@ -164,7 +178,7 @@ const JobDetails = () => {
                       >
                         Register
                       </Badge>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>

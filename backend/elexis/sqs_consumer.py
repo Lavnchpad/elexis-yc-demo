@@ -112,13 +112,6 @@ def process_message(message_body):
             print(f"Error fetching transcript data from S3: {e}")
             return
 
-        # Generate summary from transcript data
-        # try:
-        #     summary_json = generate_summary(transcript_data)
-        # except Exception as e:
-        #     print(f"Error generating summary for transcript: {e}")
-        #     return
-
         # Update the Interview instance with the transcript and summary
         try:
             interview = Interview.objects.get(meeting_room=room_url)
@@ -130,8 +123,6 @@ def process_message(message_body):
             specialEvaluationMetrics = JobRequirementSerializer(requirementQuerySet, many = True).data
             summary_json = generate_summary(transcript_data, specialEvaluationMetrics)
 
-# meeting room se interview milega , interview se job , job se requirements, requiremenetEvaluation mil gaya , toh har ek requirement ke against ek record store kardo requiremenetEvaluation table pe
-
 
 
             # Update fields
@@ -141,7 +132,24 @@ def process_message(message_body):
             interview.skills = summary_json['skills']
             interview.experience = summary_json['experience']
             interview.save()
+            
+            evaluations_to_create=[]
+            candidate = interview.candidate
 
+            for item in summary_json['requirements_evaluation']:
+                print("item",item)
+                try:
+                   evaluations_to_create.append(
+                       JobRequirementEvaluation(
+                            candidate=candidate,
+                            job_requirement_id=item['id'],
+                            rating = item['evaluation'],
+                            remarks = item['remarks']
+                        )
+                   )
+                except JobRequirementEvaluation.DoesNotExist:
+                    continue
+            JobRequirementEvaluation.objects.bulk_create(evaluations_to_create)
             if interview:
                 print(f"Transcript and summary updated for meeting_room: {room_url}: summaryjson::: Evaaalu{(summary_json)}")
             else:
