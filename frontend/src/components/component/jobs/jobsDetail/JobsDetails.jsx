@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "../../../../utils/api";
 import { CircleArrowLeft } from "lucide-react";
 import { JobsEvaluationTable } from "@/page/components/JobsEvaluationTable";
+import ErrorBoundary from "@/utils/ErrorBoundary";
 
 const JobDetails = () => {
   const navigate = useNavigate();
@@ -104,85 +105,12 @@ const JobDetails = () => {
                         {jobData.min_ctc}-{jobData.max_ctc}
                       </p>
                     </div>
-                    {/* <p className="font-semibold">Important evaluation metrics</p> */}
-                    {/* <div className="grid grid-cols-2 justify-items-stretch text-center">
-                      <p className="font-semibold underline">
-                        Topic
-                      </p>
-                      <p className="font-semibold underline">Weight</p>
-                      {jobData.requirements?.map(requirement => (
-                        <>
-                          <div>{requirement.requirement}</div>
-                          <div>{requirement.weightage}</div>
-                        </>
-
-                      ))}
-                    </div> */}
-                    {/* <div>
-                      <p className="text-base font-semibold text-primaryButtonColor gap-4">
-                        Interview
-                      </p>
-                      <Badge
-                        onClick={() => handleNavigation(jobId, "schedule")}
-                      >
-                        Schedule
-                      </Badge>
-                      <Badge
-                         onClick={() => handleNavigation(jobId, "accepted")}
-                      >
-                        Accepted
-                      </Badge>
-                      <Badge
-                          onClick={() => handleNavigation(jobId, "rejected")}
-                      >
-                        Rejected
-                      </Badge>
-                    </div> */}
-                    {/* <div>
-                      <p className="text-base font-semibold text-primaryButtonColor">
-                        Candidates
-                      </p>
-                      <Badge
-                        onClick={() =>
-                          navigate("/", {
-                            state: { jobId: jobId, status: "onhold" }, // Pass data using state
-                          })
-                        }
-                      >
-                        Onhold
-                      </Badge>
-                      <Badge
-                        onClick={() =>
-                          navigate("/", {
-                            state: { jobId: jobId, status: "accepted" }, // Pass data using state
-                          })
-                        }
-                      >
-                        Accepted
-                      </Badge>
-                      <Badge
-                        onClick={() =>
-                          navigate("/", {
-                            state: { jobId: jobId, status: "rejected" }, // Pass data using state
-                          })
-                        }
-                      >
-                        Rejected
-                      </Badge>
-                      <Badge
-                        onClick={() =>
-                          navigate("/", {
-                            state: { jobId: jobId, status: "registered" }, // Pass data using state
-                          })
-                        }
-                      >
-                        Register
-                      </Badge>
-                    </div> */}
                   </div>
                 </div>
                 <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
-                  <JobsEvaluationTable id={jobId} />
+                  <ErrorBoundary>
+                    <JobsEvaluationTable id={jobId} />
+                  </ErrorBoundary>
                 </div>
               </div>
             </div>
