@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "../../../../utils/api";
 import { CircleArrowLeft } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { JobsEvaluationTable } from "@/page/components/JobsEvaluationTable";
 
 const JobDetails = () => {
   const navigate = useNavigate();
@@ -76,7 +76,7 @@ const JobDetails = () => {
           </TabsList>
           <TabsContent className="mt-0" value="job-details">
             <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
-              <div className="grid grid-cols-8 gap-x-8">
+              <div className="grid grid-cols-8 gap-x-8 space-y-4">
                 <div className="shadow-lg px-4 col-span-5 py-4 flex flex-col gap-y-4 rounded-md border">
                   <div className="flex flex-col gap-y-2">
                     <h1 className="font-semibold text-primaryButtonColor text-lg">
@@ -180,6 +180,9 @@ const JobDetails = () => {
                       </Badge>
                     </div> */}
                   </div>
+                </div>
+                <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
+                  <JobsEvaluationTable id={jobId} />
                 </div>
               </div>
             </div>

@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Recruiter, Candidate, Job, Interview, JobRequirement
+from .models import Recruiter, Candidate, Job, Interview, JobRequirement , JobRequirementEvaluation
 from elexis.utils.general import getHumanReadableTime
 from .serializers import (
     RecruiterSerializer,
@@ -20,12 +20,14 @@ from .serializers import (
     JobSerializer,
     InterviewSerializer,
     LoginSerializer,
+    JobRequirementSerializer,
     ChangePasswordSerializer,
 )
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, now
 from django.shortcuts import redirect
 import requests
+from django.db.models import F, Sum, ExpressionWrapper, IntegerField
 import os
 from dotenv import load_dotenv      
 # from django.core.files.storage import default_storage
@@ -354,3 +356,57 @@ class JobViewSet(viewsets.ModelViewSet):
         )
     def perform_update(self, serializer):
         serializer.save(modified_by = self.request.user)
+
+    @action(detail=True, methods=['get'])
+    def ranked_candidates(self, request, pk=None):
+        job = self.get_object()
+        evaluations = JobRequirementEvaluation.objects.filter(
+            job_requirement__job=job
+            ).annotate(
+                requirement_name=F('job_requirement__requirement'),
+                requirement_id=F('job_requirement__id'),
+                weightage=F('job_requirement__weightage'),
+                candidates_id=F('candidate__id'),
+                candidates_name=F('candidate__name'),
+                weighted_score=ExpressionWrapper(
+                    F('rating') * F('job_requirement__weightage'),
+                    output_field=IntegerField()
+                )
+            ).values(
+                'candidates_id',
+                'candidates_name',
+                'requirement_name',
+                'requirement_id',
+                'weightage',
+                'rating',
+                'weighted_score',
+                'remarks',
+            ).order_by(
+                "-weighted_score"
+            )
+        response = {}
+        for evaluation in evaluations:
+            candidateId = str(evaluation["candidates_id"])
+            requirementName = str(evaluation["requirement_id"])
+            requirementevaluation = {
+                "remarks":evaluation["remarks"],
+                "weightage": evaluation["weightage"],
+                "weightedScore":evaluation["weighted_score"],
+                "rating":evaluation["rating"],
+                "requirementName": evaluation["requirement_name"],
+                }
+            if candidateId in response:
+                response[candidateId]["evaluations"][requirementName]= requirementevaluation
+                response[candidateId]["totalScore"] = response[candidateId]["totalScore"] + requirementevaluation['weightedScore']
+            else:
+                response[candidateId]={"evaluations":{requirementName : requirementevaluation},
+                "totalScore": requirementevaluation['weightedScore'],
+                "candidateName": evaluation["candidates_name"],
+                }
+
+            
+        # print("Response of ranked candidates:::", response)
+        return Response({"candidateEvaluations":response,
+                         "criterias":  JobRequirementSerializer(job.requirements, many=True).data
+                         })
+
