@@ -93,7 +93,7 @@ const AppLayout = () => {
               </div>
               {isSidebarOpen && <span>Jobs</span>}
             </Link>
-            <Link
+            {/* <Link
               to="/analytics"
               className={`flex items-center space-x-2 p-2 rounded transition-colors ${
                 isSidebarOpen
@@ -115,7 +115,7 @@ const AppLayout = () => {
                <ChartNoAxesColumn />
               </div>
               {isSidebarOpen && <span>Analytics</span>}
-            </Link>
+            </Link> */}
           </nav>
         </div>
 

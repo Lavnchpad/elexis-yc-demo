@@ -12,16 +12,16 @@ dotenv.load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI"))
 
 
-def generate_summary_data(data):
+def generate_summary_data(data, requirements):
     prompt_template = '''
-        As a senior recruiter, create a detailed and comprehensive summary of the candidate from the transcription of the interview conversation. This summary will help hiring managers understand the candidate's suitability for the position based on various criteria. Include relevant examples and provide ratings for each section. The summary should encompass the following sections: overall impression, strengths (with examples and ratings), areas for improvement (with suggestions), and final recommendation.
+        As a senior recruiter, create a detailed and comprehensive summary of the candidate from the transcription of the interview conversation. This summary will help hiring managers understand the candidate's suitability for the position based on various criteria. Include relevant examples and provide ratings for each section. The summary should encompass the following sections: overall impression, strengths (with examples and ratings), areas for improvement (with suggestions), final recommendation and requirements evaluation.
         
         I want you to be give critical reviews.
         
         Transcription:
         {{data}}
 
-        Return the summary as a JSON object with these keys: 'overall_impression', 'strengths', 'areas_for_improvement','skills' , 'experience' and 'final_recommendation'.
+        Return the summary as a JSON object with these keys: 'overall_impression', 'strengths', 'areas_for_improvement','skills' , 'experience' , 'final_recommendation' and 'requirements_evaluation'.
 
         Each section should contain the following information:
 
@@ -38,59 +38,61 @@ def generate_summary_data(data):
         suggestions: Suggestions questions that can be asked on how the candidate can improve in this area or recommendations for further assessments during interviews in a paragraph
 
         skills: It should be an list of Dictionary and each item should be a dictionary with the following fields:
-        and example object of skills should look like this: [
-  {
-    title: "Languages",
-    skills: [
-      { name: "C++", rating: 5 },
-    ],
-  },
-  {
-    title: "Job Related Skills",
-    skills: [
-      { name: "Frontend Dev.", rating: 5 },
-      { name: "Backend Dev.", rating: 5 },
-    ],
-  },
-  {
-    title: "Soft Skills",
-    skills: [
-      { name: "Public speaking", rating: 5 },
-    ],
-  },
-]
-
-        
+        and example object of skills should look like this: 
+            [
+              {
+                title: "Languages",
+                skills: [
+                  { name: "C++", rating: 5 },
+                ],
+              },
+              {
+                title: "Job Related Skills",
+                skills: [
+                  { name: "Frontend Dev.", rating: 5 },
+                  { name: "Backend Dev.", rating: 5 },
+                ],
+              },
+            ]
         experience: It should be a list of dictionary based on the professional work experience of the candidate and each item should include name , years and months
 
-        final_recommendation: (List of Strings) List of points summarizing the overall recommendation regarding the candidate's potential fit for the position, including any conditions or next steps.
-       
-        Ensure the summary is clear, concise, and provides a holistic view of the candidate's capabilities, potential, and areas needing improvement.
+        final_recommendation: (List of Strings) List of points summarizing the overall recommendation regarding the candidate's potential fit for the position, including any conditions or next steps. Ensure the summary is clear, concise, and provides a holistic view of the candidate's capabilities, potential, and areas needing improvement.
 
+        requirements_evaluation: Given the list of job requirements: {{requirements}}, evaluate a candidate against each listed requirement.
+
+                For each requirement, return a dictionary that includes:
+
+                All the existing fields from the input
+
+                An additional field called evaluation (an integer between 1 and 100)
+
+                A remarks field providing a short qualitative assessment for that requirement
+
+                The final output should be a list of dictionaries, one per requirement, with the added evaluation and remarks fields.
         '''
     while True:
         try:
-            prompt = prompt_template.replace("{{data}}", data)
+            prompt = prompt_template.replace("{{data}}", data).replace("{{requirements}}", str(requirements))
             model = genai.GenerativeModel('gemini-2.0-flash',
                                           generation_config={"response_mime_type": "application/json"})
             chat = model.start_chat(history=[])
             response = chat.send_message(prompt)
 
             response_json = json.loads(response.text)
-
             required_keys = [
                 'overall_impression',
                 'strengths',
                 'areas_for_improvement',
                 'final_recommendation',
                 'skills',
-                'experience'
+                'experience',
+                'requirements_evaluation'
             ]
 
             for key in required_keys:
                 assert key in response_json, f"Missing key in the response: {key}"
                 assert isinstance(response_json[key],
-                                  list), f"Key '{key}' should be a list but got {type(response_json[key])}"
+                                    list), f"Key '{key}' should be a list but got {type(response_json[key])}"
 
             for item in response_json['strengths']:
                 assert 'strength' in item, "Missing 'strength' in strengths"
@@ -124,12 +126,10 @@ def generate_summary_data(data):
 
 
 
-def generate_summary(transcript_data):
+def generate_summary(transcript_data, requirements): # requirements stands for JobRequirement Table
     logger.info("Summary Function started")
-
-    
     try:
-        summary_data = generate_summary_data(transcript_data)
+        summary_data = generate_summary_data(transcript_data, requirements)
         logger.info("File processing completed successfully")
 
         return summary_data
