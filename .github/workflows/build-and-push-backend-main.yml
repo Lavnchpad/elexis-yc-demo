@@ -7,7 +7,7 @@ on:
       - main
     paths:
       - backend/**
-      - .github/workflows/build-and-push-backend.yml
+      - .github/workflows/build-and-push-backend-main.yml
 jobs:
   build-and-push-image:
     if: github.event.pull_request.merged == true
