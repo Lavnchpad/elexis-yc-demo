@@ -2,9 +2,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "../../../../utils/api";
-import logo from "../../../../assets/images/logo.png";
 import { CircleArrowLeft } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { JobsEvaluationTable } from "@/page/components/JobsEvaluationTable";
+import ErrorBoundary from "@/utils/ErrorBoundary";
 
 const JobDetails = () => {
   const navigate = useNavigate();
@@ -15,7 +15,6 @@ const JobDetails = () => {
   const navigateBack = () => {
     navigate(-1);
   };
-  console.log(jobData);
   const handleNavigation = (jobId, status) => {
     localStorage.setItem("jobState", JSON.stringify({ jobId, status }));
     navigate("/", { state: { jobId, status } });
@@ -78,7 +77,7 @@ const JobDetails = () => {
           </TabsList>
           <TabsContent className="mt-0" value="job-details">
             <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
-              <div className="grid grid-cols-8 gap-x-8">
+              <div className="grid grid-cols-8 gap-x-8 space-y-4">
                 <div className="shadow-lg px-4 col-span-5 py-4 flex flex-col gap-y-4 rounded-md border">
                   <div className="flex flex-col gap-y-2">
                     <h1 className="font-semibold text-primaryButtonColor text-lg">
@@ -97,8 +96,8 @@ const JobDetails = () => {
                   <h1 className="font-semibold text-primaryButtonColor text-lg">
                     Key Information
                   </h1>
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-2 justify-items-stretch">
-                    <div>
+                  <div className="grid grid-cols-1 gap-y-4 gap-x-2 justify-items-stretch">
+                    <div className="flex gap-4 items-center">
                       <p className="text-base font-semibold text-primaryButtonColor">
                         CTC Range
                       </p>
@@ -106,68 +105,12 @@ const JobDetails = () => {
                         {jobData.min_ctc}-{jobData.max_ctc}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-base font-semibold text-primaryButtonColor gap-4">
-                        Interview
-                      </p>
-                      <Badge
-                        onClick={() => handleNavigation(jobId, "schedule")}
-                      >
-                        Schedule
-                      </Badge>
-                      <Badge
-                         onClick={() => handleNavigation(jobId, "accepted")}
-                      >
-                        Accepted
-                      </Badge>
-                      <Badge
-                          onClick={() => handleNavigation(jobId, "rejected")}
-                      >
-                        Rejected
-                      </Badge>
-                    </div>
-                    <div>
-                      <p className="text-base font-semibold text-primaryButtonColor">
-                        Candidates
-                      </p>
-                      <Badge
-                        onClick={() =>
-                          navigate("/", {
-                            state: { jobId: jobId, status: "onhold" }, // Pass data using state
-                          })
-                        }
-                      >
-                        Onhold
-                      </Badge>
-                      <Badge
-                        onClick={() =>
-                          navigate("/", {
-                            state: { jobId: jobId, status: "accepted" }, // Pass data using state
-                          })
-                        }
-                      >
-                        Accepted
-                      </Badge>
-                      <Badge
-                        onClick={() =>
-                          navigate("/", {
-                            state: { jobId: jobId, status: "rejected" }, // Pass data using state
-                          })
-                        }
-                      >
-                        Rejected
-                      </Badge>
-                      <Badge
-                        onClick={() =>
-                          navigate("/", {
-                            state: { jobId: jobId, status: "registered" }, // Pass data using state
-                          })
-                        }
-                      >
-                        Register
-                      </Badge>
-                    </div>
                   </div>
+                </div>
+                <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
+                  <ErrorBoundary>
+                    <JobsEvaluationTable id={jobId} />
+                  </ErrorBoundary>
                 </div>
               </div>
             </div>

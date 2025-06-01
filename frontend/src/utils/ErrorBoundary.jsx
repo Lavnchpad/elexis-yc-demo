@@ -20,7 +20,7 @@ class ErrorBoundary extends React.Component {
       hasError: false,
       error: null,
       errorInfo: null,
-      resetKey: prevState.resetKey + 1, // Change key to force remount
+      // resetKey: prevState.resetKey + 1, // Change key to force remount
     }));
   };
 

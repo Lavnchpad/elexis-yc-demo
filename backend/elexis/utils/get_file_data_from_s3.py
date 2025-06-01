@@ -11,7 +11,6 @@ s3 = boto3.client(
     region_name=os.getenv("AWS_REGION_NAME")
 )
 def get_file_data_from_s3(bucket,key):
-    # s3 = boto3.client('s3')  # uses env vars automatically
     response = s3.get_object(Bucket=bucket, Key=key)
     return response['Body'].read().decode('utf-8')
 

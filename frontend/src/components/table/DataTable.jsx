@@ -44,10 +44,10 @@ const DataTable = ({
       <Table className="data-table">
         {/* Table Header */}
         <TableHeader className="bg-black rounded-lg">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
+          {table.getHeaderGroups().map((headerGroup, index) => (
+            <TableRow key={headerGroup.id + index}>
+              {headerGroup.headers.map((header, i) => (
+                <TableHead key={header.id + i}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -63,14 +63,14 @@ const DataTable = ({
         {/* Table Body */}
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map((row, index) => (
               <TableRow
-                key={row.id}
+                key={row.id + index}
                 data-state={row.getIsSelected() ? 'selected' : undefined}
                 onClick={() => hasClick && onClickRoute && onClickRoute(row.original)}
               >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                {row.getVisibleCells().map((cell, index) => (
+                  <TableCell key={cell.id + index}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}

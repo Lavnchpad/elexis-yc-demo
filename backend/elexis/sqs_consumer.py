@@ -1,6 +1,7 @@
-from elexis.models import Interview, Snapshots
+from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementEvaluation
 from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3, put_dict_as_json_to_s3
 from elexis.utils.summary_generation import generate_summary
+from elexis.serializers import JobRequirementSerializer
 from elexis.utils.convert_transcript_format import convert
 import boto3
 import json
@@ -86,7 +87,7 @@ def process_message(message_body):
                 return
                 
                 
-        # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://google.com"}
+        # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://googly.com"}
         # {"type":"proctor","video":"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4","room_url":"https://google.com"}
         elif not room_url or not transcript_url:
             print(f"Invalid data in message: meeting_room={room_url}, transcript_url={transcript_url}")
@@ -111,24 +112,46 @@ def process_message(message_body):
             print(f"Error fetching transcript data from S3: {e}")
             return
 
-        # Generate summary from transcript data
-        try:
-            summary_json = generate_summary(transcript_data)
-        except Exception as e:
-            print(f"Error generating summary for transcript: {e}")
-            return
-
         # Update the Interview instance with the transcript and summary
         try:
-            rows_updated = Interview.objects.filter(meeting_room=room_url).update(
-                transcript=(full_s3_url+".json"),
-                summary=(summary_json),
-                status='ended',
-                skills = (summary_json['skills']),
-                experience =(summary_json['experience'])
-            )
-            if rows_updated:
-                print(f"Transcript and summary updated for meeting_room: {room_url}: summaryjson::: {(summary_json)}")
+            interview = Interview.objects.get(meeting_room=room_url)
+
+            # Access job_id before update , later 
+            jobId = interview.job.id
+            # I need all the requirements for this job id
+            requirementQuerySet = JobRequirement.objects.filter(job_id = jobId)
+            specialEvaluationMetrics = JobRequirementSerializer(requirementQuerySet, many = True).data
+            summary_json = generate_summary(transcript_data, specialEvaluationMetrics)
+
+
+
+            # Update fields
+            interview.transcript = full_s3_url + ".json"
+            interview.summary = summary_json
+            interview.status = 'ended'
+            interview.skills = summary_json['skills']
+            interview.experience = summary_json['experience']
+            interview.save()
+            
+            evaluations_to_create=[]
+            candidate = interview.candidate
+
+            for item in summary_json['requirements_evaluation']:
+                print("item",item)
+                try:
+                   evaluations_to_create.append(
+                       JobRequirementEvaluation(
+                            candidate=candidate,
+                            job_requirement_id=item['id'],
+                            rating = item['evaluation'],
+                            remarks = item['remarks']
+                        )
+                   )
+                except JobRequirementEvaluation.DoesNotExist:
+                    continue
+            JobRequirementEvaluation.objects.bulk_create(evaluations_to_create)
+            if interview:
+                print(f"Transcript and summary updated for meeting_room: {room_url}: summaryjson::: Evaaalu{(summary_json)}")
             else:
                 print(f"Interview ID {room_url} not found. No update performed.")
         except Exception as e:
