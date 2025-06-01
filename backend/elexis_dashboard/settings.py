@@ -78,7 +78,7 @@ CORS_ALLOW_METHODS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = ["http://dashboard-backend", "http://dashboard-backend", 
-    "https://api.soltech.elexis.ai", "http://api.soltech.elexis.ai"]
+    "https://api.soltech.elexis.ai", "http://api.soltech.elexis.ai", "https://api.amaxa.elexis.ai", "http://api.amaxa.elexis.ai"]
 
 ROOT_URLCONF = 'elexis_dashboard.urls'
 
