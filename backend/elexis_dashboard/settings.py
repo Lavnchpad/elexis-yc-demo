@@ -63,7 +63,8 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", 
     'http://dashboard-backend',
-    'https://dashboard.soltech.elexis.ai' # Allow requests from your frontend domain
+    'https://dashboard.soltech.elexis.ai',
+    'https://dashboard.amaxa.elexis.ai' # Allow requests from your frontend domain
 ]
 CORS_ALLOW_CREDENTIALS = True
 
