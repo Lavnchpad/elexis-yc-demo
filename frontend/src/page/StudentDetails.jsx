@@ -14,7 +14,7 @@ import {
   SatelliteDishIcon,
   View,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ScheduleDrive from "@/components/component/drive/ScheduleDrive";
@@ -44,19 +44,23 @@ import Skills from "@/components/component/candidate/skills-experience/Skills";
 import AddCandidate from "@/components/component/candidate/AddCandidate";
 import ErrorBoundary from "@/utils/ErrorBoundary";
 import { toast } from "sonner";
+import { copyLink } from "@/lib/utils";
 const StudentDetails = ({ }) => {
-  const [loading, setLoading] = useState(true);
+  const { id: candidateidInUrl } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filteredCandidates, setFilteredCandidates] = useState([]);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const { candidates, loading: candidatesLoading } =
     useContext(CandidatesContext);
-  const { jobs, fetchJobs } = useContext(JobsContext);
-  const { interviewData, fetchInterviewDetails } = useContext(InterviewContext);
+  const { jobs, fetchJobs, jobsLoading } = useContext(JobsContext);
+  const { interviewData, fetchInterviewDetails, interviewDataLoading } = useContext(InterviewContext);
   const [selectedInterview, setSelectedInterview] = useState(null);
-  const [filteredCandidates, setFilteredCandidates] = useState([]);
   const [candidatesWithStatus, setCandidatesWithStatus] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedJobId, setSelectedJobId] = useState(null);
+
+  const selectedInterviewIdFromSearchParam = searchParams.get("interview_id");
   // const location = useLocation();
   const navigate = useNavigate();
   const statusPriority = {
@@ -73,25 +77,29 @@ const StudentDetails = ({ }) => {
     }
   };
 
-  function copyLink(text) {
-    if (!text) {
-      toast.error('Interview Link is not available at the moment!')
-      return;
-    }
-    navigator.clipboard.writeText(text);
-    toast.success(`Link copied! ${text}`);
-  }
+
 
   useEffect(() => {
-    if (selectedCandidate) {
-      fetchJobs();
-      fetchInterviewDetails(selectedCandidate.id);
-      setLoading(true);
-      setTimeout(() => setLoading(false), 1000);
+    // Check if candidateidInUrl is present
+    if (candidateidInUrl && filteredCandidates.length > 0) {
+      // Find the candidate with the matching ID
+      const candidate = filteredCandidates.find(candidate => candidate.id === (candidateidInUrl));
+      if (candidate) {
+        setSelectedCandidate(candidate);
+        fetchJobs(); 
+        fetchInterviewDetails(candidate.id)
+      } else {
+        // If no candidate found, reset selectedCandidate
+        setSelectedCandidate(null);
+      }
+    } else {
+      // If no candidateidInUrl, reset selectedCandidate
+      setSelectedCandidate(null);
     }
-  }, [selectedCandidate]);
+  }, [candidateidInUrl, filteredCandidates]);
 
   useEffect(() => {
+
     const savedState = JSON.parse(localStorage.getItem("jobState"));
 
     if (savedState) {
@@ -106,15 +114,23 @@ const StudentDetails = ({ }) => {
   }, []);
 
   useEffect(() => {
-    if (selectedJobId && interviewData.length > 0) {
+    if (selectedInterviewIdFromSearchParam && interviewData.length > 0) {
+      const interview = interviewData.find(i => i.id === selectedInterviewIdFromSearchParam);
+      if (interview) {
+        setSelectedInterview(interview);
+        setSelectedJobId(interview.job.id); // Set jobId from the interview
+      } else {
+        setSelectedInterview(null);
+      }
+    }
+    else if (selectedJobId && interviewData.length > 0) {
       const interview = interviewData.find(i => i.job.id === selectedJobId);
       setSelectedInterview(interview);
-    }
-    else {
+    } else {
       // Reset selected interview when no jobId or on refresh
       setSelectedInterview(null);
     }
-  }, [selectedJobId, interviewData]);
+  }, [selectedJobId, interviewData, selectedInterviewIdFromSearchParam]);
 
   useEffect(() => {
     const fetchInterviews = async () => {
@@ -188,7 +204,8 @@ const StudentDetails = ({ }) => {
   };
 
   const handleCandidateClick = (candidate) => {
-    setSelectedCandidate(candidate);
+    // setSelectedCandidate(candidate);
+    navigate(`/candidate/${candidate.id}`)
   };
 
   return (
@@ -263,7 +280,7 @@ const StudentDetails = ({ }) => {
         <div className="w-3/4 p-6">
           {!selectedCandidate ? (
             <div>Please select a candidate to view details.</div>
-          ) : loading ? (
+          ) : (jobsLoading || interviewDataLoading) ? (
             <StudentDetailsSkeleton />
           ) : (
             <div>

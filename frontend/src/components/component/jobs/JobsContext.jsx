@@ -1,23 +1,21 @@
+import axios from "axioss";
 import React, { createContext, useEffect, useState } from "react";
 
 export const JobsContext = createContext();
 
 export const JobsProvider = ({ children }) => {
   const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true); // loading state for jobs
 
   const fetchJobs = async () => {
     try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/jobs/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        setJobs(await response.json());
-      } else {
-        console.error("Failed to fetch jobs");
-      }
+      setLoading(true)
+      const response = await axios.get(`/jobs/`)
+      setJobs(response);
     } catch (error) {
       console.error("Error fetching jobs:", error);
+    } finally {
+      setLoading(false)
     }
   };
   useEffect(() => {
@@ -25,7 +23,7 @@ export const JobsProvider = ({ children }) => {
   }, []);
 
   return (
-    <JobsContext.Provider value={{ jobs,setJobs, fetchJobs }}>
+    <JobsContext.Provider value={{ jobs, setJobs, fetchJobs, jobsLoading: loading }}>
       {children}
     </JobsContext.Provider>
   );

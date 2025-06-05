@@ -367,6 +367,8 @@ class JobViewSet(viewsets.ModelViewSet):
             ).annotate(
                 requirement_name=F('job_requirement__requirement'),
                 requirement_id=F('job_requirement__id'),
+                interviewId=F('interview_id'),
+                interviewDate=F('interview__date'),
                 weightage=F('job_requirement__weightage'),
                 candidates_id=F('candidate__id'),
                 candidates_name=F('candidate__name'),
@@ -376,7 +378,9 @@ class JobViewSet(viewsets.ModelViewSet):
                 )
             ).values(
                 'candidates_id',
+                'interviewId',
                 'candidates_name',
+                'interviewDate',
                 'requirement_name',
                 'requirement_id',
                 'weightage',
@@ -390,6 +394,7 @@ class JobViewSet(viewsets.ModelViewSet):
         for evaluation in evaluations:
             candidateId = str(evaluation["candidates_id"])
             requirementName = str(evaluation["requirement_id"])
+            interviewId=str(evaluation["interviewId"]),
             requirementevaluation = {
                 "remarks":evaluation["remarks"],
                 "weightage": evaluation["weightage"],
@@ -404,6 +409,8 @@ class JobViewSet(viewsets.ModelViewSet):
                 response[candidateId]={"evaluations":{requirementName : requirementevaluation},
                 "totalScore": requirementevaluation['weightedScore'],
                 "candidateName": evaluation["candidates_name"],
+                "candidateId": candidateId,
+                "interviewId":interviewId
                 }
 
             
