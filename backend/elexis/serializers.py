@@ -109,6 +109,9 @@ class InterviewSerializer(serializers.ModelSerializer):
         read_only_fields = ('scheduled_by', 'link','recruiter','organization')
     def get_snapshots(self, obj):
         snapshots = Snapshots.objects.filter(interview=obj)
+        for snapshot in snapshots:
+            snapshot.video = [generate_signed_url(AWS_TRANSCRIPT_BUCKET_NAME, vid_url.replace("://", "").split("/", 1)[-1])
+                              for vid_url in snapshot.video]
         return SnapshotSerializer(snapshots, many=True).data
     
     def get_transcript(self, obj):
