@@ -11,9 +11,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='jobrequirementevaluation',
-            name='interview',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, related_name='evaluation', to='elexis.interview'),
-        ),
+        # migrations.AlterField(
+        #     model_name='jobrequirementevaluation',
+        #     name='interview',
+        #     field=models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, related_name='evaluation', to='elexis.interview'),
+        # ),
     ]
