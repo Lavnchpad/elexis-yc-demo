@@ -32,7 +32,7 @@ import os
 from dotenv import load_dotenv      
 # from django.core.files.storage import default_storage
 # print("default storage is::: ",default_storage.__class__)
-
+from .mail_templates.interview_scheduled import interview_scheduled_template
 load_dotenv()
 CLIENT_URL = os.getenv("CLIENT_URL")
 AWS_STORAGE_BUCKET_NAME= os.getenv("AWS_STORAGE_BUCKET_NAME")
@@ -233,13 +233,15 @@ class InterviewViewSet(viewsets.ModelViewSet):
             self._update_status_fields(interview)
             interview.save()
 
-            subject = "Interview Scheduled"
-            message = (
-                f"Dear {interview.candidate.name},\n\n"
-                f"You have an interview scheduled for '{interview.job.job_name}' on {interview.date} at {interview.time}.\n"
-                f"Click here to join: {interview.link}\n\n"
-                f"Best regards,\n{interview.scheduled_by.company_name}"
-            )
+            # subject = "Interview Scheduled"
+            # message = (
+            #     f"Dear {interview.candidate.name},\n\n"
+            #     f"You have an interview scheduled for '{interview.job.job_name}' on {interview.date} at {interview.time}.\n"
+            #     f"Click here to join: {interview.link}\n\n"
+            #     f"Best regards,\n{interview.scheduled_by.company_name}"
+            # )
+            subject, message = interview_scheduled_template(interview.scheduled_by.organization.org_name, interview.candidate.name, interview.job.job_name, interview.link, f"{interview.date} at {interview.time}", interview.scheduled_by.email)
+            print(subject, message)
             try:
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email])
             except Exception as e:
@@ -305,7 +307,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             "candidate_voice_clone": "India Accent (Female)",
             "is_dashboard_request": True,
             "record_interview": True,
-            "language" : 'english',
+            "language" : interview.language,
             "job_description_text": interview.job.job_description,
 
             }
@@ -314,9 +316,11 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 "resume": ("resume.pdf", candidate.resume.file, "application/pdf"),
                 # "job_description": ("pythondev.pdf",open("static/desc.pdf", "rb"), "application/pdf"),
             }
-            
+            print(data)
             try:
-                response = requests.post(f"{settings.BOT_HOSTNAME}/start", data=data, files=files)
+                import time
+                time.sleep(150)               
+                # response = requests.post(f"{settings.BOT_HOSTNAME}/start", data=data, files=files)
 
                 json_response = response.json()
                 print("JSON response of meeting url:::", json_response)
@@ -367,6 +371,8 @@ class JobViewSet(viewsets.ModelViewSet):
             ).annotate(
                 requirement_name=F('job_requirement__requirement'),
                 requirement_id=F('job_requirement__id'),
+                interviewId=F('interview_id'),
+                interviewDate=F('interview__date'),
                 weightage=F('job_requirement__weightage'),
                 candidates_id=F('candidate__id'),
                 candidates_name=F('candidate__name'),
@@ -376,7 +382,9 @@ class JobViewSet(viewsets.ModelViewSet):
                 )
             ).values(
                 'candidates_id',
+                'interviewId',
                 'candidates_name',
+                'interviewDate',
                 'requirement_name',
                 'requirement_id',
                 'weightage',
@@ -390,6 +398,7 @@ class JobViewSet(viewsets.ModelViewSet):
         for evaluation in evaluations:
             candidateId = str(evaluation["candidates_id"])
             requirementName = str(evaluation["requirement_id"])
+            interviewId=str(evaluation["interviewId"]),
             requirementevaluation = {
                 "remarks":evaluation["remarks"],
                 "weightage": evaluation["weightage"],
@@ -404,6 +413,8 @@ class JobViewSet(viewsets.ModelViewSet):
                 response[candidateId]={"evaluations":{requirementName : requirementevaluation},
                 "totalScore": requirementevaluation['weightedScore'],
                 "candidateName": evaluation["candidates_name"],
+                "candidateId": candidateId,
+                "interviewId":interviewId
                 }
 
             

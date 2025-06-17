@@ -1,3 +1,4 @@
+import { Loader } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -42,7 +43,15 @@ const StartInterview = () => {
       startInterview();
     }
   },[interviewId]);
-
+  if(message === "") {
+    return (
+      <div className="w-full h-screen">
+        <div className="flex h-full justify-center items-center">
+          <Loader className="animate-spin mr-2" size={32} /> Preparing Interview<br/>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="p-4 space-y-4">
       <p>{message}</p>
