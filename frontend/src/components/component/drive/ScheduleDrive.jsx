@@ -73,7 +73,7 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
       time: data.time,
       ...(scheduleInterview ? { job_id: data.jobId } : null),
       ...(scheduleInterview ? { candidate_id: selectedCandidate.id } : null),
-      language: data.preferredLanguage || "English",
+      language: data.preferredLanguage || "english",
     };
     console.log({ payload });
 
@@ -166,11 +166,15 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                             <SelectValue placeholder="Select a time" />
                           </SelectTrigger>
                           <SelectContent>
-                            {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
+                            {Array.from({ length: 24 }, (_, i) => i).flatMap((hour) => [(
                               <SelectItem key={hour} value={`${hour.toString().padStart(2, "0")}:00`}>
                                 {`${hour.toString().padStart(2, "0")}:00`}
                               </SelectItem>
-                            ))}
+                            ), (
+                              <SelectItem key={`${hour}:30`} value={`${hour.toString().padStart(2, "0")}:30`}>
+                                {`${hour.toString().padStart(2, "0")}:30`}
+                              </SelectItem>
+                            )])}
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -195,8 +199,6 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                           const selectedInterview = interviewData.find((interview) => interview.job.id === value);
                           if (selectedInterview) {
                             setInterviewId(selectedInterview.id);  // Store the interviewId in the state
-                            form.setValue("date", selectedInterview.date);
-                            form.setValue("time", selectedInterview.time);
                           }
                         }} value={field.value}>
                           <SelectTrigger>
@@ -240,7 +242,7 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                             if (selectedInterview) {
                               setInterviewId(selectedInterview.id);  // Store the interviewId in the state
                               form.setValue("date", selectedInterview.date);
-                              form.setValue("time", selectedInterview.time);
+                              form.setValue("time", selectedInterview.time.substring(0, 5));
                             }
                           }} value={field.value}>
                             <SelectTrigger>
