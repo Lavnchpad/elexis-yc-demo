@@ -209,8 +209,8 @@ class InterviewViewSet(viewsets.ModelViewSet):
           queryset = Interview.objects.all()
 
         # Filter by the user (if authenticated and is a recruiter)
-          if self.request.user.is_authenticated and hasattr(self.request.user, "recruiter_profile"):
-              queryset = queryset.filter(scheduled_by=self.request.user.recruiter_profile)
+          if self.request.user.is_authenticated:
+              queryset = queryset.filter(scheduled_by__organization_id=self.request.user.organization_id)
 
         # Filter by status query parameter
           status = self.request.query_params.get("status")
@@ -241,7 +241,6 @@ class InterviewViewSet(viewsets.ModelViewSet):
             #     f"Best regards,\n{interview.scheduled_by.company_name}"
             # )
             subject, message = interview_scheduled_template(interview.scheduled_by.organization.org_name, interview.candidate.name, interview.job.job_name, interview.link, f"{interview.date} at {interview.time}", interview.scheduled_by.email)
-            print(subject, message)
             try:
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email])
             except Exception as e:
@@ -317,10 +316,8 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 # "job_description": ("pythondev.pdf",open("static/desc.pdf", "rb"), "application/pdf"),
             }
             print(data)
-            try:
-                import time
-                time.sleep(150)               
-                # response = requests.post(f"{settings.BOT_HOSTNAME}/start", data=data, files=files)
+            try:          
+                response = requests.post(f"{settings.BOT_HOSTNAME}/start", data=data, files=files)
 
                 json_response = response.json()
                 print("JSON response of meeting url:::", json_response)
