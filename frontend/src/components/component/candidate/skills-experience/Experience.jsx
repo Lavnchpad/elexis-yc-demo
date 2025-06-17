@@ -44,7 +44,7 @@ const Experience = ({experience}) => {
           >
             <CardContent className="pt-6">
               <div>
-                <div className="text-sm text-muted-foreground">{exp.title}</div>
+                <div className="text-sm text-muted-foreground">{exp.name?exp.name:exp.title}</div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-purple-500">{exp.years}</span>
                   <span className="text-xl">Years</span>
