@@ -27,6 +27,7 @@ import { JobsContext } from "../jobs/JobsContext";
 import { toast } from "sonner";
 import { InterviewContext } from "../interview/InterviewContext";
 import { InterviewStatus } from "@/utils/StatusButton";
+import { languages } from "@/lib/utils";
 
 const scheduleSchema = z
   .object({
@@ -294,8 +295,11 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="English">English</SelectItem>
-                          <SelectItem value="Hindi">Hindi</SelectItem>
+                          {/* <SelectItem value="English">English</SelectItem>
+                          <SelectItem value="Hindi">Hindi</SelectItem> */}
+                          {
+                            Object.entries(languages).map((entry) => <SelectItem key={entry[0]} value={entry[0]}>{entry[1]}</SelectItem>)
+                          }
                         </SelectContent>
                       </Select>
                       <FormMessage />

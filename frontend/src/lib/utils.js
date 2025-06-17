@@ -13,3 +13,8 @@ export function copyLink(text) {
   navigator.clipboard.writeText(text);
   toast.success(`Link copied! ${text}`);
 }
+
+export const languages = {
+  english: "English",
+  hindi: "Hindi"
+}
