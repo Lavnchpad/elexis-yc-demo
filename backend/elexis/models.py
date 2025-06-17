@@ -127,6 +127,10 @@ class Interview(BaseModel):
         ('hold', 'Hold'),
         ('registered', 'Registered'),
     ]
+    LANGUAGES = [
+        ("english", "English"),
+        ("hindi", "Hindi")
+    ]
 
     candidate = models.ForeignKey(
         Candidate, on_delete=models.CASCADE, related_name="interviews"
@@ -152,7 +156,7 @@ class Interview(BaseModel):
     skills = models.JSONField(default=dict, blank=True, null=True)
     meeting_room = models.URLField(blank=True, null=True)
     language = models.CharField(
-        max_length=50, default="English", help_text="Language used in the interview"
+        max_length=50, default="english", choices=LANGUAGES, help_text="Language used in the interview"
     )
 
     def __str__(self):

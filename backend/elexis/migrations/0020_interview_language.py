@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='interview',
             name='language',
-            field=models.CharField(default='English', help_text='Language used in the interview', max_length=50),
+            field=models.CharField(default='english', help_text='Language used in the interview', max_length=50),
         ),
     ]
