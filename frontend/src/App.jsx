@@ -44,6 +44,7 @@ const App = () => {
           >
             {/* Nested Routes */}
             <Route index element={<ProtectedRoute><StudentDetails /></ProtectedRoute>} />
+            <Route path="/candidate/:id" element={<ProtectedRoute><StudentDetails /></ProtectedRoute>} />
             <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
             <Route path="/my-team" element={<ProtectedRoute><MyTeam /></ProtectedRoute>} />
             <Route path="/team-details/:memberId" element={<ProtectedRoute><MyTeamDetails /></ProtectedRoute>} />

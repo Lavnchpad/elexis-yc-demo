@@ -24,7 +24,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { JobsContext } from "../jobs/JobsContext";
-import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
 import { InterviewContext } from "../interview/InterviewContext";
 import { InterviewStatus } from "@/utils/StatusButton";
@@ -34,6 +33,7 @@ const scheduleSchema = z
     date: z.string().min(1, "Date is required"),
     time: z.string().min(1, "Time is required"),
     jobId: z.string().optional(),
+    preferredLanguage: z.string().optional(),
     interview: z.string().optional(),
   })
   .refine(
@@ -50,14 +50,15 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
   const { interviewData, fetchInterviewDetails, setSelectedJob } = useContext(InterviewContext);
   const [interviewId, setInterviewId] = useState()
   const [open, setOpen] = useState(false);
-
+  console.log("interviewData", interviewData)
   const form = useForm({
     resolver: zodResolver(scheduleSchema),
     defaultValues: {
       date: "",
       time: "",
       interview: "",
-      jobId: ""
+      jobId: "",
+      preferredLanguage: "",
     },
   });
   form.watch('interview')
@@ -71,6 +72,7 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
       time: data.time,
       ...(scheduleInterview ? { job_id: data.jobId } : null),
       ...(scheduleInterview ? { candidate_id: selectedCandidate.id } : null),
+      language: data.preferredLanguage || "English",
     };
     console.log({ payload });
 
@@ -207,8 +209,9 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                                 </SelectItem>
                               ))
 
-                            ) : (
-                              jobs.map((job) => (
+                            ) :
+                              (
+                                jobs.data?.map((job) => (
                                 <SelectItem key={job.id} value={job.id}>
                                   {job.job_name}
                                 </SelectItem>
@@ -251,7 +254,7 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                                 ))
 
                               ) : (
-                                jobs.map((job) => (
+                                  jobs?.data?.map((job) => (
                                   <SelectItem key={job.id} value={job.id}>
                                     {job.job_name}
                                   </SelectItem>
@@ -278,6 +281,28 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="preferredLanguage" // Still using the descriptive name
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-medium text-gray-700">Preferred Language</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a language" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="English">English</SelectItem>
+                          <SelectItem value="Hindi">Hindi</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
               </div>
 
               {/* Save Schedule Button */}

@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      axioss: path.resolve(__dirname, 'src/utils/api.js'), // Adjust the path to your axios instance
     },
   },
   // server: {

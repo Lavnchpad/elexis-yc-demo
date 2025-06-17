@@ -151,9 +151,12 @@ class Interview(BaseModel):
     experience = models.JSONField(default=dict, blank=True, null=True)
     skills = models.JSONField(default=dict, blank=True, null=True)
     meeting_room = models.URLField(blank=True, null=True)
+    language = models.CharField(
+        max_length=50, default="English", help_text="Language used in the interview"
+    )
 
     def __str__(self):
-        return f"Interview for {self.candidate.name} - {self.job.job_name} - {self.time} - id: {self.id}"
+        return f"Interview for {self.candidate.name} - {self.job.job_name} - {self.time}"
 
 class Snapshots(BaseModel):
     interview = models.ForeignKey(
@@ -182,10 +185,9 @@ class JobRequirementEvaluation(BaseModel):
     candidate = models.ForeignKey(
         Candidate, on_delete=models.CASCADE , related_name='jobrequirementevaluation'
     )
-    # TODO : Discuss with AP whether we need to add the below or not
-    # interview = models.ForeignKey(
-    #     Interview, on_delete=models.DO_NOTHING, related_name='evaluation'
-    # )
+    interview = models.ForeignKey(
+        Interview, on_delete=models.DO_NOTHING, related_name='evaluation'
+    )
     job_requirement = models.ForeignKey(JobRequirement , on_delete=models.CASCADE , related_name="jobrequirement")
     rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(100)],

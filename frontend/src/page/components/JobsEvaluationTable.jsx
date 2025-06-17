@@ -1,11 +1,13 @@
 import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import useJobEvaluation from "../hooks/useJobEvaluation"
 import Tooltip from "./ToolTipCustom"
+import { Link } from "react-router-dom"
 
 
 
 export function JobsEvaluationTable({ id }) {
     const { evaluations: candidateEvaluations, criterias } = useJobEvaluation({ jobId: id })
+    const fullmarks = criterias?.reduce((acc, criteria) => acc + (criteria?.weightage || 0) * 100, 0) || 0;
     return (
         <Table>
             <TableCaption>Candidate Evaluation</TableCaption>
@@ -15,7 +17,7 @@ export function JobsEvaluationTable({ id }) {
                     {criterias?.map((criteria) => (
                         <TableHead key={criteria.id} className="text-center">{criteria?.requirement}({criteria?.weightage || 0})</TableHead>
                     ))}
-                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-right">Total ({fullmarks})</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -34,6 +36,8 @@ export function JobsEvaluationTable({ id }) {
                             })
                         }
                         <TableCell className="text-right">{item?.totalScore}</TableCell>
+                        <TableCell className="text-right"><Link className="hover:underline" to={`/candidate/${item.candidateId}?interview_id=${item?.interviewId?.[0] || ""}`}>View Details</Link></TableCell>
+
                     </TableRow>
                 ))}
             </TableBody>

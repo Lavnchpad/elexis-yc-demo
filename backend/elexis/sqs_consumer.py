@@ -141,6 +141,7 @@ def process_message(message_body):
                 try:
                    evaluations_to_create.append(
                        JobRequirementEvaluation(
+                            interview=interview,
                             candidate=candidate,
                             job_requirement_id=item['id'],
                             rating = item['evaluation'],
