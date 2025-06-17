@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='jobrequirementevaluation',
             name='interview',
-            field=models.ForeignKey(blank=True, default='c931736f-120c-4081-b774-e17c68c74d9a', null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='evaluation', to='elexis.interview'),
+            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='evaluation', to='elexis.interview'),
         ),
     ]
