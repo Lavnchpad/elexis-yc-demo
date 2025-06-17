@@ -44,14 +44,18 @@ class CustomRecruiterAdmin(UserAdmin):
     )
 
     filter_horizontal = ("groups", "user_permissions")
+class ShowAllFieldsAdmin(admin.ModelAdmin):
+    readonly_fields = ('created_date', 'modified_date')
+    ordering = ['-modified_date']
+    
 
 
 admin.site.register(Recruiter, CustomRecruiterAdmin)
-admin.site.register(Candidate)
-admin.site.register(Job)
-admin.site.register(Organization)
-admin.site.register(Interview)
-admin.site.register(Snapshots)
-admin.site.register(JobRequirement)
-admin.site.register(JobRequirementEvaluation)
+admin.site.register(Candidate,ShowAllFieldsAdmin)
+admin.site.register(Job,ShowAllFieldsAdmin)
+admin.site.register(Organization,ShowAllFieldsAdmin)
+admin.site.register(Interview,ShowAllFieldsAdmin)
+admin.site.register(Snapshots,ShowAllFieldsAdmin)
+admin.site.register(JobRequirement,ShowAllFieldsAdmin)
+admin.site.register(JobRequirementEvaluation,ShowAllFieldsAdmin)
 

@@ -207,8 +207,9 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                                 </SelectItem>
                               ))
 
-                            ) : (
-                              jobs.map((job) => (
+                            ) :
+                              (
+                                jobs.data?.map((job) => (
                                 <SelectItem key={job.id} value={job.id}>
                                   {job.job_name}
                                 </SelectItem>

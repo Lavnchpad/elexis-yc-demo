@@ -183,7 +183,7 @@ class JobRequirementEvaluation(BaseModel):
         Candidate, on_delete=models.CASCADE , related_name='jobrequirementevaluation'
     )
     interview = models.ForeignKey(
-        Interview, on_delete=models.DO_NOTHING, related_name='evaluation', blank=True, null=True,
+        Interview, on_delete=models.DO_NOTHING, related_name='evaluation'
     )
     job_requirement = models.ForeignKey(JobRequirement , on_delete=models.CASCADE , related_name="jobrequirement")
     rating = models.IntegerField(
