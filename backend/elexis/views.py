@@ -232,14 +232,6 @@ class InterviewViewSet(viewsets.ModelViewSet):
             interview.link = f"{CLIENT_URL}/interviews/{interview.id}/start/"
             self._update_status_fields(interview)
             interview.save()
-
-            # subject = "Interview Scheduled"
-            # message = (
-            #     f"Dear {interview.candidate.name},\n\n"
-            #     f"You have an interview scheduled for '{interview.job.job_name}' on {interview.date} at {interview.time}.\n"
-            #     f"Click here to join: {interview.link}\n\n"
-            #     f"Best regards,\n{interview.scheduled_by.company_name}"
-            # )
             subject, message = interview_scheduled_template(interview.scheduled_by.organization.org_name, interview.candidate.name, interview.job.job_name, interview.link, f"{interview.date} at {interview.time}", interview.scheduled_by.email)
             try:
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email])
@@ -294,7 +286,13 @@ class InterviewViewSet(viewsets.ModelViewSet):
                      "isEarly": False},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            
+            # if meeting room already exists , then return that everytime, if the user is withing the time frame of the interview
+            if interview.meeting_room:
+                return Response(
+                        {"message": "Interview starting...", "url": interview.meeting_room},
+                        status=status.HTTP_200_OK
+                    )
+                       
             candidate = interview.candidate
             data= {
             "name":candidate.name,
@@ -312,7 +310,9 @@ class InterviewViewSet(viewsets.ModelViewSet):
             }
 
             files = {
-                "resume": ("resume.pdf", candidate.resume.file, "application/pdf"),
+                # "resume": ("resume.pdf", candidate.resume.file, "application/pdf"),
+                "resume": ("resume.pdf", open("resumes/default.pdf","rb"), "application/pdf"),
+
                 # "job_description": ("pythondev.pdf",open("static/desc.pdf", "rb"), "application/pdf"),
             }
             print(data)
