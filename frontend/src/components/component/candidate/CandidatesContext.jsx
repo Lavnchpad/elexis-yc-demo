@@ -9,14 +9,14 @@ const CandidatesProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   const fetchCandidates = async () => {
-    try {
+    // try {
       const response = await axios.get('/candidates/');
       return (response.data);  // Add avatars after fetching candidates
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setloading(false);
-    }
+    // } catch (error) {
+    //   setError(error.message);
+    // } finally {
+    //   setloading(false);
+    // }
   };
 
   // useEffect to fetch candidates when component mounts

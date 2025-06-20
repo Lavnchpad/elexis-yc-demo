@@ -4,8 +4,9 @@ from django.db.models import JSONField
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import MinValueValidator, MaxValueValidator
-
-
+from django.utils import timezone
+from typing import Optional
+from typing_extensions import Self
 
 class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -201,3 +202,26 @@ class JobRequirementEvaluation(BaseModel):
 
     def __str__(self):
         return f"{self.job_requirement.job.job_name} -{self.job_requirement.requirement} - {self.candidate.name}"
+    
+class MaintaineceWindow(BaseModel):
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    reason = models.TextField()
+    user_display_text = models.TextField(
+        default="Elexis is currently undergoing maintenance. We apologize for any inconvenience caused. Please check back later."
+    )
+    is_draft = models.BooleanField(default=False, 
+                                   help_text="If True, this maintenance window is not yet active and will not be displayed to users.")
+    def __str__(self):
+        return f"Maintenance from {self.start_time} to {self.end_time} - Reason: {self.reason}"
+    
+    class Meta:
+        verbose_name_plural = "Maintenance Windows"
+
+    @classmethod
+    def is_maintenance_active(cls) -> Optional[Self]:
+        now = timezone.now()
+        try:
+            return cls.objects.filter(start_time__lte=now, end_time__gte=now, is_draft=False).first()
+        except cls.DoesNotExist:
+            return None
