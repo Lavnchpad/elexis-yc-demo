@@ -39,7 +39,7 @@ class MaintainenceMiddleware:
                     return self.get_response(request)
                     
                 return JsonResponse({
-                    "messsage": window.user_display_text,
+                    "message": window.user_display_text,
                     "start_time": window.start_time.isoformat(),
                     "end_time": window.end_time.isoformat(),
                     "reason": window.reason
