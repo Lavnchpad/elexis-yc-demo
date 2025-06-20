@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'elexis.middleware.MaintainenceMiddleware',  # Custom middleware for maintenance mode
 ]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", 

@@ -17,7 +17,7 @@ import { UserProvider } from './components/component/recruiter/UserContext';
 import Analytics from './page/Analytics';
 import MyTeamDetails from './components/component/profile/MyTeamDetails';
 import InterviewFilter from './page/InterviewFilter';
-
+import {Maintenance} from './page/Maintenance';
 const App = () => {
   return (
     <BrowserRouter>
@@ -26,7 +26,8 @@ const App = () => {
         <Routes>
           {/* Login Route */}
           <Route path="/login" element={<LoginPage />} />
-
+          {/* Maintenance Route */}
+          <Route path="/maintenance" element={<Maintenance />} />
           {/* Protected Routes with AppLayout */}
           <Route
             path="/"

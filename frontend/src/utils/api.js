@@ -28,6 +28,13 @@ api.interceptors.response.use(
             // OR, if using Vue Router or React Router:
             // router.push('/login');
         }
+        if(error.response?.status === 503) {
+            console.log(error.response)
+            const startTime = error.response.data?.start_time;
+            const endTime = error.response.data?.end_time;
+            const message = error.response.data?.message || "Service Unavailable";
+            window.location.href = `/maintenance?startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&message=${encodeURIComponent(message)}`;
+        }
         return Promise.reject(error);
     }
 );
