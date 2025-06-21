@@ -247,3 +247,10 @@ EMAIL_HOST_PASSWORD=os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL=os.getenv("DEFAULT_FROM_EMAIL")
 
 BOT_HOSTNAME = os.getenv("BOT_HOSTNAME", "https://app.elexis.ai")
+BOT_AWS_REGION = os.getenv("BOT_AWS_REGION", "us-west-1")
+BOT_TASK_DEFINITION_ARN = os.getenv("TASK_DEFINITION_ARN", "arn:aws:ecs:us-west-1:905418350733:task-definition/amaxa-elexis-amaxa-bot-task")
+BOT_CLUSTER_ARN = os.getenv("BOT_CLUSTER_ARN", "arn:aws:ecs:us-west-1:905418350733:cluster/amaxa-elexis-amaxa-elexis-bot-task")
+
+
+DAILY_API_PATH = os.getenv("DAILY_API_PATH", "api.daily.co/v1")
+DAILY_API_KEY = os.getenv("DAILY_API_KEY")

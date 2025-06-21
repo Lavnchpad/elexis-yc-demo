@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -6,6 +7,7 @@ import { toast } from "sonner";
 const StartInterview = () => {
   const { interviewId } = useParams();
   const [message, setMessage] = useState("");
+  const [interviewLink, setInterviewLink] = useState("");
   const startInterview = async function startInterview() {
     try {
       const response = await fetch(
@@ -23,7 +25,7 @@ const StartInterview = () => {
         if(jsonifiedResponse?.isEarly) {
           jsonifiedResponse?.message && toast.error(jsonifiedResponse.message) && setMessage(jsonifiedResponse.message);
         }else if(jsonifiedResponse && jsonifiedResponse.url) {
-          window.location.href = jsonifiedResponse.url;
+          setInterviewLink(jsonifiedResponse.url);
           return;
         }else {
           jsonifiedResponse.message && toast.error(jsonifiedResponse.message) && setMessage(jsonifiedResponse.message);
@@ -47,7 +49,16 @@ const StartInterview = () => {
     return (
       <div className="w-full h-screen">
         <div className="flex h-full justify-center items-center">
-          <Loader className="animate-spin mr-2" size={32} /> Preparing Interview<br/>
+          {
+            interviewLink ?
+              <Button asChild variant="link">
+                <a href={interviewLink} className="">Start Interview</a>
+              </Button>
+              :
+              <>
+                <Loader className="animate-spin mr-2" size={32} /> Preparing Interview
+              </>
+          }
         </div>
       </div>
     )

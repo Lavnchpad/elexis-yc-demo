@@ -159,6 +159,7 @@ class Interview(BaseModel):
     language = models.CharField(
         max_length=50, default="english", choices=LANGUAGES, help_text="Language used in the interview"
     )
+    ecs_task_created = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Interview for {self.candidate.name} - {self.job.job_name} - {self.time}"
@@ -191,7 +192,7 @@ class JobRequirementEvaluation(BaseModel):
         Candidate, on_delete=models.CASCADE , related_name='jobrequirementevaluation'
     )
     interview = models.ForeignKey(
-        Interview, on_delete=models.DO_NOTHING, related_name='evaluation'
+        Interview, on_delete=models.DO_NOTHING, related_name='evaluation', null=True
     )
     job_requirement = models.ForeignKey(JobRequirement , on_delete=models.CASCADE , related_name="jobrequirement")
     rating = models.IntegerField(
