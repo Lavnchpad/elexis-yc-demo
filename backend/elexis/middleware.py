@@ -37,7 +37,7 @@ class MaintainenceMiddleware:
         if window is not None:
             # If the request is not for the maintenance page, redirect to it
             if request.path != '/maintenance':
-                if request.path.startswith('/admin/'):
+                if request.path.startswith('/admin/') or request.path.startswith('/login'):
                     return self.get_response(request)
                 print(request.user)
                 # Manually authenticate JWT for non-DRF requests
