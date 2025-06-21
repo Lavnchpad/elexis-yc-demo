@@ -159,6 +159,7 @@ class Interview(BaseModel):
     language = models.CharField(
         max_length=50, default="english", choices=LANGUAGES, help_text="Language used in the interview"
     )
+    ecs_task_created = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Interview for {self.candidate.name} - {self.job.job_name} - {self.time}"

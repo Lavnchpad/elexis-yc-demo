@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate
 # from django_filters import CharFilter, FilterSet
 # from django_filters.rest_framework import DjangoFilterBackend
+from elexis.services.ecs_task import ECSAIBotTaskService, ECSInterviewLanguages, ECSInterviewTaskContext
+from elexis.services.daily import DailyMeetingService
 from rest_framework.exceptions import PermissionDenied
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from django.core.mail import send_mail
@@ -286,62 +288,66 @@ class InterviewViewSet(viewsets.ModelViewSet):
                      "isEarly": False},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            daily_service = DailyMeetingService()
             # if meeting room already exists , then return that everytime, if the user is withing the time frame of the interview
-            if interview.meeting_room:
-                return Response(
-                        {"message": "Interview starting...", "url": interview.meeting_room},
-                        status=status.HTTP_200_OK
-                    )
-                       
+            if not interview.meeting_room:
+                
+                room = daily_service.create_meeting_room()
+                interview.meeting_room = room.room_url
+                interview.save()
+                
             candidate = interview.candidate
-            data= {
-            "name":candidate.name,
-            "candidate_email": candidate.email,
-            "interviewer_email":candidate.recruiter.email,
-            "role":interview.job.job_name,
-            "company_name": candidate.recruiter.organization.org_name,
-            "interviewer_name": "Arya",
-            "candidate_voice_clone": "India Accent (Female)",
-            "is_dashboard_request": True,
-            "record_interview": True,
-            "language" : interview.language,
-            "job_description_text": interview.job.job_description,
 
-            }
+            # data= {
+            # "name":candidate.name,
+            # "candidate_email": candidate.email,
+            # "interviewer_email":candidate.recruiter.email,
+            # "role":interview.job.job_name,
+            # "company_name": candidate.recruiter.organization.org_name,
+            # "interviewer_name": "Arya",
+            # "candidate_voice_clone": "India Accent (Female)",
+            # "is_dashboard_request": True,
+            # "record_interview": True,
+            # "language" : interview.language,
+            # "job_description_text": interview.job.job_description,
 
-            files = {
-                # "resume": ("resume.pdf", candidate.resume.file, "application/pdf"),
-                "resume": ("resume.pdf", open("resumes/default.pdf","rb"), "application/pdf"),
-
-                # "job_description": ("pythondev.pdf",open("static/desc.pdf", "rb"), "application/pdf"),
-            }
-            print(data)
-            try:          
-                response = requests.post(f"{settings.BOT_HOSTNAME}/start", data=data, files=files)
-
-                json_response = response.json()
-                print("JSON response of meeting url:::", json_response)
-                meeting_link = json_response.get("room_url")
-                if meeting_link:
-                    interview.meeting_room = meeting_link
-                    interview.link = None
-                    interview.save()
-                    return Response(
-                        {"message": "Interview starting...", "url": meeting_link},
-                        status=status.HTTP_200_OK
-                    )
-                else: 
-                    return Response(
-                        {"error": "Failed to retrieve meeting link."},
-                        status=status.HTTP_502_BAD_GATEWAY
-                    )
-
-            except Exception as e:
-                print("Request error:", e)
+            # }
+            tries = 5
+            print(interview.ecs_task_created, tries)
+            while (not interview.ecs_task_created) and tries > 0:
+                tries -=1
+                interview.ecs_task_created = True
+                interview.save()
+                ecs_interview_service = ECSAIBotTaskService()
+                task_created = ecs_interview_service.run_task(interview_context=ECSInterviewTaskContext(
+                    candidate_id=str(candidate.id),
+                    interview_id=str(interview.id),
+                    company_name=candidate.recruiter.organization.org_name,
+                    role=interview.job.job_name,
+                    candidate_name=candidate.name,
+                    room_url=interview.meeting_room,
+                    room_name= daily_service.get_name_from_url(interview.meeting_room),
+                    language= ECSInterviewLanguages(interview.language),  # Assuming Language is an enum or similar
+                    record_interview=True,
+                    interview_type="technical",
+                    resume_s3_url="https://demo-soltech-elexis-dashboard-storage.s3.us-west-1.amazonaws.com/resumes/Resume-Updated.pdf",
+                    # candidate.resume.url if candidate.resume else None,
+                    resume_bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                    resume_bucket_region=settings.AWS_S3_REGION_NAME,
+                    job_description=interview.job.job_description,
+                    daily_api_key=settings.DAILY_API_KEY
+                ))
+                print("Task Created", task_created)
+                interview.ecs_task_created = task_created
+                interview.save()
                 return Response(
-                    {"error": "Failed to start the interview. Please try again later."},
-                    status=status.HTTP_502_BAD_GATEWAY
-                )
+                            {"message": "Interview starting...", "url": interview.meeting_room},
+                            status=status.HTTP_200_OK
+                        )
+            return Response(
+                {"error": "Failed to start the interview. Please try again later."},
+                status=status.HTTP_502_BAD_GATEWAY
+            )
 
 class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
