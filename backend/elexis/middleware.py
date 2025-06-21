@@ -2,6 +2,8 @@ from .models import MaintaineceWindow
 from django.http import JsonResponse
 from rest_framework import status
 from django.utils import timezone
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.contrib.auth.models import AnonymousUser
 
 class MaintainenceMiddleware:
     """
@@ -37,7 +39,20 @@ class MaintainenceMiddleware:
             if request.path != '/maintenance':
                 if request.path.startswith('/admin/'):
                     return self.get_response(request)
-                    
+                print(request.user)
+                # Manually authenticate JWT for non-DRF requests
+                if 'HTTP_AUTHORIZATION' in request.META:
+                    jwt_auth = JWTAuthentication()
+                    try:
+                        user_auth_tuple = jwt_auth.authenticate(request)
+                        if user_auth_tuple is not None:
+                            request.user, _ = user_auth_tuple
+                    except Exception:
+                        request.user = AnonymousUser()
+                if not request.user.is_anonymous:
+                    if request.user.organization:
+                        if request.user.organization.is_exempt_from_maintenance:
+                            return self.get_response(request)
                 return JsonResponse({
                     "message": window.user_display_text,
                     "start_time": window.start_time.isoformat(),

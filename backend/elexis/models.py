@@ -26,6 +26,10 @@ class BaseModel(models.Model):
 
 class Organization(BaseModel):
     org_name = models.CharField(max_length=255)
+    is_exempt_from_maintenance = models.BooleanField(
+        default=False,
+        help_text="If True, this organization is exempt from maintenance windows and will not be affected by them."
+    )
     
     def __str__(self):
         return self.org_name
