@@ -264,48 +264,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             elif (interview.link and interview.status != 'scheduled' and not interview.meeting_room) :
                 interview.status = 'scheduled'
 
-        @action(detail=True, methods=["get"], permission_classes=[AllowAny])
-        def info(self, request, pk=None):
-            interview = self.get_object()
-
-            current_time = now()
-            interview_start = make_aware(datetime.combine(interview.date, interview.time))
-            interview_end = interview_start + timedelta(hours=1)
-
-        # Case 1: Too early
-            if current_time < interview_start:
-                return Response(
-                    {"message": f"Your interview is scheduled at {getHumanReadableTime(interview_start)}. Please wait.",
-                     "isEarly": True},
-                    status=status.HTTP_200_OK,  # Or 403 if you want to block it
-                )
-
-        # Case 2: Too late
-            if current_time > interview_end:
-                print("current time:::", current_time , interview_end)
-                return Response(
-                    {"message": "This interview link has expired. Please contact the recruiter to reschedule.",
-                     "isEarly": False},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            if not interview.meeting_room:
-                
-                room = daily_service.create_meeting_room()
-                interview.meeting_room = room.room_url
-                interview.save()
-            return Response({
-                "interviewId": str(interview.id),
-                "candidateName": interview.candidate.name,
-                "jobName": interview.job.job_name,
-                "date": interview.date.strftime("%Y-%m-%d"),
-                "time": interview.time.strftime("%H:%M"),
-                "language": interview.language,
-                "isEarly": False,
-                "requiresCtcInfo": interview.job.ask_for_ctc_info,
-                "requiresExperienceInfo": interview.job.ask_for_reason_for_leaving_previous_job,
-                "requiresLanguageInfo": interview.job.ask_for_language_preference,
-            })
-
+        
         @action(detail=True, methods=["get"], permission_classes=[AllowAny])
         def start(self, request, pk=None):
             interview = self.get_object()
