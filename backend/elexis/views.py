@@ -330,8 +330,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
                     language= ECSInterviewLanguages(interview.language),  # Assuming Language is an enum or similar
                     record_interview=True,
                     interview_type="technical",
-                    resume_s3_url="https://demo-soltech-elexis-dashboard-storage.s3.us-west-1.amazonaws.com/resumes/Resume-Updated.pdf",
-                    # candidate.resume.url if candidate.resume else None,
+                    resume_s3_url=candidate.resume.url if candidate.resume else "",
                     resume_bucket=settings.AWS_STORAGE_BUCKET_NAME,
                     resume_bucket_region=settings.AWS_S3_REGION_NAME,
                     job_description=interview.job.job_description,
