@@ -236,7 +236,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             interview.save()
             subject, message = interview_scheduled_template(interview.scheduled_by.organization.org_name, interview.candidate.name, interview.job.job_name, interview.link, f"{interview.date} at {interview.time}", interview.scheduled_by.email)
             try:
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email])
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email, interview.scheduled_by.email])
             except Exception as e:
                 print("Email can't be sent", e)
 
@@ -264,6 +264,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             elif (interview.link and interview.status != 'scheduled' and not interview.meeting_room) :
                 interview.status = 'scheduled'
 
+        
         @action(detail=True, methods=["get"], permission_classes=[AllowAny])
         def start(self, request, pk=None):
             interview = self.get_object()
