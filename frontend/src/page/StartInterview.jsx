@@ -52,7 +52,7 @@ const StartInterview = () => {
           {
             interviewLink ?
               <Button asChild variant="link">
-                <a href={interviewLink} className="">Start Interview</a>
+                <a href={interviewLink} className="">Click to Start Interview</a>
               </Button>
               :
               <>
