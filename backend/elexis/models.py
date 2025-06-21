@@ -116,7 +116,18 @@ class Job(BaseModel):
     min_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     max_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     is_disabled = models.BooleanField(default=False)
-
+    ask_for_ctc_info = models.BooleanField(
+        default=True,
+        help_text="If True, candidates will be asked for their CTC information during the interview process."
+    )
+    ask_for_reason_for_leaving_previous_job = models.BooleanField(
+        default=True,
+        help_text="If True, candidates will be asked for the reason for leaving their previous job during the interview process."
+    )
+    ask_for_language_preference = models.BooleanField(
+        default=True,
+        help_text="If True, candidates will be asked for their language preference during the interview process."
+    )
     def __str__(self):
         return self.job_name
 # topics that must be evaluated and  represented visually
@@ -164,6 +175,10 @@ class Interview(BaseModel):
         max_length=50, default="english", choices=LANGUAGES, help_text="Language used in the interview"
     )
     ecs_task_created = models.BooleanField(default=False)
+    expected_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    current_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    reason_for_leaving_previous_job = models.TextField(
+        blank=True, null=True, help_text="Reason for leaving the previous job")
 
     def __str__(self):
         return f"Interview for {self.candidate.name} - {self.job.job_name} - {self.time}"
