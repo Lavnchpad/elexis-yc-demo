@@ -3,8 +3,10 @@ import os
 
 import dotenv
 import google.generativeai as genai
+from google.generativeai.types import BlobDict
 import logging
-
+import requests
+from io import BytesIO
 logger = logging.getLogger(__name__)
 
 
@@ -142,3 +144,31 @@ def generate_summary(transcript_data, requirements): # requirements stands for J
 
 
 
+def experience_information_generation(signed_url):
+    response = requests.get(signed_url)
+    if response.status_code != 200:
+        logger.error("Failed to download file from signed URL")
+        return None
+
+    pdf_blob = BlobDict(data=response.content, mime_type="application/pdf")
+
+    try:
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        prompt = (
+            "You are an expert recruiter. Extract and summarize the candidate's professional work experience from the attached PDF resume. "
+            "For each experience, provide the company name, duration in years (as an integer), and duration in months (as an integer, 0-11). "
+            "Return the result as a JSON list of dictionaries, each with keys: name, years, months. "
+            "Example: [{\"name\": \"CompanyX\", \"years\": 2, \"months\": 5}]. "
+            "Do not return as markdown, return as plain JSON."
+        )
+        response = model.generate_content(
+            [prompt, pdf_blob],
+            stream=False,
+            generation_config={
+                "response_mime_type": "application/json",
+            }
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        logger.error(f"Error extracting experience: {e}")
+        return None

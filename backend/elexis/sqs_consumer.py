@@ -1,6 +1,6 @@
 from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementEvaluation
 from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3, put_dict_as_json_to_s3
-from elexis.utils.summary_generation import generate_summary
+from elexis.utils.summary_generation import generate_summary, experience_information_generation
 from elexis.serializers import JobRequirementSerializer
 from elexis.utils.convert_transcript_format import convert
 import boto3
@@ -8,6 +8,7 @@ import json
 import time
 from dotenv import load_dotenv
 import os
+import traceback
 load_dotenv()
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -121,8 +122,35 @@ def process_message(message_body):
             # I need all the requirements for this job id
             requirementQuerySet = JobRequirement.objects.filter(job_id = jobId)
             specialEvaluationMetrics = JobRequirementSerializer(requirementQuerySet, many = True).data
-            summary_json = generate_summary(transcript_data, specialEvaluationMetrics)
-
+            summary_json = None
+            # Retry summary generation up to 3 times on error
+            retries = 3
+            for attempt in range(retries):
+                try:
+                    summary_json = generate_summary(transcript_data, specialEvaluationMetrics)
+                    break
+                except Exception as e:
+                    traceback.print_exc()
+                    print(f"Error generating summary (attempt {attempt+1}/{retries}): {e}")
+                    if attempt == retries - 1:
+                        print("Max retries reached. Skipping summary generation.")
+                        return
+                    time.sleep(2)
+            
+            # Retry fetching experience up to 3 times on error
+            retries = 3
+            experience = None
+            for attempt in range(retries):
+                try:
+                    experience =  experience_information_generation(interview.candidate.resume.url)
+                    break
+                except Exception as e:
+                    traceback.print_exc()
+                    print(f"Error fetching experience (attempt {attempt+1}/{retries}): {e}")
+                    if attempt == retries - 1:
+                        print("Max retries reached. Skipping experience fetching.")
+                        return
+                    time.sleep(2)
 
 
             # Update fields
@@ -131,6 +159,8 @@ def process_message(message_body):
             interview.status = 'ended'
             interview.skills = summary_json['skills']
             interview.experience = summary_json['experience']
+            if experience is not None:
+                interview.experience = experience
             interview.save()
             
             evaluations_to_create=[]
