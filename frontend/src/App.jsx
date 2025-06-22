@@ -6,7 +6,7 @@ import LoginPage from './components/component/login/Login';
 import ProtectedRoute from './components/component/ProtectedRoute';
 import CandidatesProvider from './components/component/candidate/CandidatesContext';
 import { JobsProvider } from './components/component/jobs/JobsContext';
-import StartInterview from './page/StartInterview';
+import StartInterview from './page/interview/StartInterview';
 import { Toaster } from "@/components/ui/sonner";
 import { InterviewProvider } from './components/component/interview/InterviewContext';
 import MyProfile from './components/component/profile/MyProfile';

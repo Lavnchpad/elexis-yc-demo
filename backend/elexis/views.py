@@ -340,20 +340,6 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 
             candidate = interview.candidate
 
-            # data= {
-            # "name":candidate.name,
-            # "candidate_email": candidate.email,
-            # "interviewer_email":candidate.recruiter.email,
-            # "role":interview.job.job_name,
-            # "company_name": candidate.recruiter.organization.org_name,
-            # "interviewer_name": "Arya",
-            # "candidate_voice_clone": "India Accent (Female)",
-            # "is_dashboard_request": True,
-            # "record_interview": True,
-            # "language" : interview.language,
-            # "job_description_text": interview.job.job_description,
-
-            # }
             tries = 5
             print(interview.ecs_task_created, tries)
             while (not interview.ecs_task_created) and tries > 0:
