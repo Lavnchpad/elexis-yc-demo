@@ -267,87 +267,95 @@ class InterviewViewSet(viewsets.ModelViewSet):
         
         @action(detail=True, methods=["get"], permission_classes=[AllowAny])
         def start(self, request, pk=None):
-            interview = self.get_object()
+            try:
+                interview = self.get_object()
 
-            current_time = now()
-            interview_start = make_aware(datetime.combine(interview.date, interview.time))
-            interview_end = interview_start + timedelta(hours=1)
+                current_time = now()
+                interview_start = make_aware(datetime.combine(interview.date, interview.time))
+                interview_end = interview_start + timedelta(hours=1)
 
-        # Case 1: Too early
-            if current_time < interview_start:
+            # Case 1: Too early
+                if current_time < interview_start:
+                    return Response(
+                        {"message": f"Your interview is scheduled at {getHumanReadableTime(interview_start)}. Please wait.",
+                        "isEarly": True},
+                        status=status.HTTP_200_OK,  # Or 403 if you want to block it
+                    )
+
+            # Case 2: Too late
+                if current_time > interview_end:
+                    print("current time:::", current_time , interview_end)
+                    return Response(
+                        {"message": "This interview link has expired. Please contact the recruiter to reschedule.",
+                        "isEarly": False},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                daily_service = DailyMeetingService()
+                # if meeting room already exists , then return that everytime, if the user is withing the time frame of the interview
+                if not interview.meeting_room:
+                    
+                    room = daily_service.create_meeting_room()
+                    interview.meeting_room = room.room_url
+                    interview.save()
+                print("Meeting room created or already exists:", interview.meeting_room)
+                candidate = interview.candidate
+
+                # data= {
+                # "name":candidate.name,
+                # "candidate_email": candidate.email,
+                # "interviewer_email":candidate.recruiter.email,
+                # "role":interview.job.job_name,
+                # "company_name": candidate.recruiter.organization.org_name,
+                # "interviewer_name": "Arya",
+                # "candidate_voice_clone": "India Accent (Female)",
+                # "is_dashboard_request": True,
+                # "record_interview": True,
+                # "language" : interview.language,
+                # "job_description_text": interview.job.job_description,
+
+                # }
+                tries = 5
+                print(interview.ecs_task_created, tries)
+                while (not interview.ecs_task_created) and tries > 0:
+                    tries -=1
+                    interview.ecs_task_created = True
+                    interview.save()
+                    ecs_interview_service = ECSAIBotTaskService()
+                    task_created = ecs_interview_service.run_task(interview_context=ECSInterviewTaskContext(
+                        candidate_id=str(candidate.id),
+                        interview_id=str(interview.id),
+                        company_name=candidate.recruiter.organization.org_name,
+                        role=interview.job.job_name,
+                        candidate_name=candidate.name,
+                        room_url=interview.meeting_room,
+                        room_name= daily_service.get_name_from_url(interview.meeting_room),
+                        language= ECSInterviewLanguages(interview.language),  # Assuming Language is an enum or similar
+                        record_interview=True,
+                        interview_type="technical",
+                        resume_s3_url=candidate.resume.url if candidate.resume else "",
+                        resume_bucket=settings.AWS_STORAGE_BUCKET_NAME,
+                        resume_bucket_region=settings.AWS_S3_REGION_NAME,
+                        job_description=interview.job.job_description,
+                        daily_api_key=settings.DAILY_API_KEY
+                    ))
+                    print("Task Created", task_created)
+                    interview.ecs_task_created = task_created
+                    interview.save()
+                    time.sleep(30) # Giving some time for the task to be created
+                    print("ECS Task created status:", interview.ecs_task_created)
+                    return Response(
+                                {"message": "Interview starting...", "url": interview.meeting_room},
+                                status=status.HTTP_200_OK)
                 return Response(
-                    {"message": f"Your interview is scheduled at {getHumanReadableTime(interview_start)}. Please wait.",
-                     "isEarly": True},
-                    status=status.HTTP_200_OK,  # Or 403 if you want to block it
-                )
-
-        # Case 2: Too late
-            if current_time > interview_end:
-                print("current time:::", current_time , interview_end)
-                return Response(
-                    {"message": "This interview link has expired. Please contact the recruiter to reschedule.",
-                     "isEarly": False},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            daily_service = DailyMeetingService()
-            # if meeting room already exists , then return that everytime, if the user is withing the time frame of the interview
-            if not interview.meeting_room:
+                                {"message": "Interview starting...", "url": interview.meeting_room},
+                                status=status.HTTP_200_OK)
                 
-                room = daily_service.create_meeting_room()
-                interview.meeting_room = room.room_url
-                interview.save()
-                
-            candidate = interview.candidate
-
-            # data= {
-            # "name":candidate.name,
-            # "candidate_email": candidate.email,
-            # "interviewer_email":candidate.recruiter.email,
-            # "role":interview.job.job_name,
-            # "company_name": candidate.recruiter.organization.org_name,
-            # "interviewer_name": "Arya",
-            # "candidate_voice_clone": "India Accent (Female)",
-            # "is_dashboard_request": True,
-            # "record_interview": True,
-            # "language" : interview.language,
-            # "job_description_text": interview.job.job_description,
-
-            # }
-            tries = 5
-            print(interview.ecs_task_created, tries)
-            while (not interview.ecs_task_created) and tries > 0:
-                tries -=1
-                interview.ecs_task_created = True
-                interview.save()
-                ecs_interview_service = ECSAIBotTaskService()
-                task_created = ecs_interview_service.run_task(interview_context=ECSInterviewTaskContext(
-                    candidate_id=str(candidate.id),
-                    interview_id=str(interview.id),
-                    company_name=candidate.recruiter.organization.org_name,
-                    role=interview.job.job_name,
-                    candidate_name=candidate.name,
-                    room_url=interview.meeting_room,
-                    room_name= daily_service.get_name_from_url(interview.meeting_room),
-                    language= ECSInterviewLanguages(interview.language),  # Assuming Language is an enum or similar
-                    record_interview=True,
-                    interview_type="technical",
-                    resume_s3_url=candidate.resume.url if candidate.resume else "",
-                    resume_bucket=settings.AWS_STORAGE_BUCKET_NAME,
-                    resume_bucket_region=settings.AWS_S3_REGION_NAME,
-                    job_description=interview.job.job_description,
-                    daily_api_key=settings.DAILY_API_KEY
-                ))
-                print("Task Created", task_created)
-                interview.ecs_task_created = task_created
-                interview.save()
+                            
+            except:
                 return Response(
-                            {"message": "Interview starting...", "url": interview.meeting_room},
-                            status=status.HTTP_200_OK
-                        )
-            return Response(
-                {"error": "Failed to start the interview. Please try again later."},
-                status=status.HTTP_502_BAD_GATEWAY
-            )
+                    {"error": "Failed to start the interview. Please try again later."},
+                    status=status.HTTP_502_BAD_GATEWAY
+                )
 
 class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.all()
