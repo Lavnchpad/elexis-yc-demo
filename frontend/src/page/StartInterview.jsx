@@ -48,12 +48,18 @@ const StartInterview = () => {
   if(message === "") {
     return (
       <div className="w-full h-screen">
-        <div className="flex h-full justify-center items-center">
+        <div className="flex h-full justify-center items-center flex-col space-y-4 text-center items-center">
           {
             interviewLink ?
-              <Button asChild variant="link">
+            <>
+              Interview will start within a minute after you join in, please wait for the interviewer to join the interview.
+              <br/>
+              <p className="text-gray-500 text-sm">Click the button below to start the interview.</p>
+              <Button asChild className="primary">
                 <a href={interviewLink} className="">Click to Start Interview</a>
               </Button>
+            </>
+              
               :
               <>
                 <Loader className="animate-spin mr-2" size={32} /> Preparing Interview
