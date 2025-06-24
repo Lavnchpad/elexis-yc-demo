@@ -35,6 +35,7 @@ from dotenv import load_dotenv
 # from django.core.files.storage import default_storage
 # print("default storage is::: ",default_storage.__class__)
 from .mail_templates.interview_scheduled import interview_scheduled_template
+import time
 load_dotenv()
 CLIENT_URL = os.getenv("CLIENT_URL")
 AWS_STORAGE_BUCKET_NAME= os.getenv("AWS_STORAGE_BUCKET_NAME")
@@ -341,7 +342,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
                     print("Task Created", task_created)
                     interview.ecs_task_created = task_created
                     interview.save()
-                    time.sleep(30) # Giving some time for the task to be created
+                    time.sleep(10) # Giving some time for the task to be created
                     print("ECS Task created status:", interview.ecs_task_created)
                     return Response(
                                 {"message": "Interview starting...", "url": interview.meeting_room},
