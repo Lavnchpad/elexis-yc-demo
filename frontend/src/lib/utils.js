@@ -18,3 +18,13 @@ export const languages = {
   english: "English",
   hindi: "Hindi"
 }
+
+export const interviewLanguages = [
+  { key: "english", value: "English" },
+  { key: "hindi", value: "Hindi" },
+  // { key: "French", value: "French" },
+  // { key: "Spanish", value: "Spanish" },
+  // { key: "German", value: "German" },
+  // { key: "Italian", value: "Italian" },
+  // { key: "Chinese", value: "Chinese" }
+]

@@ -211,7 +211,7 @@ const StudentDetails = ({ }) => {
   return (
     <>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Student Databases</h1>
+        <h1 className="text-2xl font-bold">Candidates</h1>
         <JobsProvider>
           <AddCandidate>
             <Button>Add Candidate</Button>

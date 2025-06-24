@@ -86,7 +86,7 @@ const JobsPage = () => {
     <div className="min-h-screen">
       <div className="mx-auto max-w-7xl">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">Jobs Databases</h1>
+          <h1 className="text-2xl font-bold">Jobs</h1>
           <ManageJobs onJobCreated={fetchJobs}>
             <Button className="bg-black hover:bg-gray-800">+ Create Job</Button>
           </ManageJobs>

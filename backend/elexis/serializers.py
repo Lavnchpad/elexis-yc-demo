@@ -35,7 +35,7 @@ class JobSerializer(serializers.ModelSerializer):
         model = Job
         fields = '__all__'
         read_only_fields = ('recruiter', 'organization')
-        fields = ['job_name','id', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description','requirements','recruiter', 'organization']  # Explicitly define the fields you want to include
+        fields = ['job_name','id', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description','requirements','recruiter', 'organization', 'allowed_interview_languages', 'ask_for_language_preference']  # Explicitly define the fields you want to include
         # exclude = ('recruiter', 'organization')  # Exclude from input but keep in the model
     
     def create(self, validated_data):

@@ -103,6 +103,11 @@ class Candidate(BaseModel):
 
 
 class Job(BaseModel):
+    LANG_CHOICES = [
+        ('english', 'English'),
+        ('hindi', 'Hindi'),
+       
+    ]
     recruiter = models.ForeignKey(
         Recruiter, on_delete=models.CASCADE, related_name="jobs"
     )
@@ -124,14 +129,37 @@ class Job(BaseModel):
         default=True,
         help_text="If True, candidates will be asked for the reason for leaving their previous job during the interview process."
     )
-    ask_for_language_preference = models.BooleanField(
-        default=True,
-        help_text="If True, candidates will be asked for their language preference during the interview process."
+    _allowed_interview_languages = models.CharField(
+        max_length=255, # Increased max_length to safely store multiple languages
+        default="english",
+        help_text="Comma-separated list of allowed interview languages (e.g., 'english,hindi')."
     )
     def __str__(self):
         return self.job_name
-# topics that must be evaluated and  represented visually
+    
+    @property
+    def allowed_interview_languages(self):
+        """
+        Returns the allowed languages as a list of strings.
+        """
+        if not self.ask_for_language_preference:
+            return []
+        return [lang.strip() for lang in self._allowed_interview_languages.split(',') if lang.strip()]
 
+    @allowed_interview_languages.setter
+    def allowed_interview_languages(self, value):
+        """
+        Sets the allowed languages from a list of strings,
+        storing them as a comma-separated string.
+        """
+        if isinstance(value, list):
+            valid_languages = [choice[0] for choice in self.LANG_CHOICES]
+            cleaned_value = [lang for lang in value if lang in valid_languages]
+            self._allowed_interview_languages = ",".join(cleaned_value)
+        elif isinstance(value, str):
+            self._allowed_interview_languages = value
+        else:
+            raise ValueError("allowed_interview_languages must be a list of strings or a comma-separated string.")
 
 class Interview(BaseModel):
     STATUS_CHOICES = [

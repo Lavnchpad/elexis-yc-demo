@@ -22,8 +22,9 @@ import {
   FormMessage,
 } from "../../ui/form";
 import { Input } from "../../ui/input";
-import { Textarea } from "../../ui/textarea";
+import { interviewLanguages } from "@/lib/utils";
 import { Delete, Loader } from "lucide-react";
+import MultiSelect from "@/components/ui/MultiSelect";
 
 // Validation schema
 const jobSchema = z.object({
@@ -43,6 +44,7 @@ const jobSchema = z.object({
 });
 
 const ManageJobs = ({ onJobCreated, children }) => {
+  const [selectedLanguages, setSelectedLanguages] = useState(['english']);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [pageNumber, setpageNumber] = useState(1);
@@ -82,7 +84,8 @@ const ManageJobs = ({ onJobCreated, children }) => {
         location,
         min_ctc,
         max_ctc, job_description,
-        requirements: data.topics
+        requirements: data.topics,
+        allowed_interview_languages: selectedLanguages,
       },
       );
         if (onJobCreated) {
@@ -189,6 +192,21 @@ const ManageJobs = ({ onJobCreated, children }) => {
                           </FormItem>
                         )}
                       />
+
+                      {/* Select Job Interview Languages */}
+                      <div className="">
+                        {
+                          selectedLanguages?.map((lang, index) => (
+                            <span key={index} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium mr-2 mb-2">
+                              {lang}
+                              <button type="button" className="ml-1 text-blue-500 hover:text-blue-700" onClick={() => setSelectedLanguages(selectedLanguages.filter((l) => l !== lang))}>
+                                &times;
+                              </button>
+                            </span>
+                          ))
+                        }
+                        <MultiSelect actionTitle={"Language"} values={interviewLanguages} selectedItems={selectedLanguages} setSelectedItems={setSelectedLanguages} dropdownLabel={"Interview Languages"} />
+                      </div>
                     </>
                     :
                     <>
