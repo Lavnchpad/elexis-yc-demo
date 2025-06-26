@@ -35,7 +35,7 @@ class JobSerializer(serializers.ModelSerializer):
         model = Job
         fields = '__all__'
         read_only_fields = ('recruiter', 'organization')
-        fields = ['job_name','id', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description','requirements','recruiter', 'organization', 'allowed_interview_languages', 'ask_for_language_preference']  # Explicitly define the fields you want to include
+        fields = ['job_name','id', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description','requirements','recruiter', 'organization', 'allowed_interview_languages', 'ask_for_reason_for_leaving_previous_job', 'ask_for_ctc_info']  # Explicitly define the fields you want to include
         # exclude = ('recruiter', 'organization')  # Exclude from input but keep in the model
     
     def create(self, validated_data):
@@ -123,6 +123,15 @@ class InterviewSerializer(serializers.ModelSerializer):
         except:
             return None
 
+class StartInterviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Interview
+        fields = [
+            'expected_ctc',
+            'current_ctc',
+            'reason_for_leaving_previous_job',
+            'language'
+        ]
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()

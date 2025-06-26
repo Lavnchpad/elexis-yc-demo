@@ -22,6 +22,7 @@ export const PreInterviewForm = ({ interviewData, onSubmit = async (data) => {}}
     if (!(interviewData instanceof CandidateInterviewInformationResponse)) {
         throw new Error("Invalid interview data provided to PreInterviewForm");
     }
+    console.log({ interviewData })
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -43,34 +44,45 @@ export const PreInterviewForm = ({ interviewData, onSubmit = async (data) => {}}
             reasonForLeavingJob,
             language
         );
-        if (onSubmit) {
-            setSubmitting(true);            
-        }
-    }
-
-    useEffect(() => {
-        if (submitting) {
-            onSubmit(new PreInterviewFormSubmission(
-                interviewData.currentCtc,
-                interviewData.expectedCtc,
-                interviewData.reasonForLeavingJob,
-                interviewData.language
-            )).then(() => {
+        if (onSubmit instanceof Function && interviewData) {
+            setSubmitting(true);
+            onSubmit(
+                submission
+            ).then(() => {
                 setSubmitting(false);
-                toast.success("Interview started successfully!");
+                // toast.success("Interview started successfully!");
             }).catch((error) => {
                 setSubmitting(false);
                 toast.error("Failed to start interview: " + error.message);
-            });
+            }).finally(() => {
+                setSubmitting(false);
+            }
+            );
         }
-    }, [submitting, onSubmit, interviewData]);
+    }
+    // useEffect(() => {
+    //     if (submitting) {
+    //         onSubmit(new PreInterviewFormSubmission(
+    //             interviewData.currentCtc,
+    //             interviewData.expectedCtc,
+    //             interviewData.reasonForLeavingJob,
+    //             interviewData.language
+    //         )).then(() => {
+    //             setSubmitting(false);
+    //             toast.success("Interview started successfully!");
+    //         }).catch((error) => {
+    //             setSubmitting(false);
+    //             toast.error("Failed to start interview: " + error.message);
+    //         });
+    //     }
+    // }, [submitting, onSubmit, interviewData]);
 
 
     const requiresInformationToBeFilled = interviewData.requiresCtcInfo || interviewData.requiresReasonForLeavingJob || interviewData.requiresLanguageInfo;
     return (<div className="p-6 space-y-4">
         <div className="text-center max-w-md mx-auto">
-            <h1 className="text-xl font-bold">Start Interview</h1>
-            <p className="text-black-600 mb-6">Hello {interviewData.candidateName}, your AI Interview has been schduled for {interviewData.jobName}.</p>
+            {/* <h1 className="text-xl font-bold">Start Interview</h1> */}
+            <p className="text-black-600 mb-6">Hello <span className='font-bold'>{interviewData.candidateName}</span>, your AI Interview has been schduled for {interviewData.jobName}.</p>
             {requiresInformationToBeFilled && (
                 <p className="text-left text-gray-500">Please fill the following information before starting the interview.</p>
             )}
@@ -82,6 +94,7 @@ export const PreInterviewForm = ({ interviewData, onSubmit = async (data) => {}}
                     <label htmlFor="currentCtc" className="block mb-2">Current CTC:</label>
                     <div className="flex space-x-2 vertical-center">
                         <input
+                            defaultValue={interviewData.currentCtc || ""}
                             type="number"
                             id="currentCtc"
                             name="currentCtc"
@@ -90,7 +103,7 @@ export const PreInterviewForm = ({ interviewData, onSubmit = async (data) => {}}
                             step="0.01"
                             required
                         />
-                        <div className="flex vertical-center items-center">L.P.A</div>
+                        <div className="flex vertical-center items-center">LPA</div>
                     </div>
                 </div>
             )}
@@ -99,6 +112,7 @@ export const PreInterviewForm = ({ interviewData, onSubmit = async (data) => {}}
                     <label htmlFor="expectedCtc" className="block mb-2">Expected CTC:</label>
                     <div className="flex space-x-2 vertical-center">
                         <input
+                            defaultValue={interviewData.expectedCtc || ""}
                             type="number"
                             id="expectedCtc"
                             name="expectedCtc"
@@ -107,30 +121,34 @@ export const PreInterviewForm = ({ interviewData, onSubmit = async (data) => {}}
                             step="0.01"
                             required
                         />
-                        <div className="flex vertical-center items-center">L.P.A</div>
+                        <div className="flex vertical-center items-center">LPA</div>
                     </div>
                 </div>
             )}
             {interviewData?.requiresReasonForLeavingJob && (
                 <div>
                     <label htmlFor="reasonForLeavingJob" className="block mb-2">Reason for leaving previous job:</label>
-                    <input required type="text" id="reasonForLeavingJob" name="reasonForLeavingJob" className="border p-2 w-full" />
+                    <textarea required type="text" defaultValue={interviewData.reasonForLeaving} id="reasonForLeavingJob" name="reasonForLeavingJob" className="border p-2 w-full" />
                 </div>
             )}
-            {interviewData?.requiresLanguageInfo && (
+
                 <div className="flex space-x-2 vertical-center mb-2">
                     <label htmlFor="language" className="flex space-x-2 vertical-center">Language:</label>
-                    <select required name="language" id="language" className="border w-full">
-                        <option value="english">English</option>
-                        <option value="hindi">Hindi</option>
+                <select required name="language" id="language" className="border w-full" defaultValue={interviewData?.language}>
+                    {/* <option value="english">English</option>
+                        <option value="hindi">Hindi</option> */}
+                    {interviewData.availableLanguages?.map((lang) => (
+                        <option key={lang} value={lang}>{lang}</option>
+                    ))}
                     </select>
                 </div>
-            )}
+
             <Button disabled={submitting} className="w-full">
                 Start Interview
                 {submitting && <Loader className="animate-spin ml-2" />}
             </Button>
         </form>
     </div>);
+
 
 }

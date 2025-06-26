@@ -20,12 +20,13 @@ export class CandidateInterviewInformationResponse {
     date;
     time;
     language;
+    availableLanguages;
     isEarly;
     requiresCtcInfo;
     requiresReasonForLeavingJob;
     requiresLanguageInfo;
 
-    constructor(interviewId, candidateName, jobName, date, time, language, isEarly, requiresCtcInfo, requiresReasonForLeavingJob, requiresLanguageInfo) {
+    constructor(interviewId, candidateName, jobName, date, time, language, isEarly, requiresCtcInfo, requiresReasonForLeavingJob, availableLanguages, expectedCtc, currentCtc, reasonForLeaving) {
         this.interviewId = interviewId;
         this.candidateName = candidateName;
         this.jobName = jobName;
@@ -35,7 +36,10 @@ export class CandidateInterviewInformationResponse {
         this.isEarly = isEarly;
         this.requiresCtcInfo = requiresCtcInfo;
         this.requiresReasonForLeavingJob = requiresReasonForLeavingJob;
-        this.requiresLanguageInfo = requiresLanguageInfo;
+        this.availableLanguages = availableLanguages;
+        this.reasonForLeaving = reasonForLeaving;
+        this.expectedCtc = expectedCtc;
+        this.currentCtc = currentCtc;
     }
 }
 
@@ -55,7 +59,10 @@ class CandidateInterviewResponseFactory {
                 data.isEarly,
                 data.requiresCtcInfo,
                 data.requiresReasonForLeavingJob,
-                data.requiresLanguageInfo
+                data.availableLanguages || [],
+                data.expectedCtc,
+                data.currentCtc,
+                data.reasonForLeaving,
             );
         }
         return new CandidateInterviewErrorResponse("Error fetching interview information");
@@ -67,12 +74,22 @@ export class CandidateInterviewService {
      * This is an Unauthenticated service for handling candidate interviews.
      * It provides methods to start an interview and get interview information.
      */
-    static async startInterview(interviewId) {
+    static async startInterview({ interviewId, current_ctc, expected_ctc, reason_for_leaving_previous_job, language }) {
         try {
+            const body = {
+                current_ctc,
+                expected_ctc,
+                reason_for_leaving_previous_job,
+                language
+            }
             const response = await fetch(
                 `${import.meta.env.VITE_API_BASE_URL}/interviews/${interviewId}/start/`,
                 {
-                    method: "GET",
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(body),
                 }
             );
 

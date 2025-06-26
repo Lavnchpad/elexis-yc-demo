@@ -25,6 +25,7 @@ import { Input } from "../../ui/input";
 import { interviewLanguages } from "@/lib/utils";
 import { Delete, Loader } from "lucide-react";
 import MultiSelect from "@/components/ui/MultiSelect";
+import { Checkbox } from "@/components/ui/checkBox";
 
 // Validation schema
 const jobSchema = z.object({
@@ -33,6 +34,8 @@ const jobSchema = z.object({
   min_ctc: z.string().min(1, { message: "Min CTC is required" }),
   max_ctc: z.string().min(1, { message: "Max CTC is required" }),
   job_description: z.string().min(1, { message: "Description is required" }),
+  ask_for_ctc_info: z.boolean().default(true),
+  ask_for_reason_for_leaving_previous_job: z.boolean().default(true),
   topics: z.array(
     z.object({
       requirement: z.string().nonempty("Topic is required"),
@@ -56,6 +59,8 @@ const ManageJobs = ({ onJobCreated, children }) => {
       min_ctc: "",
       max_ctc: "",
       job_description: "",
+      ask_for_ctc_info: true,
+      ask_for_reason_for_leaving_previous_job: true,
       topics: [{ requirement: "", weightage: "" }]
       // additional_data: "",
     },
@@ -78,13 +83,15 @@ const ManageJobs = ({ onJobCreated, children }) => {
     }
     setLoading(true);
     try {
-      const { job_name, location, min_ctc, max_ctc, job_description } = data;
+      const { job_name, location, min_ctc, max_ctc, job_description, ask_for_reason_for_leaving_previous_job, ask_for_ctc_info } = data;
       await axios.post(`/jobs/`, {
         job_name,
         location,
         min_ctc,
         max_ctc, job_description,
         requirements: data.topics,
+        ask_for_reason_for_leaving_previous_job,
+        ask_for_ctc_info,
         allowed_interview_languages: selectedLanguages,
       },
       );
@@ -194,7 +201,8 @@ const ManageJobs = ({ onJobCreated, children }) => {
                       />
 
                       {/* Select Job Interview Languages */}
-                      <div className="">
+                      <div className="flex justify-between">
+                        <div>
                         {
                           selectedLanguages?.map((lang, index) => (
                             <span key={index} className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium mr-2 mb-2">
@@ -206,42 +214,58 @@ const ManageJobs = ({ onJobCreated, children }) => {
                           ))
                         }
                         <MultiSelect actionTitle={"Language"} values={interviewLanguages} selectedItems={selectedLanguages} setSelectedItems={setSelectedLanguages} dropdownLabel={"Interview Languages"} />
+                        </div>
+                        <div>
+                          <FormField
+                            control={form.control}
+                            name="ask_for_ctc_info"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  className="flex flex-row items-center gap-2"
+                                >
+                                  <FormLabel className="text-sm font-normal mt-2">
+                                    Ask CTC Info
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="ask_for_reason_for_leaving_previous_job"
+                            render={({ field }) => {
+
+                              return (
+                                <FormItem
+                                  className="flex flex-row items-center gap-2"
+                                >
+                                  <FormLabel className="text-sm font-normal mt-2">
+                                    {/* {item.label} */}
+                                    Ask Reason for leaving previous job
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                        </div>
                       </div>
+
                     </>
                     :
                     <>
-                      {/* {Array(addTopic).fill(-1).map((_, i) => (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" key={i}>
-                          <FormField
-                            control={form.control}
-                            name={`topic-${i}`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Topic</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name={`weight-${i}`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Weightage</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Enter Job Description" type="number" min={0} max={5} {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                      ))} */}
                       {fields.map((field, i) => (
                         <div
                           key={field.id}
@@ -296,23 +320,6 @@ const ManageJobs = ({ onJobCreated, children }) => {
                       <Button className="self-end" variant='destructive' disabled={fields.length === 5} onClick={() => append({ topic: "", weight: "" })}>Add another topic +</Button>
                     </>
                   }
-                  {/* <FormField
-                  control={form.control}
-                  name="additional_data"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Additional Information</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter additional information"
-                          {...field}
-                          rows={3}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                /> */}
                 <DialogFooter>
                     {pageNumber === 1 ?
                       <Button type="button" onClick={() => setpageNumber(prev => prev + 1)}>

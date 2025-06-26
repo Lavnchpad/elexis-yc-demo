@@ -8,6 +8,10 @@ from django.utils import timezone
 from typing import Optional
 from typing_extensions import Self
 
+LANG_CHOICES = [
+        ('english', 'English'),
+        ('hindi', 'Hindi'),
+]
 class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_date = models.DateTimeField(auto_now_add=True)
@@ -100,14 +104,7 @@ class Candidate(BaseModel):
 
     def __str__(self):
         return self.name
-
-
 class Job(BaseModel):
-    LANG_CHOICES = [
-        ('english', 'English'),
-        ('hindi', 'Hindi'),
-       
-    ]
     recruiter = models.ForeignKey(
         Recruiter, on_delete=models.CASCADE, related_name="jobs"
     )
@@ -142,8 +139,6 @@ class Job(BaseModel):
         """
         Returns the allowed languages as a list of strings.
         """
-        if not self.ask_for_language_preference:
-            return []
         return [lang.strip() for lang in self._allowed_interview_languages.split(',') if lang.strip()]
 
     @allowed_interview_languages.setter
@@ -171,10 +166,6 @@ class Interview(BaseModel):
         ('hold', 'Hold'),
         ('registered', 'Registered'),
     ]
-    LANGUAGES = [
-        ("english", "English"),
-        ("hindi", "Hindi")
-    ]
 
     candidate = models.ForeignKey(
         Candidate, on_delete=models.CASCADE, related_name="interviews"
@@ -200,7 +191,7 @@ class Interview(BaseModel):
     skills = models.JSONField(default=dict, blank=True, null=True)
     meeting_room = models.URLField(blank=True, null=True)
     language = models.CharField(
-        max_length=50, default="english", choices=LANGUAGES, help_text="Language used in the interview"
+        max_length=50, default="english", choices=LANG_CHOICES, help_text="Language used in the interview"
     )
     ecs_task_created = models.BooleanField(default=False)
     expected_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)

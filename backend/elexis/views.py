@@ -24,6 +24,7 @@ from .serializers import (
     LoginSerializer,
     JobRequirementSerializer,
     ChangePasswordSerializer,
+    StartInterviewSerializer
 )
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, now
@@ -267,7 +268,6 @@ class InterviewViewSet(viewsets.ModelViewSet):
         @action(detail=True, methods=["get"], permission_classes=[AllowAny])
         def info(self, request, pk=None):
             interview = self.get_object()
-
             current_time = now()
             interview_start = make_aware(datetime.combine(interview.date, interview.time))
             interview_end = interview_start + timedelta(hours=1)
@@ -289,7 +289,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             if not interview.meeting_room:
-                
+                daily_service = DailyMeetingService()
                 room = daily_service.create_meeting_room()
                 interview.meeting_room = room.room_url
                 interview.save()
@@ -303,13 +303,15 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 "isEarly": False,
                 "requiresCtcInfo": interview.job.ask_for_ctc_info,
                 "requiresReasonForLeavingJob": interview.job.ask_for_reason_for_leaving_previous_job,
-                "requiresLanguageInfo": interview.job.ask_for_language_preference,
+                "availableLanguages": interview.job.allowed_interview_languages,
+                "expectedCtc": interview.expected_ctc,
+                "currentCtc": interview.current_ctc,
+                "reasonForLeaving": interview.reason_for_leaving_previous_job,
             })
 
-        @action(detail=True, methods=["get"], permission_classes=[AllowAny])
+        @action(detail=True, methods=["post"], permission_classes=[AllowAny])
         def start(self, request, pk=None):
             interview = self.get_object()
-
             current_time = now()
             interview_start = make_aware(datetime.combine(interview.date, interview.time))
             interview_end = interview_start + timedelta(hours=1)
@@ -337,7 +339,12 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 room = daily_service.create_meeting_room()
                 interview.meeting_room = room.room_url
                 interview.save()
-                
+            
+            serializer = StartInterviewSerializer(interview , data = request.data, partial=True)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else :
+                serializer.save()
             candidate = interview.candidate
 
             tries = 5

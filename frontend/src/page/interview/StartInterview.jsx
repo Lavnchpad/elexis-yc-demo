@@ -26,9 +26,14 @@ const StartInterview = () => {
   switch (data?.constructor) {
     case CandidateInterviewInformationResponse:
       return <PreInterviewForm interviewData={data} onSubmit={async (data) => {
-        // Wait 15 secs
-        await new Promise(resolve => setTimeout(resolve, 15000));
-        // Start the interview
+        try {
+          await CandidateInterviewService.startInterview({ current_ctc: data.currentCtc, expected_ctc: data.expectedCtc, reason_for_leaving_previous_job: data.reasonForLeavingJob, language: data.language, interviewId });
+
+        } catch (error) {
+          console.error("Error saving pre-interview info:", error);
+          toast.error("Failed to save pre-interview information. Please try again later.");
+          throw error;
+        }
       }}/>
     case CandidateTimeNotMatchingResponse:
       return <InterviewTimeNotInRange data={data} />;
