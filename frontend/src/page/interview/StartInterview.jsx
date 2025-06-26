@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Loader } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -11,6 +9,7 @@ import { PreInterviewForm } from "./PreinterviewForm";
 const StartInterview = () => {
   const { interviewId } = useParams();
   const [data, setData] = useState(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     CandidateInterviewService.getInterviewInformation(interviewId)
@@ -18,10 +17,15 @@ const StartInterview = () => {
         setData(data);
       }).catch((error) => {
         setData(undefined);
+        setError(true);
+        console.error("Error fetching interview information:", error);
       })
   }, []);
+  if (error) {
+    return <InterviewLoader variant="error" />;
+  }
   if (!data) {
-    return <InterviewLoader />;
+    return <InterviewLoader variant="loader" />;
   }
   switch (data?.constructor) {
     case CandidateInterviewInformationResponse:

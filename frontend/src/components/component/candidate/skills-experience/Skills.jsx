@@ -34,8 +34,8 @@ const skillCategories = [
 ]
 
 const Experience = ({skills}) => {
-  if(skills == undefined) {
-    return "No skills data available"
+  if (!skills) {
+    return null
   }
   return (
     Array.isArray(skills) ? (
@@ -61,7 +61,7 @@ const Experience = ({skills}) => {
         </div>
       </CardContent>
     </Card>
-    ) : "No skills data available"
+    ) : null
   )
 }
 export default Experience;

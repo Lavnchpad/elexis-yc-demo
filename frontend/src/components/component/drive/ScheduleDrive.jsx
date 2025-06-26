@@ -51,7 +51,6 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
   const { interviewData, fetchInterviewDetails, setSelectedJob } = useContext(InterviewContext);
   const [interviewId, setInterviewId] = useState()
   const [open, setOpen] = useState(false);
-  console.log("interviewData", interviewData)
   const form = useForm({
     resolver: zodResolver(scheduleSchema),
     defaultValues: {
