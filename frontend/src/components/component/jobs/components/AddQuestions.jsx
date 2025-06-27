@@ -15,6 +15,7 @@ export default function QuestionnaireEditor({
     // onSaveQuestions,
     onAddQuestion,
     onRemoveQuestion,
+    viewOnly = false, // Added viewOnly prop to control editability
 }) {
     const [newQuestionText, setNewQuestionText] = useState('');
     const newQuestionInputRef = useRef(null);
@@ -55,10 +56,10 @@ export default function QuestionnaireEditor({
     return (
         <div className="">
             <div className="py-6 space-y-6">
-                <div className="flex flex-col gap-3 p-1 border  rounded-lg  shadow-inner">
-                    <Label htmlFor="new-question-input" className="text-md font-semibold text-lg">
+                <div className="flex flex-col gap-3 rounded-lg ">
+                    {/* <Label htmlFor="new-question-input" className="text-md font-semibold text-lg">
                         Add New Question
-                    </Label>
+                    </Label> */}
                     <div className="flex gap-2">
                         <Input
                             id="new-question-input"
@@ -71,14 +72,15 @@ export default function QuestionnaireEditor({
                                     handleInternalAddQuestion();
                                 }
                             }}
-                            className="flex-1 rounded-md text-base py-2"
+                            className="flex-1 text-base py-2"
                         />
                         <Button
                             onClick={handleInternalAddQuestion}
+                            disabled={!newQuestionText.trim() || viewOnly}
 
                         >
                             <PlusCircle className="w-5 h-5" />
-                            <span>Add</span>
+                            {/* <span>Add</span> */}
                         </Button>
                     </div>
                 </div>
@@ -103,6 +105,7 @@ export default function QuestionnaireEditor({
                                         onClick={() => handleInternalRemoveQuestion(question.id)}
                                         className="rounded-full w-8 h-8 flex-shrink-0"
                                         title="Remove Question"
+                                        disabled={viewOnly}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                         <span className="sr-only">Remove</span>

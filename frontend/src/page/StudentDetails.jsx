@@ -46,6 +46,7 @@ import ErrorBoundary from "@/utils/ErrorBoundary";
 // import { toast } from "sonner";
 import { copyLink } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import InterviewQsns from "./components/InterviewQsns";
 const StudentDetails = ({ }) => {
   const { id: candidateidInUrl } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -385,6 +386,7 @@ const StudentDetails = ({ }) => {
                   </Button>
                 </div>
                   </div>
+                  {selectedInterview && <InterviewQsns />}
                   {
                     selectedInterview?.current_ctc || selectedInterview?.expected_ctc || selectedInterview?.reason_for_leaving_previous_job ?
                       <div>
@@ -420,7 +422,6 @@ const StudentDetails = ({ }) => {
                       </div>
                       : null
                   }
-
               <div className="grid gap-6 md:grid-cols-[300px_1fr]">
                     <Experience experience={selectedInterview?.experience} />
                     <Skills skills={selectedInterview?.skills} />
