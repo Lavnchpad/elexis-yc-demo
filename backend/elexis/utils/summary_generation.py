@@ -172,3 +172,32 @@ def experience_information_generation(signed_url):
     except Exception as e:
         logger.error(f"Error extracting experience: {e}")
         return None
+
+
+def resume_summary_generator(signed_url):
+    response = requests.get(signed_url)
+    if response.status_code != 200:
+        logger.error("Failed to download file from signed URL")
+        return None
+
+    pdf_blob = BlobDict(data=response.content, mime_type="application/pdf")
+
+    try:
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        prompt = (
+            "You are an expert recruiter. Summarize the candidate's resume from the attached PDF. "
+            "The summary should include key skills, experiences, and qualifications relevant to the job role. "
+            "Return the summary as a JSON object with keys: 'skills', 'experience', 'qualifications'. "
+            "Do not return as markdown, return as plain JSON."
+        )
+        response = model.generate_content(
+            [prompt, pdf_blob],
+            stream=False,
+            generation_config={
+                "response_mime_type": "application/json",
+            }
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        logger.error(f"Error generating resume summary: {e}")
+        return None

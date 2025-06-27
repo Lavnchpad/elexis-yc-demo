@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Recruiter, Candidate, Job, Interview, Snapshots , JobRequirement
+from .models import Recruiter, Candidate, Job, Interview, Snapshots , JobRequirement, JobQuestions
 from django.contrib.auth.password_validation import validate_password
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from dotenv import load_dotenv
@@ -24,25 +24,34 @@ class RecruiterSerializer(serializers.ModelSerializer):
         if password:
             instance.set_password(password)
         return super().update(instance, validated_data)
-
+class JobQuestionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobQuestions
+        fields = ['id', 'question', 'sort_order']
 class JobRequirementSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobRequirement
         fields = ['id','requirement', 'weightage']
 class JobSerializer(serializers.ModelSerializer):
     requirements = JobRequirementSerializer(many=True)
+    questions =JobQuestionsSerializer(many=True)
     class Meta:
         model = Job
         fields = '__all__'
         read_only_fields = ('recruiter', 'organization')
-        fields = ['job_name','id', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description','requirements','recruiter', 'organization', 'allowed_interview_languages', 'ask_for_reason_for_leaving_previous_job', 'ask_for_ctc_info']  # Explicitly define the fields you want to include
+        fields = ['job_name','id', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description','requirements','questions','recruiter', 'organization', 'allowed_interview_languages', 'ask_for_reason_for_leaving_previous_job', 'ask_for_ctc_info']  # Explicitly define the fields you want to include
         # exclude = ('recruiter', 'organization')  # Exclude from input but keep in the model
     
     def create(self, validated_data):
         # Add recruiter automatically (assuming current user is the recruiter)
         validated_data['recruiter'] = self.context['request'].user  # Assign logged-in user
         requirements_data = validated_data.pop('requirements')
+        questions_data = validated_data.pop('questions', None)
+            
         job = Job.objects.create(**validated_data)
+        if questions_data is not None:
+            for question in questions_data:
+                JobQuestions.objects.create(job=job, **question)
         if requirements_data is not None:
             for req in requirements_data:
                 JobRequirement.objects.create(job=job, **req)
@@ -136,3 +145,27 @@ class StartInterviewSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+
+class GeneratedQuestionsSerializer(serializers.Serializer):
+    resume = serializers.ListField(
+        child=serializers.CharField(max_length=500),
+        help_text="List of questions derived from the resume."
+    )
+    job_role = serializers.ListField(
+        child=serializers.CharField(max_length=500),
+        help_text="List of questions related to the job role."
+    )
+    job_role_experience = serializers.ListField(
+        child=serializers.CharField(max_length=500),
+        help_text="List of questions about job role-specific experience."
+    )
+
+
+class QuestionsRequestSerializer(serializers.Serializer):
+    role = serializers.CharField(max_length=255, required=True)
+    job_description = serializers.CharField(required=True)
+    interview_id = serializers.CharField(required=False, allow_null=True, default=None) # with the interview id in req , we will get the resume
+    # resume_summary = serializers.BooleanField(required=False, allow_blank=True, default=False)
+    num_resume_questions = serializers.IntegerField(required=False, default=3)
+    num_job_role_questions = serializers.IntegerField(required=False, default=3)
+    num_job_role_experience_questions = serializers.IntegerField(required=False, default=3)

@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate
 # from django_filters.rest_framework import DjangoFilterBackend
 from elexis.services.ecs_task import ECSAIBotTaskService, ECSInterviewLanguages, ECSInterviewTaskContext
 from elexis.services.daily import DailyMeetingService
+from elexis.services.questions_generator import generate_questions, GeneratedQuestionsDto
+from elexis.utils.summary_generation import resume_summary_generator
 from rest_framework.exceptions import PermissionDenied
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from django.core.mail import send_mail
@@ -24,7 +26,9 @@ from .serializers import (
     LoginSerializer,
     JobRequirementSerializer,
     ChangePasswordSerializer,
-    StartInterviewSerializer
+    StartInterviewSerializer,
+    GeneratedQuestionsSerializer,
+    QuestionsRequestSerializer
 )
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, now
@@ -460,3 +464,43 @@ class JobViewSet(viewsets.ModelViewSet):
                          "criterias":  JobRequirementSerializer(job.requirements, many=True).data
                          })
 
+
+class QuestionsGeneratorAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        input_serializer = QuestionsRequestSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+
+       
+        validated_input_data = input_serializer.validated_data
+        role = validated_input_data['role']
+        job_description = validated_input_data['job_description']
+        interview_id = validated_input_data['interview_id']
+        # num_resume_questions = validated_input_data['num_resume_questions']
+        # num_job_role_questions = validated_input_data['num_job_role_questions']
+        # num_job_role_experience_questions = validated_input_data['num_job_role_experience_questions']
+        
+        if interview_id:
+            # If interview_id is provided, fetch the interview object
+            try:
+                interview = Interview.objects.get(id=interview_id)
+                resume = interview.candidate.resume.url
+            except Interview.DoesNotExist:
+                return Response({"error": "Interview not found."}, status=status.HTTP_404_NOT_FOUND)
+        generated_questions = generate_questions(role=role,
+                                                  job_description=job_description,
+                                                  resume_summary=''
+                                                #   resume_summary=resume_summary_generator(resume), # think how to get the summary
+                                                #   num_resume_questions=num_resume_questions,
+                                                #   num_job_role_questions=num_job_role_questions,
+                                                #   num_job_role_experience_questions=num_job_role_experience_questions
+                                                  )
+        generated_questions_dto = GeneratedQuestionsDto(
+            resume=generated_questions.resume,
+            job_role=generated_questions.job_role,
+            job_role_experience=generated_questions.job_role_experience
+        )
+
+        output_serializer = GeneratedQuestionsSerializer(generated_questions_dto)
+
+        return Response(output_serializer.data, status=status.HTTP_200_OK)
