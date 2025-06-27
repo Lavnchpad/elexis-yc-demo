@@ -12,6 +12,7 @@ function generateUniqueId(lastNumber) {
 
 export default function QuestionnaireEditor({
     questions = [],
+    interviewId,
     setQuestions,
     // onSaveQuestions,
     onAddQuestion,
@@ -58,13 +59,6 @@ export default function QuestionnaireEditor({
             onRemoveQuestion(idToRemove);
         }
     };
-
-    // Handler for saving all changes
-    // const handleInternalSaveChanges = () => {
-    //     if (onSaveQuestions) {
-    //         onSaveQuestions(questions);
-    //     }
-    // };
 
     return (
         <div className="">
@@ -148,7 +142,7 @@ export default function QuestionnaireEditor({
                                     </div>
                                 ))}
                             </div>
-                            <AiGeneratedQuestions aigeneratedQuestions={aigeneratedQuestions} setAiGeneratedQuestion={setAiGeneratedQuestion} getJdAndRole={getJdAndRole} viewOnly />
+                            <AiGeneratedQuestions aigeneratedQuestions={aigeneratedQuestions} setAiGeneratedQuestion={setAiGeneratedQuestion} getJdAndRole={getJdAndRole} viewOnly={viewOnly} interviewId={interviewId} />
                     </ScrollArea>
                 )}
             </div>

@@ -16,7 +16,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Recruiter, Candidate, Job, Interview, JobRequirement , JobRequirementEvaluation
+from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions , JobRequirementEvaluation, JobQuestions
 from elexis.utils.general import getHumanReadableTime
 from .serializers import (
     RecruiterSerializer,
@@ -236,6 +236,20 @@ class InterviewViewSet(viewsets.ModelViewSet):
         # Set the organization based on the candidate's organization
             organization = candidate.organization
             interview = serializer.save(scheduled_by=self.request.user,organization=organization)
+            #  save copy of the job questions to the Interview questions table
+            job_Questions = JobQuestions.objects.filter(job=interview.job)
+            new_interview_questions_instances = []
+            for question in job_Questions:
+                new_interview_questions_instances.append(
+                        InterviewQuestions(
+                            interview=interview, 
+                            question=question.question, 
+                            sort_order=question.sort_order
+                        )
+            )
+            if new_interview_questions_instances:
+                InterviewQuestions.objects.bulk_create(new_interview_questions_instances)
+
             interview.link = f"{CLIENT_URL}/interviews/{interview.id}/start/"
             self._update_status_fields(interview)
             interview.save()

@@ -386,7 +386,7 @@ const StudentDetails = ({ }) => {
                   </Button>
                 </div>
                   </div>
-                  {selectedInterview && <InterviewQsns viewOnly={isInterviewEnded(selectedInterview?.status)} />}
+                  {selectedInterview && <InterviewQsns viewOnly={isInterviewEnded(selectedInterview?.status)} initialQuestions={selectedInterview?.interview_questions} interviewDetails={selectedInterview} />}
                   {
                     selectedInterview?.current_ctc || selectedInterview?.expected_ctc || selectedInterview?.reason_for_leaving_previous_job ?
                       <div>

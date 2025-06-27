@@ -4,8 +4,8 @@ import { DialogFooter, DialogHeader, DialogTrigger, Dialog, DialogClose, DialogC
 import React, { useState } from 'react'
 import { toast } from 'sonner';
 
-export default function InterviewQsns({ viewOnly = false }) {
-  const [questions, setQuestions] = useState([{ 'id': 1, "question": 'What is your greatest strength?' }, { "question": 'Describe a challenge you faced and how you overcame it.', "id": 2 }]);
+export default function InterviewQsns({ viewOnly = false, initialQuestions, interviewDetails }) {
+  const [questions, setQuestions] = useState(initialQuestions || []);
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -18,7 +18,7 @@ export default function InterviewQsns({ viewOnly = false }) {
             Question to be asked for the selected interview
           </DialogDescription>
         </DialogHeader>
-        <QuestionnaireEditor questions={questions} setQuestions={setQuestions} viewOnly={viewOnly} />
+        <QuestionnaireEditor questions={questions} setQuestions={setQuestions} viewOnly={viewOnly} getJdAndRole={() => ({ role: interviewDetails?.job.job_name, jd: interviewDetails?.job.job_description })} interviewId={interviewDetails?.id} />
         <DialogFooter className="sm:justify-start">
           <Button disabled={viewOnly} type="button" onClick={() => {
             // do the needful

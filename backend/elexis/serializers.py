@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Recruiter, Candidate, Job, Interview, Snapshots , JobRequirement, JobQuestions
+from .models import Recruiter, Candidate, Job, Interview, Snapshots , JobRequirement, JobQuestions, InterviewQuestions
 from django.contrib.auth.password_validation import validate_password
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from dotenv import load_dotenv
@@ -101,8 +101,14 @@ class SnapshotSerializer(serializers.ModelSerializer):
         model = Snapshots
         fields = '__all__'
 
+class InterviewQuestionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InterviewQuestions
+        fields = ['id', 'question', 'sort_order']
+
 class InterviewSerializer(serializers.ModelSerializer):
     candidate = CandidateSerializer(read_only=True)
+    interview_questions = InterviewQuestionsSerializer(many=True)
     job = JobSerializer(read_only=True)
     candidate_id = serializers.PrimaryKeyRelatedField(
         queryset=Candidate.objects.all(), source='candidate', write_only=True
@@ -114,7 +120,35 @@ class InterviewSerializer(serializers.ModelSerializer):
     transcript = serializers.SerializerMethodField() 
     class Meta:
         model = Interview
-        fields = '__all__'
+        fields = [
+    'candidate',
+    'candidate_id',
+    'created_by',
+    'created_date',
+    'interview_questions',
+    'current_ctc',
+    'date',
+    'ecs_task_created',
+    'expected_ctc',
+    'experience',
+    'id',
+    'job',
+    'job_id',
+    'language',
+    'link',
+    'meeting_room',
+    'modified_by',
+    'modified_date',
+    'organization',
+    'reason_for_leaving_previous_job',
+    'scheduled_by',
+    'skills',
+    'snapshots',
+    'status',
+    'summary',
+    'time',
+    'transcript'
+]
         read_only_fields = ('scheduled_by', 'link','recruiter','organization')
     def get_snapshots(self, obj):
         snapshots = Snapshots.objects.filter(interview=obj)

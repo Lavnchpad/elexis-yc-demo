@@ -33,6 +33,9 @@ export const interviewLanguages = [
 
 export const isInterviewEnded = (status) => {
   if (status === InterviewStatus.ENDED || status === InterviewStatus.REJECTED || status === InterviewStatus.HOLD || status === InterviewStatus.ACCEPTED) {
+    console.log("Interview is ended or rejected or on hold or accepted");
     return true;
   }
+  console.log("Interview is not ended yet");
+  return false;
 }

@@ -39,11 +39,12 @@ export class GenerateQuestionsResponseFactory {
 
 
 export class GenerateQuestionsService {
-    static async generateQuestions(jobDescription, role) {
+    static async generateQuestions(jobDescription, role, interview_id) {
         try {
             const response = await axios.post('/generate-questions/', {
                 job_description: jobDescription,
-                role: role
+                role: role,
+                ...(interview_id ? { interview_id: interview_id } : null)
             });
             return GenerateQuestionsResponseFactory.getResponse(response.data);
         } catch (error) {

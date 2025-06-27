@@ -9,6 +9,7 @@ export default function AiGeneratedQuestions({
     setAiGeneratedQuestion,
     AiGeneratedQuestions,
     viewOnly = false,
+    interviewId
 }) {
     const [isLoading, setIsLoading] = useState(false)
     const [areQuestionsGenerated, setAreQuestionsGenerated] = useState(false)
@@ -22,7 +23,7 @@ export default function AiGeneratedQuestions({
         console.log("Generating questions for:", jd, role)
         try {
             setIsLoading(true)
-            const response = await GenerateQuestionsService.generateQuestions(jd, role)
+            const response = await GenerateQuestionsService.generateQuestions(jd, role, interviewId)
             setAiGeneratedQuestion(response)
             setAreQuestionsGenerated(true)
         } catch (error) {
