@@ -26,6 +26,7 @@ import { interviewLanguages } from "@/lib/utils";
 import { Delete, Loader } from "lucide-react";
 import MultiSelect from "@/components/ui/MultiSelect";
 import { Checkbox } from "@/components/ui/checkBox";
+import QuestionnaireEditor from "./components/AddQuestions";
 
 // Validation schema
 const jobSchema = z.object({
@@ -46,11 +47,15 @@ const jobSchema = z.object({
   // additional_data: z.string().optional(),
 });
 
+const lastPage = 3; // Total number of pages in the form
+const firstPage = 1;
+
 const ManageJobs = ({ onJobCreated, children }) => {
+  const [questions, setQuestions] = useState([{ 'id': 1, "question": 'What is your greatest strength?' }, { "question": 'Describe a challenge you faced and how you overcame it.', "id": 2 }]);
   const [selectedLanguages, setSelectedLanguages] = useState(['english']);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [pageNumber, setpageNumber] = useState(1);
+  const [pageNumber, setpageNumber] = useState(firstPage);
   const form = useForm({
     resolver: zodResolver(jobSchema),
     defaultValues: {
@@ -61,7 +66,7 @@ const ManageJobs = ({ onJobCreated, children }) => {
       job_description: "",
       ask_for_ctc_info: true,
       ask_for_reason_for_leaving_previous_job: true,
-      topics: [{ requirement: "", weightage: "" }]
+      topics: []
       // additional_data: "",
     },
   });
@@ -76,7 +81,6 @@ const ManageJobs = ({ onJobCreated, children }) => {
   const authUser = JSON.parse(localStorage.getItem("user"));
   const canManageJobs = authUser?.can_manage_jobs || authUser?.is_admin;
   const onSubmit = async (data) => {
-    console.log({ data })
     if (!canManageJobs) {
       alert("You do not have permission to manage jobs.");
       return;
@@ -93,13 +97,14 @@ const ManageJobs = ({ onJobCreated, children }) => {
         ask_for_reason_for_leaving_previous_job,
         ask_for_ctc_info,
         allowed_interview_languages: selectedLanguages,
+        questions: questions?.map(q => q.question) || [],
       },
       );
-        if (onJobCreated) {
-          onJobCreated();
-        }
-        form.reset();
-        setOpen(false);
+      if (onJobCreated) {
+        onJobCreated();
+      }
+      form.reset();
+      setOpen(false);
 
     } catch (error) {
       console.error("Error creating job:", error);
@@ -108,6 +113,7 @@ const ManageJobs = ({ onJobCreated, children }) => {
       setLoading(false);
     }
   };
+  console.log('rerender')
 
   return (
     <div>
@@ -118,19 +124,22 @@ const ManageJobs = ({ onJobCreated, children }) => {
             <DialogTitle>Create Job</DialogTitle>
             <DialogDescription>
               {
-                pageNumber === 1 ?
+                pageNumber === firstPage ?
                   "Fill in the job details below. Click save when you're done."
                   :
-                  "Add must know topics and their weightage"
-              } 
+                  pageNumber === 2 ?
+                    "Add must know topics and their weightage for the job. if not required, you can remove the topic and move to the next page."
+                    :
+                    "Add questions for the job. You can add custom questions as well."
+              }
             </DialogDescription>
           </DialogHeader>
           {!canManageJobs ? (
             <div className="text-red-500 text-center">You do not have permission to manage jobs.</div>
           ) : (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  {pageNumber === 1 ?
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[95%] overflow-y-scroll">
+                  {pageNumber === firstPage ?
                     <>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
@@ -265,6 +274,7 @@ const ManageJobs = ({ onJobCreated, children }) => {
 
                     </>
                     :
+                    pageNumber === 2 ?
                     <>
                       {fields.map((field, i) => (
                         <div
@@ -316,29 +326,29 @@ const ManageJobs = ({ onJobCreated, children }) => {
 
                         </div>
                       ))}
-
                       <Button className="self-end" variant='destructive' disabled={fields.length === 5} onClick={() => append({ topic: "", weight: "" })}>Add another topic +</Button>
                     </>
+                      :
+                      <QuestionnaireEditor questions={questions} setQuestions={setQuestions} />
                   }
-                <DialogFooter>
-                    {pageNumber === 1 ?
-                      <Button type="button" onClick={() => setpageNumber(prev => prev + 1)}>
+                  <DialogFooter>
+                    <div className="space-x-2">
+                      <Button type="button" className={`${pageNumber === firstPage ? 'hidden' : ''}`} disabled={pageNumber === firstPage} onClick={() => setpageNumber(prev => prev - 1)} variant="outline">
+                        Previous Page
+                      </Button>
+                      <Button type="button" className={`${pageNumber === lastPage ? 'hidden' : ''}`} disabled={pageNumber === lastPage} onClick={() => setpageNumber(prev => prev + 1)}>
                         Next Page
                       </Button>
-                      :
-                      <div className="space-x-2">
-                        <Button type="button" onClick={() => setpageNumber(prev => prev - 1)} variant="outline">
-                          Previous Page
-                        </Button>
-                        <Button type="submit" disabled={loading}>
-                    {loading ? (
-                      <Loader className="animate-spin mr-2" size={16} />
-                    ) : (
-                      "Create Job"
-                    )}
-                  </Button>
-                      </div>
-                    }
+
+                      <Button type="submit" className={`${pageNumber !== lastPage ? 'hidden' : ''}`} disabled={loading || pageNumber !== lastPage}>
+                        {loading ? (
+                          <Loader className="animate-spin mr-2" size={16} />
+                        ) : (
+                          "Create Job"
+                        )}
+                      </Button>
+                    </div>
+
 
                 </DialogFooter>
               </form>

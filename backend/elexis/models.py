@@ -264,3 +264,21 @@ class MaintaineceWindow(BaseModel):
             return cls.objects.filter(start_time__lte=now, end_time__gte=now, is_draft=False).first()
         except cls.DoesNotExist:
             return None
+        
+
+class JobQuestions(BaseModel):
+    job = models.ForeignKey(
+        Job, on_delete=models.DO_NOTHING, related_name="questions"
+    )
+    question = models.TextField()
+
+    def __str__(self):
+        return f"Question for {self.job.job_name}: {self.question}"
+    
+class InterviewQuestions(BaseModel):
+    interview = models.ForeignKey(
+        Interview, on_delete=models.CASCADE, related_name="interview_questions"
+    )
+    question = models.TextField()
+    def __str__(self):
+        return f"Question for Interview {self.interview.id}: {self.question}"
