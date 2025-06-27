@@ -44,7 +44,7 @@ import Skills from "@/components/component/candidate/skills-experience/Skills";
 import AddCandidate from "@/components/component/candidate/AddCandidate";
 import ErrorBoundary from "@/utils/ErrorBoundary";
 // import { toast } from "sonner";
-import { copyLink } from "@/lib/utils";
+import { copyLink, isInterviewEnded } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import InterviewQsns from "./components/InterviewQsns";
 const StudentDetails = ({ }) => {
@@ -386,7 +386,7 @@ const StudentDetails = ({ }) => {
                   </Button>
                 </div>
                   </div>
-                  {selectedInterview && <InterviewQsns />}
+                  {selectedInterview && <InterviewQsns viewOnly={isInterviewEnded(selectedInterview?.status)} />}
                   {
                     selectedInterview?.current_ctc || selectedInterview?.expected_ctc || selectedInterview?.reason_for_leaving_previous_job ?
                       <div>

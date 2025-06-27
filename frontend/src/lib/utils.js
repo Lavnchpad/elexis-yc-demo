@@ -1,3 +1,4 @@
+import { InterviewStatus } from "@/utils/StatusButton";
 import { clsx } from "clsx";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge"
@@ -29,3 +30,9 @@ export const interviewLanguages = [
   // { key: "Italian", value: "Italian" },
   // { key: "Chinese", value: "Chinese" }
 ]
+
+export const isInterviewEnded = (status) => {
+  if (status === InterviewStatus.ENDED || status === InterviewStatus.REJECTED || status === InterviewStatus.HOLD || status === InterviewStatus.ACCEPTED) {
+    return true;
+  }
+}

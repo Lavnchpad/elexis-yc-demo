@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
+import AiGeneratedQuestions from './AiGeneratedQuestions';
+import { toast } from 'sonner';
 
 function generateUniqueId(lastNumber) {
     return `${lastNumber++}`;
@@ -14,19 +15,31 @@ export default function QuestionnaireEditor({
     setQuestions,
     // onSaveQuestions,
     onAddQuestion,
+    getJdAndRole,
     onRemoveQuestion,
     viewOnly = false, // Added viewOnly prop to control editability
 }) {
     const [newQuestionText, setNewQuestionText] = useState('');
+    const [aigeneratedQuestions, setAiGeneratedQuestion] = useState([])
     const newQuestionInputRef = useRef(null);
 
-
+    const handleAddAiQuestion = (id) => {
+        const questionToAdd = aigeneratedQuestions.find(q => q.id === id);
+        if (questionToAdd) {
+            const newQuestion = { id: generateUniqueId(questions[questions.length - 1].id + 1), question: questionToAdd.question.trim() };
+            // setting the AI generated question to the original selected question array state
+            setQuestions((prev) => {
+                return [...prev, newQuestion];
+            });
+            toast.success(`Question "${questionToAdd.question}" added successfully!`);
+            setAiGeneratedQuestion((prev) => prev.filter(q => q.id !== id));
+        }
+    }
     const handleInternalAddQuestion = () => {
         if (newQuestionText.trim()) {
             const newQuestion = { id: generateUniqueId(questions[questions.length - 1].id + 1), question: newQuestionText.trim() };
             setQuestions((prev) => {
-                const a = [...prev, newQuestion];
-                return a;
+                return [...prev, newQuestion];
             });
             setNewQuestionText('');
             if (newQuestionInputRef.current) {
@@ -84,8 +97,7 @@ export default function QuestionnaireEditor({
                         </Button>
                     </div>
                 </div>
-
-                <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">Current Questions ({questions.length})</h3>
+                <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">Selected Questions ({questions.length})</h3>
                 {questions.length === 0 ? (
                     <p className="text-gray-500 text-center italic py-4">No questions added yet. Start by adding one!</p>
                 ) : (
@@ -113,6 +125,30 @@ export default function QuestionnaireEditor({
                                 </div>
                             ))}
                         </div>
+                            {/*  Add AI Generated Questions Section */}
+                            <div className="space-y-3 text-xs shadow-sm mt-4">
+                                {aigeneratedQuestions.map((question, index) => (
+                                    <div
+                                        key={question.id}
+                                        className="flex items-center justify-between p-3 border border-gray-200 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                                    >
+                                        <span className="text-gray-800 flex-1 mr-4">
+                                            * {question.question}
+                                        </span>
+                                        <Button
+                                            size="icon"
+                                            onClick={() => handleAddAiQuestion(question.id)}
+                                            className="rounded-full w-8 h-8 flex-shrink-0"
+                                            title="Add Question"
+                                            disabled={viewOnly}
+                                        >
+                                            <PlusCircle className="w-4 h-4" />
+                                            <span className="sr-only">Add</span>
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                            <AiGeneratedQuestions aigeneratedQuestions={aigeneratedQuestions} setAiGeneratedQuestion={setAiGeneratedQuestion} getJdAndRole={getJdAndRole} viewOnly />
                     </ScrollArea>
                 )}
             </div>

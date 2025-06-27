@@ -71,6 +71,14 @@ const ManageJobs = ({ onJobCreated, children }) => {
     },
   });
 
+  const { watch } = form;
+  const job_role = watch("job_name");
+  const jd = watch("job_description");
+
+  function getJdAndRole() {
+    return { jd, role: job_role };
+  }
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "topics" // This must match the defaultValues key
@@ -97,7 +105,7 @@ const ManageJobs = ({ onJobCreated, children }) => {
         ask_for_reason_for_leaving_previous_job,
         ask_for_ctc_info,
         allowed_interview_languages: selectedLanguages,
-        questions: questions?.map(q => q.question) || [],
+        questions: questions?.map((q, index) => ({ sort_order: index, question: q.question } || [])),
       },
       );
       if (onJobCreated) {
@@ -113,7 +121,6 @@ const ManageJobs = ({ onJobCreated, children }) => {
       setLoading(false);
     }
   };
-  console.log('rerender')
 
   return (
     <div>
@@ -329,7 +336,7 @@ const ManageJobs = ({ onJobCreated, children }) => {
                       <Button className="self-end" variant='destructive' disabled={fields.length === 5} onClick={() => append({ topic: "", weight: "" })}>Add another topic +</Button>
                     </>
                       :
-                      <QuestionnaireEditor questions={questions} setQuestions={setQuestions} />
+                      <QuestionnaireEditor questions={questions} setQuestions={setQuestions} getJdAndRole={getJdAndRole} />
                   }
                   <DialogFooter>
                     <div className="space-x-2">

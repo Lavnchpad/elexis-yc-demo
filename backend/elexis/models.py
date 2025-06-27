@@ -268,7 +268,7 @@ class MaintaineceWindow(BaseModel):
 
 class JobQuestions(BaseModel):
     job = models.ForeignKey(
-        Job, on_delete=models.DO_NOTHING, related_name="questions"
+        Job, on_delete=models.CASCADE, related_name="questions"
     )
     question = models.TextField()
     sort_order = models.IntegerField(
