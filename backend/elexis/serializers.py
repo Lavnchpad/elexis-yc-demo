@@ -118,7 +118,7 @@ class InterviewQuestionsSerializer(serializers.ModelSerializer):
 
 class InterviewSerializer(serializers.ModelSerializer):
     candidate = CandidateSerializer(read_only=True)
-    interview_questions = InterviewQuestionsSerializer(many=True)
+    interview_questions = InterviewQuestionsSerializer(many=True, partial=True, required=False)
     job = JobSerializer(read_only=True)
     candidate_id = serializers.PrimaryKeyRelatedField(
         queryset=Candidate.objects.all(), source='candidate', write_only=True

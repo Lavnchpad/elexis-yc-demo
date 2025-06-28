@@ -521,18 +521,20 @@ class QuestionsGeneratorAPIView(APIView):
         # num_resume_questions = validated_input_data['num_resume_questions']
         # num_job_role_questions = validated_input_data['num_job_role_questions']
         # num_job_role_experience_questions = validated_input_data['num_job_role_experience_questions']
-        
+        resume = ""
         if interview_id:
             # If interview_id is provided, fetch the interview object
             try:
                 interview = Interview.objects.get(id=interview_id)
-                resume = interview.candidate.resume.url
+                resume_url = interview.candidate.resume.url
+                if resume_url:
+                    resume = resume_summary_generator(resume_url)
+                    print("Resume Summary Generated:", resume)
             except Interview.DoesNotExist:
                 return Response({"error": "Interview not found."}, status=status.HTTP_404_NOT_FOUND)
         generated_questions = generate_questions(role=role,
                                                   job_description=job_description,
-                                                  resume_summary=''
-                                                #   resume_summary=resume_summary_generator(resume), # think how to get the summary
+                                                  resume_summary=resume, # think how to get the summary
                                                 #   num_resume_questions=num_resume_questions,
                                                 #   num_job_role_questions=num_job_role_questions,
                                                 #   num_job_role_experience_questions=num_job_role_experience_questions

@@ -41,7 +41,7 @@ export class GenerateQuestionsResponseFactory {
 export class GenerateQuestionsService {
     static async generateQuestions(jobDescription, role, interview_id) {
         try {
-            const response = await axios.post('/generate-questions/', {
+            const response = await axios.post(`/generate-questions/?interview_id=${interview_id}`, {
                 job_description: jobDescription,
                 role: role,
                 ...(interview_id ? { interview_id: interview_id } : null)

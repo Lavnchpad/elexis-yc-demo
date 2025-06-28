@@ -175,9 +175,12 @@ def experience_information_generation(signed_url):
 
 
 def resume_summary_generator(signed_url):
+    if not signed_url:
+        logger.error("Signed URL is empty or None")
+        return None
     response = requests.get(signed_url)
     if response.status_code != 200:
-        logger.error("Failed to download file from signed URL")
+        logger.error("Failed to download file from signed URL", signed_url)
         return None
 
     pdf_blob = BlobDict(data=response.content, mime_type="application/pdf")

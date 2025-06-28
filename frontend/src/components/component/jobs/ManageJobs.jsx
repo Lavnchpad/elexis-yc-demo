@@ -51,7 +51,7 @@ const lastPage = 3; // Total number of pages in the form
 const firstPage = 1;
 
 const ManageJobs = ({ onJobCreated, children }) => {
-  const [questions, setQuestions] = useState([{ 'id': 1, "question": 'What is your greatest strength?' }, { "question": 'Describe a challenge you faced and how you overcame it.', "id": 2 }]);
+  const [questions, setQuestions] = useState([]);
   const [selectedLanguages, setSelectedLanguages] = useState(['english']);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
