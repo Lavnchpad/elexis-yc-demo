@@ -1,6 +1,7 @@
 import boto3
 from django.conf import settings
 import enum
+import json
 
 class ECSLaunchType:
     """
@@ -105,7 +106,7 @@ class ECSAIBotTaskService:
                         {'name': 'RESUME_BUCKET_REGION', 'value': context.resume_bucket_region},
                         {'name': 'JOB_DESCRIPTION', 'value': context.job_description},
                         {'name': 'DAILY_API_KEY', 'value': context.daily_api_key},
-                        {'name': 'QUESTIONS', 'value': ','.join(context.questions) if context.questions else ''}
+                        {'name': 'QUESTIONS', 'value': json.dumps(context.questions) if context.questions else '[]'}
                     ]
                 }
             ]

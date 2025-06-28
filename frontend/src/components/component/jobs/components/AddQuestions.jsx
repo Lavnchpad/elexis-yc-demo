@@ -12,6 +12,7 @@ function generateUniqueId() {
 
 export default function QuestionnaireEditor({
     questions = [],
+    jobView = false,
     interviewId,
     setQuestions,
     // onSaveQuestions,
@@ -142,7 +143,7 @@ export default function QuestionnaireEditor({
                                     </div>
                                 ))}
                             </div>
-                            <AiGeneratedQuestions aigeneratedQuestions={aigeneratedQuestions} setAiGeneratedQuestion={setAiGeneratedQuestion} getJdAndRole={getJdAndRole} viewOnly={viewOnly} interviewId={interviewId} />
+                    <AiGeneratedQuestions aigeneratedQuestions={aigeneratedQuestions} setAiGeneratedQuestion={setAiGeneratedQuestion} getJdAndRole={getJdAndRole} viewOnly={viewOnly} interviewId={interviewId} jobView={!!jobView} />
                     </ScrollArea>
 
             </div>

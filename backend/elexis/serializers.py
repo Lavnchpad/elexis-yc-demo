@@ -27,14 +27,18 @@ class RecruiterSerializer(serializers.ModelSerializer):
 class JobQuestionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobQuestions
-        fields = ['id', 'question', 'sort_order']
+        fields = '__all__'
+    def validate_job(self, value):
+        if not Job.objects.filter(id=value.id).exists():
+            raise serializers.ValidationError("Interview with this ID does not exist.")
+        return value
 class JobRequirementSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobRequirement
         fields = ['id','requirement', 'weightage']
 class JobSerializer(serializers.ModelSerializer):
     requirements = JobRequirementSerializer(many=True)
-    questions =JobQuestionsSerializer(many=True)
+    questions =JobQuestionsSerializer(many=True, required=False, allow_empty=True)
     class Meta:
         model = Job
         fields = '__all__'

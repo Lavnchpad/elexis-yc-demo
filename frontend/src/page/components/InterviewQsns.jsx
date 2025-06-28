@@ -5,7 +5,8 @@ import axios from 'axioss';
 import React, { useState } from 'react'
 import { toast } from 'sonner';
 
-export default function InterviewQsns({ viewOnly = false, initialQuestions, interviewDetails }) {
+export default function InterviewQsns({ viewOnly = false, initialQuestions, interviewDetails, jobView = false }) {
+  // If jobView is true, it means we are on the job page and we need to handle questions differently
   const [questions, setQuestions] = useState(initialQuestions?.map(qsn => ({ ...qsn, isSaved: true }) || []));
   const [open, setOpen] = useState(false);
   const saveQuestionInDb = async () => {
@@ -15,16 +16,12 @@ export default function InterviewQsns({ viewOnly = false, initialQuestions, inte
         toast.info('No questions to save.');
         return;
       }
-      if (!interviewDetails?.id) {
-        toast.error('Interview details are not available.');
-        return;
-      }
       const payload = questions.map((q, index) => ({
         question: q.question,
         interview: interviewDetails?.id,
         sort_order: index,
       }))
-      await axios.post(`/interview-questions/?interview_id=${interviewDetails.id}`,
+      await axios.post(`/interview-questions/${!jobView ? `?interview_id=${interviewDetails.id}` : ''}`,
         [...payload]
       );
       toast.success('Questions Updated successfully!');

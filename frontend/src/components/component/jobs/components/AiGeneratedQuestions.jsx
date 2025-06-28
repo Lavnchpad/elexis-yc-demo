@@ -17,7 +17,7 @@ export default function AiGeneratedQuestions({
     const generateQsns = async () => {
         const { jd, role } = getJdAndRole();
         if (!jd || !role) {
-            toast.error("Job description and role are required to generate questions. Please provide them in the previous screens");
+            toast.error("Job description and role are required to generate questions. Please provide them.");
             return;
         }
         console.log("Generating questions for:", jd, role)
