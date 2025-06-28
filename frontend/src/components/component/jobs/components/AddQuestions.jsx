@@ -6,8 +6,8 @@ import { useRef, useState } from 'react';
 import AiGeneratedQuestions from './AiGeneratedQuestions';
 import { toast } from 'sonner';
 
-function generateUniqueId(lastNumber) {
-    return `${lastNumber++}`;
+function generateUniqueId() {
+    return Date.now() + Math.floor(Math.random() * 1000);
 }
 
 export default function QuestionnaireEditor({
@@ -27,7 +27,7 @@ export default function QuestionnaireEditor({
     const handleAddAiQuestion = (id) => {
         const questionToAdd = aigeneratedQuestions.find(q => q.id === id);
         if (questionToAdd) {
-            const newQuestion = { id: generateUniqueId(questions[questions.length - 1].id + 1), question: questionToAdd.question.trim() };
+            const newQuestion = { id: generateUniqueId(), question: questionToAdd.question.trim() };
             // setting the AI generated question to the original selected question array state
             setQuestions((prev) => {
                 return [...prev, newQuestion];
@@ -92,9 +92,9 @@ export default function QuestionnaireEditor({
                     </div>
                 </div>
                 <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">Selected Questions ({questions.length})</h3>
-                {questions.length === 0 ? (
+                {questions.length === 0 && (
                     <p className="text-gray-500 text-center italic py-4">No questions added yet. Start by adding one!</p>
-                ) : (
+                )}
                     <ScrollArea className="h-40 max-h-[50vh] pr-4">
                         <div className="space-y-3">
                             {questions.map((question, index) => (
@@ -144,7 +144,7 @@ export default function QuestionnaireEditor({
                             </div>
                             <AiGeneratedQuestions aigeneratedQuestions={aigeneratedQuestions} setAiGeneratedQuestion={setAiGeneratedQuestion} getJdAndRole={getJdAndRole} viewOnly={viewOnly} interviewId={interviewId} />
                     </ScrollArea>
-                )}
+
             </div>
 
             {/* <div className="flex flex-col sm:flex-row sm:justify-end gap-3 mt-4 pt-4 border-t border-gray-100">

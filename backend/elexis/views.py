@@ -28,7 +28,8 @@ from .serializers import (
     ChangePasswordSerializer,
     StartInterviewSerializer,
     GeneratedQuestionsSerializer,
-    QuestionsRequestSerializer
+    QuestionsRequestSerializer,
+    InterviewQuestionsSerializer
 )
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, now
@@ -478,6 +479,30 @@ class JobViewSet(viewsets.ModelViewSet):
                          "criterias":  JobRequirementSerializer(job.requirements, many=True).data
                          })
 
+
+class InterviewQuestionsViewSet(viewsets.ModelViewSet):
+    queryset = InterviewQuestions.objects.all().order_by('sort_order') # Order by sort_order by default
+    serializer_class = InterviewQuestionsSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        queryset = InterviewQuestions.objects.all().order_by('sort_order')
+        interview_id = self.request.query_params.get('interview_id', None)
+        if interview_id is not None:
+            queryset = queryset.filter(interview__id=interview_id)
+        return queryset
+    def create(self, request, *args, **kwargs):
+        interview_id = self.request.query_params.get('interview_id', None)
+        if not interview_id:
+            return Response({"error": "interview_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+        # get all the questions associated with the interview and delete them
+        interview_questions = InterviewQuestions.objects.filter(interview__id=interview_id)
+        if interview_questions.exists():
+            interview_questions.delete()
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(interview_id=interview_id)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class QuestionsGeneratorAPIView(APIView):
     permission_classes = [IsAuthenticated]

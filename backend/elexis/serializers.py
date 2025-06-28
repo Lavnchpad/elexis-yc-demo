@@ -102,9 +102,19 @@ class SnapshotSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class InterviewQuestionsSerializer(serializers.ModelSerializer):
+    isFromDb = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = InterviewQuestions
-        fields = ['id', 'question', 'sort_order']
+        # fields = ['id', 'question', 'sort_order']
+        fields = '__all__'
+
+    def get_isFromDb(self, obj):
+        return True
+
+    def validate_interview(self, value):
+        if not Interview.objects.filter(id=value.id).exists():
+            raise serializers.ValidationError("Interview with this ID does not exist.")
+        return value
 
 class InterviewSerializer(serializers.ModelSerializer):
     candidate = CandidateSerializer(read_only=True)
