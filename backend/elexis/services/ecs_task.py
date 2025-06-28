@@ -43,11 +43,12 @@ class ECSInterviewTaskContext:
     resume_bucket_region: str
     job_description: str
     daily_api_key: str
+    questions: list
 
     def __init__(self, candidate_id: str, interview_id: str, company_name: str, role: str,
                  candidate_name: str, room_url: str, room_name: str, language: ECSInterviewLanguages,
                  record_interview: bool, interview_type: ECSInterviewType, resume_s3_url: str,
-                 resume_bucket: str, job_description: str, daily_api_key: str, resume_bucket_region: str):
+                 resume_bucket: str, job_description: str, daily_api_key: str, resume_bucket_region: str, questions: list = None):
         self.candidate_id = candidate_id
         self.interview_id = interview_id
         self.company_name = company_name
@@ -63,6 +64,7 @@ class ECSInterviewTaskContext:
         self.resume_bucket_region = resume_bucket_region
         self.job_description = job_description
         self.daily_api_key = daily_api_key
+        self.questions = questions if questions is not None else []
 
 
 class ECSAIBotTaskService:
@@ -102,7 +104,8 @@ class ECSAIBotTaskService:
                         {'name': 'RESUME_BUCKET', 'value': context.resume_bucket},
                         {'name': 'RESUME_BUCKET_REGION', 'value': context.resume_bucket_region},
                         {'name': 'JOB_DESCRIPTION', 'value': context.job_description},
-                        {'name': 'DAILY_API_KEY', 'value': context.daily_api_key}
+                        {'name': 'DAILY_API_KEY', 'value': context.daily_api_key},
+                        {'name': 'QUESTIONS', 'value': ','.join(context.questions) if context.questions else ''}
                     ]
                 }
             ]

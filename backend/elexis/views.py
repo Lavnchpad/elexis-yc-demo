@@ -365,6 +365,8 @@ class InterviewViewSet(viewsets.ModelViewSet):
             else :
                 serializer.save()
             candidate = interview.candidate
+            interview_questions = InterviewQuestions.objects.filter(interview=interview).order_by('sort_order')
+            list_of_question_strings = [question_obj.question for question_obj in interview_questions]
 
             tries = 5
             print(interview.ecs_task_created, tries)
@@ -388,7 +390,8 @@ class InterviewViewSet(viewsets.ModelViewSet):
                     resume_bucket=settings.AWS_STORAGE_BUCKET_NAME,
                     resume_bucket_region=settings.AWS_S3_REGION_NAME,
                     job_description=interview.job.job_description,
-                    daily_api_key=settings.DAILY_API_KEY
+                    daily_api_key=settings.DAILY_API_KEY,
+                    questions = list_of_question_strings
                 ))
                 print("Task Created", task_created)
                 interview.ecs_task_created = task_created
