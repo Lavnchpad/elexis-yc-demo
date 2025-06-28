@@ -2,8 +2,10 @@ import QuestionnaireEditor from '@/components/component/jobs/components/AddQuest
 import { Button } from '@/components/ui/button'
 import { DialogFooter, DialogHeader, DialogTrigger, Dialog, DialogClose, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import axios from 'axioss';
+import { Icon } from 'lucide-react';
 import React, { useState } from 'react'
 import { toast } from 'sonner';
+import { Settings } from 'lucide-react';
 
 export default function InterviewQsns({ viewOnly = false, initialQuestions, interviewDetails, jobView = false }) {
   // If jobView is true, it means we are on the job page and we need to handle questions differently
@@ -35,7 +37,10 @@ export default function InterviewQsns({ viewOnly = false, initialQuestions, inte
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="link" onClick={() => setOpen(true)}>Interview Questions</Button>
+        <Button variant="outline" onClick={() => setOpen(true)}>
+          <Settings/>
+          Manage Interview Questions
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
