@@ -39,7 +39,6 @@ const StatusButton = ({ interviewData, selectedCandidate, selectedInterview, set
 
     }
   }
-  console.log({ status: selectedInterview?.status })
   return (
     <div className="ml-auto flex space-x-4">
       {/* Conditionally render buttons based on the status */}
@@ -57,13 +56,6 @@ const StatusButton = ({ interviewData, selectedCandidate, selectedInterview, set
           </Button>
         </>
       )}
-      {/* {status === "scheduled" && (
-        <>
-          <Button className="px-6 py-3" disabled>
-            Scheduled
-          </Button>
-        </>
-      )} */}
       {selectedInterview?.status === InterviewStatus.HOLD && (
         <>
           <Button className="px-6 py-3" disabled>
@@ -71,9 +63,13 @@ const StatusButton = ({ interviewData, selectedCandidate, selectedInterview, set
           </Button>
         </>
       )}
+      {selectedInterview?.status === InterviewStatus.ENDED && (
+        <>
       {selectedInterview?.status !== InterviewStatus.ACCEPTED && <Button className="px-6 py-3 bg-green-600" onClick={() => changeInterviewStatus(InterviewStatus.ACCEPTED)} type='button'>Accept</Button>}
       {selectedInterview?.status !== InterviewStatus.REJECTED && <Button className="px-6 py-3 bg-red-500" onClick={() => changeInterviewStatus(InterviewStatus.REJECTED)} type='button'>Reject</Button>}
       {selectedInterview?.status !== InterviewStatus.HOLD && <Button className="px-6 py-3 bg-yellow-600" onClick={() => changeInterviewStatus(InterviewStatus.HOLD)} type='button'>Hold</Button>}
+        </>
+      )}
       <div>
 
       </div>

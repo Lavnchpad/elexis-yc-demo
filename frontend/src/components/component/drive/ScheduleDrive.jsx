@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -51,7 +51,6 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
   const { interviewData, fetchInterviewDetails, setSelectedJob } = useContext(InterviewContext);
   const [interviewId, setInterviewId] = useState()
   const [open, setOpen] = useState(false);
-  console.log("interviewData", interviewData)
   const form = useForm({
     resolver: zodResolver(scheduleSchema),
     defaultValues: {
@@ -120,6 +119,7 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
       setOpen(false);
     }
   };
+  const isReschedule = interviewData && value;
 
   return (
     <div>
@@ -127,9 +127,9 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
         <DialogTrigger>{children}</DialogTrigger>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>{interviewData && value ? "Reschedule Drive" : "Schedule Drive"}</DialogTitle>
+            <DialogTitle>{isReschedule ? "Reschedule Drive" : "Schedule Drive"}</DialogTitle>
             <DialogDescription>
-              {interviewData && value
+              {isReschedule
                 ? "Please provide the new date and time for the interview below."
                 : "Please provide the date, time, and job role for the drive."}
             </DialogDescription>
@@ -289,7 +289,7 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                   name="preferredLanguage" // Still using the descriptive name
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-lg font-medium text-gray-700">Preferred Language</FormLabel>
+                      <FormLabel className="">Preferred Language</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className="w-full">
@@ -314,7 +314,7 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
               {/* Save Schedule Button */}
               <DialogFooter>
                 <Button type="submit" disabled={loading}>
-                  {loading ? <Loader className="animate-spin mr-2" size={16} /> : interviewData && value ? "Reschedule" : "Save Schedule"}
+                  {loading ? <Loader className="animate-spin mr-2" size={16} /> : isReschedule ? "Reschedule" : "Save Schedule"}
                 </Button>
               </DialogFooter>
             </form>

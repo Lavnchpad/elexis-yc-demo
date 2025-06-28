@@ -1,4 +1,6 @@
+import { InterviewStatus } from "@/utils/StatusButton";
 import { clsx } from "clsx";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs) {
@@ -17,4 +19,23 @@ export function copyLink(text) {
 export const languages = {
   english: "English",
   hindi: "Hindi"
+}
+
+export const interviewLanguages = [
+  { key: "english", value: "English" },
+  { key: "hindi", value: "Hindi" },
+  // { key: "French", value: "French" },
+  // { key: "Spanish", value: "Spanish" },
+  // { key: "German", value: "German" },
+  // { key: "Italian", value: "Italian" },
+  // { key: "Chinese", value: "Chinese" }
+]
+
+export const isInterviewEnded = (status) => {
+  if (status === InterviewStatus.ENDED || status === InterviewStatus.REJECTED || status === InterviewStatus.HOLD || status === InterviewStatus.ACCEPTED) {
+    console.log("Interview is ended or rejected or on hold or accepted");
+    return true;
+  }
+  console.log("Interview is not ended yet");
+  return false;
 }

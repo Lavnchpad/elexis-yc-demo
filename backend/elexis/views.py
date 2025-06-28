@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate
 # from django_filters.rest_framework import DjangoFilterBackend
 from elexis.services.ecs_task import ECSAIBotTaskService, ECSInterviewLanguages, ECSInterviewTaskContext
 from elexis.services.daily import DailyMeetingService
+from elexis.services.questions_generator import generate_questions, GeneratedQuestionsDto
+from elexis.utils.summary_generation import resume_summary_generator
 from rest_framework.exceptions import PermissionDenied
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from django.core.mail import send_mail
@@ -14,7 +16,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Recruiter, Candidate, Job, Interview, JobRequirement , JobRequirementEvaluation
+from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions , JobRequirementEvaluation, JobQuestions
 from elexis.utils.general import getHumanReadableTime
 from .serializers import (
     RecruiterSerializer,
@@ -24,6 +26,11 @@ from .serializers import (
     LoginSerializer,
     JobRequirementSerializer,
     ChangePasswordSerializer,
+    StartInterviewSerializer,
+    GeneratedQuestionsSerializer,
+    QuestionsRequestSerializer,
+    InterviewQuestionsSerializer,
+    JobQuestionsSerializer
 )
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, now
@@ -232,6 +239,20 @@ class InterviewViewSet(viewsets.ModelViewSet):
         # Set the organization based on the candidate's organization
             organization = candidate.organization
             interview = serializer.save(scheduled_by=self.request.user,organization=organization)
+            #  save copy of the job questions to the Interview questions table
+            job_Questions = JobQuestions.objects.filter(job=interview.job)
+            new_interview_questions_instances = []
+            for question in job_Questions:
+                new_interview_questions_instances.append(
+                        InterviewQuestions(
+                            interview=interview, 
+                            question=question.question, 
+                            sort_order=question.sort_order
+                        )
+            )
+            if new_interview_questions_instances:
+                InterviewQuestions.objects.bulk_create(new_interview_questions_instances)
+
             interview.link = f"{CLIENT_URL}/interviews/{interview.id}/start/"
             self._update_status_fields(interview)
             interview.save()
@@ -265,8 +286,51 @@ class InterviewViewSet(viewsets.ModelViewSet):
             elif (interview.link and interview.status != 'scheduled' and not interview.meeting_room) :
                 interview.status = 'scheduled'
 
-        
         @action(detail=True, methods=["get"], permission_classes=[AllowAny])
+        def info(self, request, pk=None):
+            interview = self.get_object()
+            current_time = now()
+            interview_start = make_aware(datetime.combine(interview.date, interview.time))
+            interview_end = interview_start + timedelta(hours=1)
+
+        # Case 1: Too early
+            if current_time < interview_start:
+                return Response(
+                    {"message": f"Your interview is scheduled at {getHumanReadableTime(interview_start)}. Please wait.",
+                     "isEarly": True},
+                    status=status.HTTP_200_OK,  # Or 403 if you want to block it
+                )
+
+        # Case 2: Too late
+            if current_time > interview_end:
+                print("current time:::", current_time , interview_end)
+                return Response(
+                    {"message": "This interview link has expired. Please contact the recruiter to reschedule.",
+                     "isEarly": False},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if not interview.meeting_room:
+                daily_service = DailyMeetingService()
+                room = daily_service.create_meeting_room()
+                interview.meeting_room = room.room_url
+                interview.save()
+            return Response({
+                "interviewId": str(interview.id),
+                "candidateName": interview.candidate.name,
+                "jobName": interview.job.job_name,
+                "date": interview.date.strftime("%Y-%m-%d"),
+                "time": interview.time.strftime("%H:%M"),
+                "language": interview.language,
+                "isEarly": False,
+                "requiresCtcInfo": interview.job.ask_for_ctc_info,
+                "requiresReasonForLeavingJob": interview.job.ask_for_reason_for_leaving_previous_job,
+                "availableLanguages": interview.job.allowed_interview_languages,
+                "expectedCtc": interview.expected_ctc,
+                "currentCtc": interview.current_ctc,
+                "reasonForLeaving": interview.reason_for_leaving_previous_job,
+            })
+
+        @action(detail=True, methods=["post"], permission_classes=[AllowAny])
         def start(self, request, pk=None):
             try:
                 interview = self.get_object()
@@ -298,6 +362,14 @@ class InterviewViewSet(viewsets.ModelViewSet):
                     room = daily_service.create_meeting_room()
                     interview.meeting_room = room.room_url
                     interview.save()
+                serializer = StartInterviewSerializer(interview , data = request.data, partial=True)
+                if not serializer.is_valid():
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                else :
+                    serializer.save()
+                candidate = interview.candidate
+                interview_questions = InterviewQuestions.objects.filter(interview=interview).order_by('sort_order')
+                list_of_question_strings = [question_obj.question for question_obj in interview_questions]
                 print("Meeting room created or already exists:", interview.meeting_room)
                 candidate = interview.candidate
 
@@ -337,7 +409,8 @@ class InterviewViewSet(viewsets.ModelViewSet):
                         resume_bucket=settings.AWS_STORAGE_BUCKET_NAME,
                         resume_bucket_region=settings.AWS_S3_REGION_NAME,
                         job_description=interview.job.job_description,
-                        daily_api_key=settings.DAILY_API_KEY
+                        daily_api_key=settings.DAILY_API_KEY,
+                        questions = list_of_question_strings
                     ))
                     print("Task Created", task_created)
                     interview.ecs_task_created = task_created
@@ -350,8 +423,6 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 return Response(
                                 {"message": "Interview starting...", "url": interview.meeting_room},
                                 status=status.HTTP_200_OK)
-                
-                            
             except:
                 return Response(
                     {"error": "Failed to start the interview. Please try again later."},
@@ -435,3 +506,91 @@ class JobViewSet(viewsets.ModelViewSet):
                          "criterias":  JobRequirementSerializer(job.requirements, many=True).data
                          })
 
+class JobQuestionsViewSet(viewsets.ModelViewSet):
+    queryset = JobQuestions.objects.all().order_by('sort_order')
+    serializer_class = JobQuestionsSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        queryset = JobQuestions.objects.all().order_by('sort_order')
+        job_id = self.request.query_params.get('job_id', None)
+        if job_id is not None:
+            queryset = queryset.filter(job__id=job_id)
+        return queryset
+    def create(self, request, *args, **kwargs):
+        job_id = self.request.query_params.get('job_id', None)
+        if not job_id:
+            return Response({"error": "job_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+        # get all the questions associated with the job and delete them
+        job_questions = JobQuestions.objects.filter(job__id=job_id)
+        if job_questions.exists():
+            job_questions.delete()
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(job_id=job_id)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+class InterviewQuestionsViewSet(viewsets.ModelViewSet):
+    queryset = InterviewQuestions.objects.all().order_by('sort_order') # Order by sort_order by default
+    serializer_class = InterviewQuestionsSerializer
+    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        queryset = InterviewQuestions.objects.all().order_by('sort_order')
+        interview_id = self.request.query_params.get('interview_id', None)
+        if interview_id is not None:
+            queryset = queryset.filter(interview__id=interview_id)
+        return queryset
+    def create(self, request, *args, **kwargs):
+        interview_id = self.request.query_params.get('interview_id', None)
+        if not interview_id:
+            return Response({"error": "interview_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+        # get all the questions associated with the interview and delete them
+        interview_questions = InterviewQuestions.objects.filter(interview__id=interview_id)
+        if interview_questions.exists():
+            interview_questions.delete()
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(interview_id=interview_id)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class QuestionsGeneratorAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        input_serializer = QuestionsRequestSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+
+       
+        validated_input_data = input_serializer.validated_data
+        role = validated_input_data['role']
+        job_description = validated_input_data['job_description']
+        interview_id = validated_input_data['interview_id']
+        # num_resume_questions = validated_input_data['num_resume_questions']
+        # num_job_role_questions = validated_input_data['num_job_role_questions']
+        # num_job_role_experience_questions = validated_input_data['num_job_role_experience_questions']
+        resume = ""
+        if interview_id:
+            # If interview_id is provided, fetch the interview object
+            try:
+                interview = Interview.objects.get(id=interview_id)
+                resume_url = interview.candidate.resume.url
+                if resume_url:
+                    resume = resume_summary_generator(resume_url)
+                    print("Resume Summary Generated:", resume)
+            except Interview.DoesNotExist:
+                return Response({"error": "Interview not found."}, status=status.HTTP_404_NOT_FOUND)
+        generated_questions = generate_questions(role=role,
+                                                  job_description=job_description,
+                                                  resume_summary=resume, # think how to get the summary
+                                                #   num_resume_questions=num_resume_questions,
+                                                #   num_job_role_questions=num_job_role_questions,
+                                                #   num_job_role_experience_questions=num_job_role_experience_questions
+                                                  )
+        generated_questions_dto = GeneratedQuestionsDto(
+            resume=generated_questions.resume,
+            job_role=generated_questions.job_role,
+            job_role_experience=generated_questions.job_role_experience
+        )
+
+        output_serializer = GeneratedQuestionsSerializer(generated_questions_dto)
+
+        return Response(output_serializer.data, status=status.HTTP_200_OK)

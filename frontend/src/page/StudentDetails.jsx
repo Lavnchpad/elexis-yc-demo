@@ -17,7 +17,7 @@ import {
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ScheduleDrive from "@/components/component/drive/ScheduleDrive";
+// import ScheduleDrive from "@/components/component/drive/ScheduleDrive";
 import {
   Select,
   SelectContent,
@@ -43,8 +43,10 @@ import Experience from "@/components/component/candidate/skills-experience/Exper
 import Skills from "@/components/component/candidate/skills-experience/Skills";
 import AddCandidate from "@/components/component/candidate/AddCandidate";
 import ErrorBoundary from "@/utils/ErrorBoundary";
-import { toast } from "sonner";
-import { copyLink } from "@/lib/utils";
+// import { toast } from "sonner";
+import { copyLink, isInterviewEnded } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import InterviewQsns from "./components/InterviewQsns";
 const StudentDetails = ({ }) => {
   const { id: candidateidInUrl } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -86,7 +88,7 @@ const StudentDetails = ({ }) => {
       const candidate = filteredCandidates.find(candidate => candidate.id === (candidateidInUrl));
       if (candidate) {
         setSelectedCandidate(candidate);
-        fetchJobs(); 
+        fetchJobs();
         fetchInterviewDetails(candidate.id)
       } else {
         // If no candidate found, reset selectedCandidate
@@ -211,7 +213,7 @@ const StudentDetails = ({ }) => {
   return (
     <>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Student Databases</h1>
+        <h1 className="text-2xl font-bold">Candidates</h1>
         <JobsProvider>
           <AddCandidate>
             <Button>Add Candidate</Button>
@@ -284,9 +286,9 @@ const StudentDetails = ({ }) => {
             <StudentDetailsSkeleton />
           ) : (
             <div>
-              <div className="bg-white p-6 rounded shadow mb-6 flex items-center">
+                  <div className="bg-white p-6 rounded shadow mb-6 flex flex-wrap items-center">
                 <div className="flex items-center space-x-6">
-                  <Avatar className="w-40 h-40 rounded-full">
+                      <Avatar className="w-40 h-40 rounded-full">
                     <AvatarImage
                       src={selectedCandidate.profile_photo}
                       alt={selectedCandidate.name}
@@ -321,11 +323,7 @@ const StudentDetails = ({ }) => {
                           <>
                             <p className="mt-2 flex items-center text-muted-foreground">
                               <Calendar className="mr-2 w-5 h-5" />
-                              {selectedInterview?.date}
-                            </p>
-                            <p className="mt-2 flex items-center text-muted-foreground">
-                              <LucideAlarmClock className="mr-2 w-5 h-5" />
-                              {selectedInterview?.time}
+                              {selectedInterview?.date} @{selectedInterview?.time}
                             </p>
                             <p className="mt-2 flex items-center text-muted-foreground">
                               <SatelliteDishIcon className="mr-2 w-5 h-5" />
@@ -335,7 +333,7 @@ const StudentDetails = ({ }) => {
                         }
                   </div>
                 </div>
-                <div className="ml-auto flex flex-col gap-2 w-1/4">
+                    <div className="mx-4 w-40">
                   <Select
                         //  disabled={!!selectedJobId}
 
@@ -387,7 +385,43 @@ const StudentDetails = ({ }) => {
                         View Resume
                   </Button>
                 </div>
-              </div>
+                  </div>
+                  {selectedInterview && <InterviewQsns viewOnly={isInterviewEnded(selectedInterview?.status)} initialQuestions={selectedInterview?.interview_questions} interviewDetails={selectedInterview} />}
+                  {
+                    selectedInterview?.current_ctc || selectedInterview?.expected_ctc || selectedInterview?.reason_for_leaving_previous_job ?
+                      <div>
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>CTC Details</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="w-full text-muted-foreground">
+
+                              {
+                                selectedInterview?.current_ctc &&
+                                <div className="">
+                                  Current CTC : {selectedInterview?.current_ctc} LPA
+                                </div>
+                              }
+                              {
+                                selectedInterview?.expected_ctc &&
+                                <div className="">
+                                  Expected CTC : {selectedInterview?.expected_ctc} LPA
+                                </div>
+                              }
+                              {
+                                selectedInterview?.reason_for_leaving_previous_job &&
+                                <div className="">
+                                  Reason For Change: {selectedInterview?.reason_for_leaving_previous_job}
+                                </div>
+                              }
+                            </div>
+                          </CardContent>
+
+                        </Card>
+                      </div>
+                      : null
+                  }
               <div className="grid gap-6 md:grid-cols-[300px_1fr]">
                     <Experience experience={selectedInterview?.experience} />
                     <Skills skills={selectedInterview?.skills} />

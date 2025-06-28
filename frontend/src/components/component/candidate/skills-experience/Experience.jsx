@@ -30,8 +30,8 @@ const Experience = ({experience}) => {
   const handleCloseDialog = () => {
     setDialogConfig((prev) => ({ ...prev, isOpen: false }))
   }
-  if(experience === undefined) {
-    return <div className="text-center text-gray-500">No experience data available.</div>
+  if (!experience) {
+    return null
   }
   return (
     <div className="space-y-6">
@@ -58,7 +58,8 @@ const Experience = ({experience}) => {
           </Card>
         ))
       ) : (
-        <div className="text-center text-gray-500">No experience data available.</div>
+          // <div className="text-center text-gray-500">No experience data available.</div>
+          null
       )}
       {/* <ExperienceDialog
         isOpen={dialogConfig.isOpen}

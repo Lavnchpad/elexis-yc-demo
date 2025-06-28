@@ -8,6 +8,9 @@ from .views import (
     InterviewViewSet,
     SignupView,
     LoginView,
+    QuestionsGeneratorAPIView,
+    InterviewQuestionsViewSet,
+    JobQuestionsViewSet
 )
 
 router = DefaultRouter()
@@ -15,10 +18,14 @@ router.register(r'recruiters', RecruiterViewSet)
 router.register(r'candidates', CandidateViewSet)
 router.register(r'jobs', JobViewSet)
 router.register(r'interviews', InterviewViewSet)
+router.register(r'interview-questions', InterviewQuestionsViewSet)
+router.register(r'job-questions', JobQuestionsViewSet)
+
 
 urlpatterns = [
     path('', include(router.urls)),
     path('signup/', SignupView.as_view(), name='signup'),
+    path('generate-questions/', QuestionsGeneratorAPIView.as_view(), name='generate-interview-questions'),
     path('login/', LoginView.as_view(), name='login'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
