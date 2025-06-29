@@ -591,7 +591,7 @@ class QuestionsGeneratorAPIView(APIView):
         generated_questions_dto = GeneratedQuestionsDto(
             resume=generated_questions.resume if interview_id else [], # interview_id will only be present when this method is invoked form the interview details page
             job_role=generated_questions.job_role,
-            job_role_experience=generated_questions.job_role_experience
+            job_role_experience=generated_questions.job_role_experience if interview_id else [],
         )
 
         output_serializer = GeneratedQuestionsSerializer(generated_questions_dto)
