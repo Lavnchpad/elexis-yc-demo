@@ -27,11 +27,8 @@ class RecruiterSerializer(serializers.ModelSerializer):
 class JobQuestionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobQuestions
-        fields = '__all__'
-    def validate_job(self, value):
-        if not Job.objects.filter(id=value.id).exists():
-            raise serializers.ValidationError("Interview with this ID does not exist.")
-        return value
+        fields = ['id', 'question', 'sort_order']
+        read_only_fields= ('job',) # while creating a job and adding questions to it , we don't have the jobId as the job is not created yet , that is why kept it as read only
 class JobRequirementSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobRequirement

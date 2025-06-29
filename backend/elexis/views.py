@@ -324,7 +324,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 "isEarly": False,
                 "requiresCtcInfo": interview.job.ask_for_ctc_info,
                 "requiresReasonForLeavingJob": interview.job.ask_for_reason_for_leaving_previous_job,
-                "availableLanguages": interview.job.allowed_interview_languages,
+                "availableLanguages": interview.job.allowed_interview_languages.split(","),
                 "expectedCtc": interview.expected_ctc,
                 "currentCtc": interview.current_ctc,
                 "reasonForLeaving": interview.reason_for_leaving_previous_job,
