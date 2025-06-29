@@ -586,7 +586,7 @@ class QuestionsGeneratorAPIView(APIView):
                                                 #   num_job_role_experience_questions=num_job_role_experience_questions
                                                   )
         generated_questions_dto = GeneratedQuestionsDto(
-            resume=generated_questions.resume,
+            resume=generated_questions.resume if interview_id else [], # interview_id will only be present when this method is invoked form the interview details page
             job_role=generated_questions.job_role,
             job_role_experience=generated_questions.job_role_experience
         )
