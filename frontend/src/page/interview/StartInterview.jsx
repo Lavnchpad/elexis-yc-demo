@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { CandidateInterviewService, CandidateTimeNotMatchingResponse, CandidateInterviewErrorResponse, CandidateInterviewInformationResponse } from "@/service/CandidateInterview";
+import { CandidateInterviewService, CandidateTimeNotMatchingResponse, CandidateInterviewErrorResponse, CandidateInterviewInformationResponse, InterviewCreatedSucessResponse } from "@/service/CandidateInterview";
 import { InterviewLoader } from "./Loader";
 import { InterviewTimeNotInRange } from "./InterviewTimeNotInRange";
 import { PreInterviewForm } from "./PreinterviewForm";
@@ -31,8 +31,12 @@ const StartInterview = () => {
     case CandidateInterviewInformationResponse:
       return <PreInterviewForm interviewData={data} onSubmit={async (data) => {
         try {
-          await CandidateInterviewService.startInterview({ current_ctc: data.currentCtc, expected_ctc: data.expectedCtc, reason_for_leaving_previous_job: data.reasonForLeavingJob, language: data.language, interviewId });
-
+          const response = await CandidateInterviewService.startInterview({ current_ctc: data.currentCtc, expected_ctc: data.expectedCtc, reason_for_leaving_previous_job: data.reasonForLeavingJob, language: data.language, interviewId });
+          if (response instanceof InterviewCreatedSucessResponse && response.url) {
+            window.location.href = response.url;
+          } else {
+            toast.error("Failed to start the interview. Please try again later.");
+          }
         } catch (error) {
           console.error("Error saving pre-interview info:", error);
           toast.error("Failed to save pre-interview information. Please try again later.");

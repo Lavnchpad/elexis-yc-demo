@@ -43,8 +43,20 @@ export class CandidateInterviewInformationResponse {
     }
 }
 
+export class InterviewCreatedSucessResponse {
+    url;
+    message;
+    constructor(url, message) {
+        this.url = url;
+        this.message = message;
+    }
+}
+
 class CandidateInterviewResponseFactory {
     static getResponse(data) {
+        if (data.url !== undefined && data.message !== undefined) {
+            return new InterviewCreatedSucessResponse(data.url, data.message);
+        }
         if (data.isEarly !== undefined && data.message !== undefined) {
             return new CandidateTimeNotMatchingResponse(data.isEarly, data.message);
         }
@@ -94,7 +106,7 @@ export class CandidateInterviewService {
             );
 
             if (response.ok) {
-                return await response.json();
+                return CandidateInterviewResponseFactory.getResponse(await response.json());
             } else {
                 const errorData = await response.json();
                 throw new Error(errorData?.message || "An error occurred. Please try again later.");
