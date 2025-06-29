@@ -230,6 +230,9 @@ class InterviewViewSet(viewsets.ModelViewSet):
           job_id = self.request.query_params.get("job")
           if job_id:
             queryset = queryset.filter(job__id=job_id)     
+          candidate_id = self.request.query_params.get("candidate_id")
+          if candidate_id:
+            queryset = queryset.filter(candidate__id=candidate_id)
 
           return queryset
         
