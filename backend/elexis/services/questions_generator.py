@@ -146,7 +146,7 @@ def generate_questions(role: str, job_description: str, resume_summary: str) -> 
         .add_role(role) \
         .add_resume_summary(resume_summary) \
         .add_job_description(job_description) \
-        .add_question_counts(5,5,5)
+        .add_question_counts(5,5 if resume_summary !="" else 10,5)
     
     prompt = builder.build()
 
