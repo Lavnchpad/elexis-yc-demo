@@ -104,7 +104,7 @@ const ManageJobs = ({ onJobCreated, children }) => {
         requirements: data.topics,
         ask_for_reason_for_leaving_previous_job,
         ask_for_ctc_info,
-        allowed_interview_languages: selectedLanguages,
+        allowed_interview_languages: selectedLanguages.join(","),
         questions: questions?.map((q, index) => ({ sort_order: index, question: q.question } || [])),
       },
       );

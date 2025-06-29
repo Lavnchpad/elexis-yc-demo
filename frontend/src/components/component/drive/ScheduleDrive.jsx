@@ -27,14 +27,14 @@ import { JobsContext } from "../jobs/JobsContext";
 import { toast } from "sonner";
 import { InterviewContext } from "../interview/InterviewContext";
 import { InterviewStatus } from "@/utils/StatusButton";
-import { languages } from "@/lib/utils";
+// import { languages } from "@/lib/utils";
 
 const scheduleSchema = z
   .object({
     date: z.string().min(1, "Date is required"),
     time: z.string().min(1, "Time is required"),
     jobId: z.string().optional(),
-    preferredLanguage: z.string().optional(),
+    // preferredLanguage: z.string().optional(),
     interview: z.string().optional(),
   })
   .refine(
@@ -58,7 +58,7 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
       time: "",
       interview: "",
       jobId: "",
-      preferredLanguage: "",
+      // preferredLanguage: "",
     },
   });
   form.watch('interview')
@@ -72,9 +72,8 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
       time: data.time,
       ...(scheduleInterview ? { job_id: data.jobId } : null),
       ...(scheduleInterview ? { candidate_id: selectedCandidate.id } : null),
-      language: data.preferredLanguage || "english",
+      // language: data.preferredLanguage || "english",
     };
-    console.log({ payload });
 
     try {
       const token = localStorage.getItem("authToken");
@@ -165,7 +164,8 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                           <SelectTrigger>
                             <SelectValue placeholder="Select a time" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent
+                            className="max-h-60 overflow-y-auto">
                             {Array.from({ length: 24 }, (_, i) => i).flatMap((hour) => [(
                               <SelectItem key={hour} value={`${hour.toString().padStart(2, "0")}:00`}>
                                 {`${hour.toString().padStart(2, "0")}:00`}
@@ -202,7 +202,7 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                           }
                         }} value={field.value}>
                           <SelectTrigger>
-                            <SelectValue placeholder={jobs?.length || interviewData?.job?.length ? "Select a job role" : "No jobs found"} />
+                            <SelectValue placeholder={jobs?.data?.length || interviewData?.job?.length ? "Select a job role" : "No jobs found"} />
                           </SelectTrigger>
                           <SelectContent>
                             {interviewData && value ? (
@@ -246,7 +246,7 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                             }
                           }} value={field.value}>
                             <SelectTrigger>
-                              <SelectValue placeholder={jobs?.length || interviewData?.job?.length ? "Select a job role" : "No jobs found"} />
+                              <SelectValue placeholder={jobs?.data?.length || interviewData?.job?.length ? "Select a job role" : "No jobs found"} />
                             </SelectTrigger>
                             <SelectContent>
                               {interviewData && value ? (
@@ -280,30 +280,6 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
                       <FormControl>
                         <Input placeholder="Additional Field" {...field} />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="preferredLanguage" // Still using the descriptive name
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="">Preferred Language</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select a language" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {/* <SelectItem value="English">English</SelectItem>
-                          <SelectItem value="Hindi">Hindi</SelectItem> */}
-                          {
-                            Object.entries(languages).map((entry) => <SelectItem key={entry[0]} value={entry[0]}>{entry[1]}</SelectItem>)
-                          }
-                        </SelectContent>
-                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

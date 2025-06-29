@@ -324,7 +324,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 "isEarly": False,
                 "requiresCtcInfo": interview.job.ask_for_ctc_info,
                 "requiresReasonForLeavingJob": interview.job.ask_for_reason_for_leaving_previous_job,
-                "availableLanguages": interview.job.allowed_interview_languages,
+                "availableLanguages": interview.job.allowed_interview_languages.split(","),
                 "expectedCtc": interview.expected_ctc,
                 "currentCtc": interview.current_ctc,
                 "reasonForLeaving": interview.reason_for_leaving_previous_job,
@@ -586,7 +586,7 @@ class QuestionsGeneratorAPIView(APIView):
                                                 #   num_job_role_experience_questions=num_job_role_experience_questions
                                                   )
         generated_questions_dto = GeneratedQuestionsDto(
-            resume=generated_questions.resume,
+            resume=generated_questions.resume if interview_id else [], # interview_id will only be present when this method is invoked form the interview details page
             job_role=generated_questions.job_role,
             job_role_experience=generated_questions.job_role_experience
         )
