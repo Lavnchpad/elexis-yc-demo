@@ -47,9 +47,11 @@ export default function InterviewQsns({ viewOnly = false, initialQuestions, inte
           <DialogTitle>Questions</DialogTitle>
           <DialogDescription>
             {/* Question to be asked in the interview. */}
-            <p className='warning-text text-red-300'>
-              Minimum 10 questions required
-            </p>
+            {questions?.length < 10 && !viewOnly && (
+              <p className='warning-text text-red-300'>
+                Minimum 10 questions required
+              </p>
+            )}
           </DialogDescription>
         </DialogHeader>
         <QuestionnaireEditor questions={questions} setQuestions={setQuestions} viewOnly={viewOnly} getJdAndRole={() => ({ role: interviewDetails?.job.job_name, jd: interviewDetails?.job.job_description })} interviewId={interviewDetails?.id} />

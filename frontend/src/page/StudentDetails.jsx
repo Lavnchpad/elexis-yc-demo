@@ -9,7 +9,6 @@ import {
   Mail,
   Phone,
   Copy,
-  LucideAlarmClock,
   Calendar,
   SatelliteDishIcon,
   View,
@@ -54,7 +53,6 @@ const StudentDetails = ({ }) => {
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const { candidates, loading: candidatesLoading } =
     useContext(CandidatesContext);
-  const { jobs, fetchJobs, jobsLoading } = useContext(JobsContext);
   const { interviewData, fetchInterviewDetails, interviewDataLoading } = useContext(InterviewContext);
   const [selectedInterview, setSelectedInterview] = useState(null);
   const [candidatesWithStatus, setCandidatesWithStatus] = useState([]);
@@ -88,7 +86,6 @@ const StudentDetails = ({ }) => {
       const candidate = filteredCandidates.find(candidate => candidate.id === (candidateidInUrl));
       if (candidate) {
         setSelectedCandidate(candidate);
-        fetchJobs();
         fetchInterviewDetails(candidate.id)
       } else {
         // If no candidate found, reset selectedCandidate
@@ -214,11 +211,9 @@ const StudentDetails = ({ }) => {
     <>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Candidates</h1>
-        <JobsProvider>
           <AddCandidate>
             <Button>Add Candidate</Button>
-          </AddCandidate>
-        </JobsProvider>
+        </AddCandidate>
       </div>
       <div className="flex">
         <div className="w-1/4 p-4 bg-gray-100">
@@ -282,7 +277,7 @@ const StudentDetails = ({ }) => {
         <div className="w-3/4 p-6">
           {!selectedCandidate ? (
             <div>Please select a candidate to view details.</div>
-          ) : (jobsLoading || interviewDataLoading) ? (
+          ) : (interviewDataLoading) ? (
             <StudentDetailsSkeleton />
           ) : (
             <div>

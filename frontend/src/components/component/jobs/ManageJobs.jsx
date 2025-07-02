@@ -27,6 +27,7 @@ import { Delete, Loader } from "lucide-react";
 import MultiSelect from "@/components/ui/MultiSelect";
 import { Checkbox } from "@/components/ui/checkBox";
 import QuestionnaireEditor from "./components/AddQuestions";
+import { Textarea } from "@/components/ui/textarea";
 
 // Validation schema
 const jobSchema = z.object({
@@ -209,7 +210,7 @@ const ManageJobs = ({ onJobCreated, children }) => {
                           <FormItem>
                             <FormLabel>Job Description</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter Job Description" {...field} />
+                              <Textarea placeholder="Enter Job Description" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
