@@ -13,7 +13,7 @@ export function JobsEvaluationTable({ id }) {
     const fullmarks = criterias?.reduce((acc, criteria) => acc + (criteria?.weightage || 0) * 100, 0) || 0;
     return (
         <>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center">
                 <h1 className="">Candidate Evaluations</h1>
                 {
                     showJobsEvaluationTable ?
