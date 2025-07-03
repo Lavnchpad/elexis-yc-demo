@@ -2,10 +2,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "../../../../utils/api";
-import { CircleArrowLeft } from "lucide-react";
+import { CircleArrowLeft, Edit } from "lucide-react";
 import { JobsEvaluationTable } from "@/page/components/JobsEvaluationTable";
 import ErrorBoundary from "@/utils/ErrorBoundary";
 import JobsQuestions from "./JobsQuestions";
+import Tooltip from "@/page/components/ToolTipCustom";
+import EditJobForm from "./EditJobForm";
 
 const JobDetails = () => {
   const navigate = useNavigate();
@@ -44,7 +46,6 @@ const JobDetails = () => {
   if (loading) {
     return <div>Loading...</div>;
   }
-
   if (!jobData) {
     return <div>Job details not found.</div>;
   }
@@ -60,10 +61,19 @@ const JobDetails = () => {
           <CircleArrowLeft alt="Back" className="w-5 h-5 text-lightColor" />
         </div>
         <div className="shadow-lg rounded-lg px-6 py-6 border">
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-semibold">{jobData.job_name}</h1>
+          <div className="">
+            <div className="flex gap-2 align-center items-center">
+
+              <h1 className="text-2xl font-semibold">{jobData.job_name}</h1>
+              <EditJobForm jobDetails={jobData} setJobDetails={setJobData}>
+                <Tooltip message={"Edit Job"} className={"w-16"}>
+                  <Edit className="inline-block cursor-pointer" />
+                </Tooltip>
+              </EditJobForm>
+            </div>
             <p>{jobData.location}</p>
           </div>
+
         </div>
       </div>
       <div className="mt-6 drive-details">
@@ -86,12 +96,12 @@ const JobDetails = () => {
                     </h1>
                     <p>{jobData.job_description}</p>
                   </div>
-                  <div className="flex flex-col gap-y-2 ">
+                  {/* <div className="flex flex-col gap-y-2 ">
                     <h1 className="font-semibold text-primaryButtonColor text-lg">
                       Eligibility Criteria
                     </h1>
                     <p>{"1.5 yrs Exp"}</p>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="shadow-lg col-span-3 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
                   <h1 className="font-semibold text-primaryButtonColor text-lg">

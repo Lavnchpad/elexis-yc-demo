@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -90,11 +90,6 @@ const AddCandidate = ({ children }) => {
 
       if (response.ok) {
         const newCandidate = await response.json();
-        // const avatarResponse = await fetch("https://mighty.tools/mockmind-api/?category=popular&nocache=1736359714029");
-        // const avatarData = await avatarResponse.json();
-        // const avatarUrl = avatarData.data[1];
-        // const candidateWithAvatar = { ...newCandidate, avatar: '' };
-        // setCandidates([...candidates, candidateWithAvatar]);
         setCandidates([...candidates, newCandidate])
         toast.success("Candidate added successfully!");
         form.reset();

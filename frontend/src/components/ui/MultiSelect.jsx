@@ -1,7 +1,12 @@
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./dropdown-menu";
 import { Button } from "./button";
 
+/*
+values - array of objects with key and value properties, ALL the Options
+selectedItems - array of selected items(strings), only selected elements in a list of strings
+*/
 const MultiSelect = ({ values = [], selectedItems, setSelectedItems, actionTitle, dropdownLabel }) => {
+
     // const [selectedItems, setSelectedItems] = useState([]);
     const handleSelectChange = (value) => {
         if (!selectedItems.includes(value)) {
