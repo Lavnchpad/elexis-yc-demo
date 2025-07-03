@@ -96,12 +96,6 @@ const JobDetails = () => {
                     </h1>
                     <p>{jobData.job_description}</p>
                   </div>
-                  {/* <div className="flex flex-col gap-y-2 ">
-                    <h1 className="font-semibold text-primaryButtonColor text-lg">
-                      Eligibility Criteria
-                    </h1>
-                    <p>{"1.5 yrs Exp"}</p>
-                  </div> */}
                 </div>
                 <div className="shadow-lg col-span-3 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
                   <h1 className="font-semibold text-primaryButtonColor text-lg">

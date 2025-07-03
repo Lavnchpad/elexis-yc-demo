@@ -33,7 +33,7 @@ const jobSchema = z.object({
 });
 export default function EditJobForm({ children, jobDetails, setJobDetails }) {
     const [editJobModalOpen, setEditJobModalOpen] = useState(false);
-    const [selectedLanguages, setSelectedLanguages] = useState(() => jobDetails?.allowed_interview_languages?.split(',') || []);
+    const [selectedLanguages, setSelectedLanguages] = useState(() => jobDetails?.allowed_interview_languages || []);
     const [loading, setLoading] = useState(false);
 
     const form = useForm({
