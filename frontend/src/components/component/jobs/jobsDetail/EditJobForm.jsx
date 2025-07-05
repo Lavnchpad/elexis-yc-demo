@@ -44,9 +44,9 @@ export default function EditJobForm({ children, jobDetails, setJobDetails }) {
             min_ctc: jobDetails?.min_ctc || "",
             max_ctc: jobDetails?.max_ctc || "",
             job_description: jobDetails?.job_description || "",
-            ask_for_ctc_info: jobDetails?.ask_for_ctc_info || true,
+            ask_for_ctc_info: jobDetails?.ask_for_ctc_info ?? true,
             allowed_interview_languages: selectedLanguages.join(","),
-            ask_for_reason_for_leaving_previous_job: jobDetails?.ask_for_reason_for_leaving_previous_job || true,
+            ask_for_reason_for_leaving_previous_job: jobDetails?.ask_for_reason_for_leaving_previous_job ?? true,
         },
     });
 
