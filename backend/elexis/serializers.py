@@ -35,25 +35,32 @@ class JobRequirementSerializer(serializers.ModelSerializer):
         fields = ['id','requirement', 'weightage']
 class JobSerializer(serializers.ModelSerializer):
     requirements = JobRequirementSerializer(many=True)
-    questions =JobQuestionsSerializer(many=True, required=False, allow_empty=True)
-    allowed_interview_languages = serializers.SerializerMethodField('get_allowed_interview_languages',
-        help_text="List of allowed interview languages, default is English if not provided."
-        
+    questions = JobQuestionsSerializer(many=True, required=False, allow_empty=True)
+    allowed_interview_languages = serializers.CharField(
+        help_text="Comma-separated list of allowed interview languages, default is English if not provided.",
+        required=False,
+        default="english"
     )
+
     class Meta:
         model = Job
-        fields = '__all__'
         read_only_fields = ('recruiter', 'organization')
-        fields = ['job_name','id', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description','requirements','questions','recruiter', 'organization', 'allowed_interview_languages', 'ask_for_reason_for_leaving_previous_job', 'ask_for_ctc_info']  # Explicitly define the fields you want to include
-        # exclude = ('recruiter', 'organization')  # Exclude from input but keep in the model
-    def get_allowed_interview_languages(self, obj):
-        return obj.allowed_interview_languages.split(',')  # Default to English if not provided
+        fields = [
+            'job_name', 'id', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description',
+            'requirements', 'questions', 'recruiter', 'organization', 'allowed_interview_languages',
+            'ask_for_reason_for_leaving_previous_job', 'ask_for_ctc_info'
+        ]
+
+    def to_representation(self, instance):
+        """Return allowed_interview_languages as a list in the output."""
+        ret = super().to_representation(instance)
+        ret['allowed_interview_languages'] = instance.allowed_interview_languages.split(",") if instance.allowed_interview_languages else ["english"]
+        return ret
+
     def create(self, validated_data):
-        # Add recruiter automatically (assuming current user is the recruiter)
-        validated_data['recruiter'] = self.context['request'].user  # Assign logged-in user
+        validated_data['recruiter'] = self.context['request'].user
         requirements_data = validated_data.pop('requirements')
         questions_data = validated_data.pop('questions', None)
-            
         job = Job.objects.create(**validated_data)
         if questions_data is not None:
             for question in questions_data:
@@ -62,18 +69,16 @@ class JobSerializer(serializers.ModelSerializer):
             for req in requirements_data:
                 JobRequirement.objects.create(job=job, **req)
         return job
+
     def update(self, instance, validated_data):
         requirements_data = validated_data.pop('requirements', None)
-        # Update job fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-        # Update job requirements (optional logic)
         if requirements_data is not None:
             instance.requirements.all().delete()
             for req_data in requirements_data:
                 JobRequirement.objects.create(job=instance, **req_data)
-
         return instance
  
     
