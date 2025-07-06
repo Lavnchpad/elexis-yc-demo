@@ -133,16 +133,6 @@ const StudentDetails = ({ }) => {
           candidate.email.toLowerCase().includes(searchLower)
       );
     }
-
-    // if (selectedStatus !== "all") {
-    // filtered = filtered.filter(candidate =>
-    //   candidate.interviews.some(interview =>
-    //     interview.status === selectedStatus &&
-    //     (!selectedJobId || interview.job.id === selectedJobId)
-    //   )
-    // );
-    // }
-
     setFilteredCandidates(filtered);
   }, [searchTerm, candidates, selectedStatus])
 

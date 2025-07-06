@@ -10,6 +10,8 @@ const CandidatesProvider = ({ children }) => {
 
   const fetchCandidates = async () => {
     try {
+      setloading(true);
+      setError(null);
       const response = await axios.get('/candidates/?include_interview_status=true');
       return (response.data);  // Add avatars after fetching candidates
     } catch (error) {
