@@ -22,7 +22,6 @@ const App = () => {
   return (
     <BrowserRouter>
       <UserProvider> {/* Move UserProvider outside to wrap all routes */}
-
         <Toaster richColors toastOptions={{}} />
         <Routes>
           {/* Login Route */}

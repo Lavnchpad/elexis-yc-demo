@@ -179,7 +179,7 @@ class Interview(BaseModel):
         blank=True, null=True, help_text="Reason for leaving the previous job")
 
     def __str__(self):
-        return f"Interview for {self.candidate.name} - {self.job.job_name} - {self.time}"
+        return f"Interview for {self.candidate.name} - {self.job.job_name} - {self.date} - {self.time}"
 
 class Snapshots(BaseModel):
     interview = models.ForeignKey(

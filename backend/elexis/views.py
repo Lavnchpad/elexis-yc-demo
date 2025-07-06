@@ -222,15 +222,14 @@ class InterviewViewSet(viewsets.ModelViewSet):
           if self.request.user.is_authenticated:
               queryset = queryset.filter(scheduled_by__organization_id=self.request.user.organization_id)
 
-        # Filter by status query parameter
+
+          job_id = self.request.query_params.get("job_id")
+          candidate_id = self.request.query_params.get("candidate_id")
           status = self.request.query_params.get("status")
           if status:
                queryset = queryset.filter(status=status)
-
-          job_id = self.request.query_params.get("job")
           if job_id:
             queryset = queryset.filter(job__id=job_id)     
-          candidate_id = self.request.query_params.get("candidate_id")
           if candidate_id:
             queryset = queryset.filter(candidate__id=candidate_id)
 

@@ -98,6 +98,7 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("New password must be different from the old password.")
         return attrs
 class CandidateSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
     class Meta:
         model = Candidate
         fields = '__all__'
@@ -106,6 +107,45 @@ class CandidateSerializer(serializers.ModelSerializer):
         # Exclude 'organization' validation
         data.pop('organization', None)
         return data    
+    def get_status(self, obj):
+        request = self.context.get('request')
+
+        # Check if the 'include_status' query parameter exists and is set to 'true' (or any value)
+        if request and request.query_params.get('include_interview_status', '').lower() == 'true':
+            interviews = obj.interviews.all()
+
+            CANDIDATE_STATUS_ACCEPTED = 'accepted'
+            CANDIDATE_STATUS_REJECTED = 'rejected'
+            CANDIDATE_STATUS_WAITING_FOR_DECISION = 'pending'
+            CANDIDATE_STATUS_HOLD = 'hold'
+            CANDIDATE_STATUS_REGISTERED = 'registered'
+            CANDIDATE_STATUS_NO_INTERVIEWS = None
+
+            # Priority 1: Accepted
+            if interviews.filter(status='accepted').exists():
+                return CANDIDATE_STATUS_ACCEPTED
+
+            # Priority 2: Rejected (if no 'accepted' interview exists)
+            elif interviews.filter(status='rejected').exists():
+                return CANDIDATE_STATUS_REJECTED
+
+            # Priority 3: Hold (if no 'accepted', 'rejected', or 'ended' exists)
+            if interviews.filter(status='hold').exists():
+                return CANDIDATE_STATUS_HOLD
+            # Priority 4: Ended (if no 'accepted' or 'rejected' exists)
+            # Assuming 'ended' implies waiting for a decision
+            elif interviews.filter(status='ended').exists():
+                return CANDIDATE_STATUS_WAITING_FOR_DECISION
+
+            # Priority 5: Started or Registered or Scheduled
+            # If any interview is 'started', 'registered', or 'scheduled', the candidate is 'Registered' (or 'In Progress')
+            if interviews.filter(status__in=['started', 'registered', 'scheduled']).exists():
+                return CANDIDATE_STATUS_REGISTERED
+
+            # If none of the above, it means there are no relevant interviews or no interviews at all
+            return CANDIDATE_STATUS_NO_INTERVIEWS
+        else:
+            return None
 
 class SnapshotSerializer(serializers.ModelSerializer):
     class Meta:

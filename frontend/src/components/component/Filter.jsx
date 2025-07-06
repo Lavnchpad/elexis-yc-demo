@@ -83,7 +83,7 @@ const Filter = ({ onSearch, onStatusChange }) => {
               }`}
               onClick={() => handleStatusChange("pending")}
             >
-              <span className="h-2.5 w-2.5 bg-yellow-500 rounded-full"></span>
+              <span className="h-2.5 w-2.5 bg-yellow-400 rounded-full"></span>
               <span>Pending</span>
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -94,6 +94,14 @@ const Filter = ({ onSearch, onStatusChange }) => {
             >
               <span className="h-2.5 w-2.5 bg-red-500 rounded-full"></span>
               <span>Rejected</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className={`flex items-center gap-2 ${selectedStatus === "hold" ? "bg-gray-100" : ""
+                }`}
+              onClick={() => handleStatusChange("hold")}
+            >
+              <span className="h-2.5 w-2.5 bg-yellow-800 rounded-full"></span>
+              <span>Hold</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

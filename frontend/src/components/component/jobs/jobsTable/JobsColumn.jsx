@@ -34,14 +34,6 @@ export const jobColumns = (deleteJob) => [
           >
             Delete
           </Button>
-          <Button
-                  variant="outline"
-                  size="sm"
-                //   onClick={() => toggleJobStatus(job.id)}
-                  className={job.isDisabled ? "bg-gray-200" : ""}
-                >
-                  <Ban className="h-4 w-4" />
-                </Button>
         </div>
         
       );

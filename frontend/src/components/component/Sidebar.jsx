@@ -10,56 +10,6 @@ import { useNavigate } from "react-router-dom";
 const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
   const { candidates, loading, error } = useContext(CandidatesContext);
   const [filteredCandidates, setFilteredCandidates] = useState(candidates || []);
-  const statusPriority = {
-    "accepted": 1,
-    "pending": 2,
-    "review": 3,
-    "rejected": 4,
-    "registered": 5,
-  };
-
-
-  // Fetch interview details
-  // useEffect(() => {
-  // const fetchInterviews = async () => {
-  //   try {
-  //     const token = localStorage.getItem("authToken");
-  //     // Assume API returns an array of interviews with candidate IDs
-  //     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/interviews/`, {
-  //       headers: {
-  //           Authorization: `Bearer ${token}`, },
-  //           'Content-Type': 'application/json',
-  //     });
-  //     const interviews = await response.json();
-  //     console.log(interviews)
-
-  //     // Map interview details to candidates
-  //     const updatedCandidates = candidates.map((candidate) => {
-  //       const candidateInterviews = interviews.filter(
-  //         (interview) => interview.candidate.id === candidate.id
-  //       );
-  //       console.log(candidateInterviews)
-  //       let status = "No interviews";
-  //       if (candidateInterviews.length > 0) {
-  //         status = candidateInterviews
-  //           .map((i) => i.status)
-  //           .sort((a, b) => statusPriority[a] - statusPriority[b])[0]; // Get the highest priority status
-  //       }
-  //       return {
-  //         ...candidate,
-  //         interviews: candidateInterviews,
-  //         status
-  //       };
-  //     });
-  //     console.log(updatedCandidates)
-  //     setFilteredCandidates(updatedCandidates);
-  //   } catch (error) {
-  //     console.error("Error fetching interviews:", error);
-  //   }
-  // };
-
-  // if (candidates.length > 0) fetchInterviews();
-  // }, [candidates]);
 
   // Handle search input
   const handleSearch = (searchValue) => {
@@ -76,7 +26,6 @@ const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
     navigate("/");
   };
 
-  // if (loading) return <div><CandidateLoader/></div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
@@ -89,7 +38,8 @@ const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
         <ul className="space-y-2 cursor-pointer">
         {loading
             ? <CandidateLoader/>
-            :filteredCandidates.map((contact) => (
+            : filteredCandidates.map((contact) => {
+              return (
             <li
               key={contact.id}
               className={`flex items-center p-4 rounded-lg shadow-sm hover:scale-105 transition-transform duration-300 ease-in-out ${
@@ -99,6 +49,8 @@ const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
                   ? "bg-[#FFE5E5]"
                   : contact.status === "pending"
                   ? "bg-[#FFFFE5]"
+                    : contact.status === "hold"
+                      ? "bg-yellow-800"
                   : "bg-[#E5E5FF]"
               }`}
               onClick={() => handleCandidateClick(contact)} 
@@ -129,7 +81,8 @@ const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
                 <p className="text-xs text-gray-500 truncate">{contact.email}</p>
               </div>
             </li>
-          ))}
+              )
+            })}
         </ul>
       </ScrollArea>
     </div>
