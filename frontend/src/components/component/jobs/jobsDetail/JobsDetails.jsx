@@ -8,6 +8,7 @@ import ErrorBoundary from "@/utils/ErrorBoundary";
 import JobsQuestions from "./JobsQuestions";
 import Tooltip from "@/page/components/ToolTipCustom";
 import EditJobForm from "./EditJobForm";
+import ScheduledInterviews from "./ScheduledInterview";
 
 const JobDetails = () => {
   const navigate = useNavigate();
@@ -118,9 +119,16 @@ const JobDetails = () => {
                   </ErrorBoundary>
                 </div>
                 <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
+                  <ErrorBoundary>
                   <JobsQuestions
                     job={jobData}
                   />
+                  </ErrorBoundary>
+                </div>
+                <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
+                  <ErrorBoundary>
+                    <ScheduledInterviews id={jobId} />
+                  </ErrorBoundary>
                 </div>
               </div>
             </div>
