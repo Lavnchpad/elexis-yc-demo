@@ -88,7 +88,8 @@ const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
         <ul className="space-y-2 cursor-pointer">
         {loading
             ? <CandidateLoader/>
-            :filteredCandidates.map((contact) => (
+            : filteredCandidates.map((contact) => {
+              return (
             <li
               key={contact.id}
               className={`flex items-center p-4 rounded-lg shadow-sm hover:scale-105 transition-transform duration-300 ease-in-out ${
@@ -98,6 +99,8 @@ const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
                   ? "bg-[#FFE5E5]"
                   : contact.status === "pending"
                   ? "bg-[#FFFFE5]"
+                    : contact.status === "hold"
+                      ? "bg-yellow-800"
                   : "bg-[#E5E5FF]"
               }`}
               onClick={() => handleCandidateClick(contact)} 
@@ -128,7 +131,8 @@ const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
                 <p className="text-xs text-gray-500 truncate">{contact.email}</p>
               </div>
             </li>
-          ))}
+              )
+            })}
         </ul>
       </ScrollArea>
     </div>

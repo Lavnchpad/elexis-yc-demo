@@ -12,6 +12,7 @@ import {
   Calendar,
   SatelliteDishIcon,
   View,
+  LoaderCircle,
 } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -28,10 +29,6 @@ import {
 import StatusButton, { InterviewStatus } from "@/utils/StatusButton";
 import Filter from "@/components/component/Filter";
 import { InterviewContext } from "@/components/component/interview/InterviewContext";
-import {
-  JobsContext,
-  JobsProvider,
-} from "@/components/component/jobs/JobsContext";
 import { CandidatesContext } from "@/components/component/candidate/CandidatesContext";
 import CandidateLoader from "@/components/component/Loader/CandidateLoader";
 import Proctoring from "@/components/component/tabs/Proctoring";
@@ -55,21 +52,12 @@ const StudentDetails = ({ }) => {
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const { interviewData, fetchInterviewDetails, interviewDataLoading } = useContext(InterviewContext);
   const [selectedInterview, setSelectedInterview] = useState(null);
-  // const [candidatesWithStatus, setCandidatesWithStatus] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedJobId, setSelectedJobId] = useState(null);
 
   const selectedInterviewIdFromSearchParam = searchParams.get("interview_id");
-  // const location = useLocation();
   const navigate = useNavigate();
-  const statusPriority = {
-    accepted: 1,
-    pending: 2,
-    review: 3,
-    rejected: 4,
-    registered: 5,
-  };
 
   const handleDownloadResume = () => {
     if (selectedCandidate?.resume) {
@@ -131,48 +119,11 @@ const StudentDetails = ({ }) => {
     }
   }, [selectedJobId, interviewData, selectedInterviewIdFromSearchParam]);
 
-  // useEffect(() => {
-  // const fetchInterviews = async () => {
-  // try {
-  // const token = localStorage.getItem("authToken");
-  // const response = await fetch(
-  //   `${import.meta.env.VITE_API_BASE_URL}/interviews/`,
-  //   {
-  //     headers: {
-  //       Authorization: `Bearer ${token}`,
-  //     },
-  //     "Content-Type": "application/json",
-  //   }
-  // );
-  // const interviews = await response.json();
-  // const updatedCandidates = candidates.map((candidate) => {
-  //   const candidateInterviews = interviews.filter(
-  //     (interview) => interview.candidate.id === candidate.id
-  //   );
-  //   let status = "No interviews";
-  //   if (candidateInterviews.length > 0) {
-  //     status = candidateInterviews
-  //       .map((i) => i.status)
-  //       .sort((a, b) => statusPriority[a] - statusPriority[b])[0];
-  //   }
-  //   return {
-  //     ...candidate,
-  //     interviews: candidateInterviews,
-  //     status,
-  //   };
-  // });
-  // setCandidatesWithStatus(updatedCandidates);
-  //   } catch (error) {
-  //     console.error("Error fetching interviews:", error);
-  //   }
-  // };
-
-  // if (candidates.length > 0) fetchInterviews();
-  // }, [candidates]);
-
   useEffect(() => {
     let filtered = candidates;
-    console.log("Filtered Candidates", { filtered });
+    if (selectedStatus !== 'all' && selectedStatus) {
+      filtered = filtered.filter(candidate => candidate.status === selectedStatus);
+    }
 
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
@@ -193,14 +144,10 @@ const StudentDetails = ({ }) => {
     // }
 
     setFilteredCandidates(filtered);
-  }, [searchTerm, candidates])
+  }, [searchTerm, candidates, selectedStatus])
 
   const handleSearch = (searchValue) => {
     setSearchTerm(searchValue);
-  };
-
-  const handleStatusChange = (status) => {
-    setSelectedStatus(status);
   };
 
   const handleCandidateClick = (candidate) => {
@@ -218,7 +165,7 @@ const StudentDetails = ({ }) => {
       </div>
       <div className="flex">
         <div className="w-1/4 p-4 bg-gray-100">
-          <Filter onSearch={handleSearch} onStatusChange={() => { }} />
+          <Filter onSearch={handleSearch} onStatusChange={(status) => setSelectedStatus(status)} />
           <ScrollArea className="mt-4 h-[520px] overflow-y-auto">
             <ul className="space-y-2 cursor-pointer">
               {candidatesLoading ? (
@@ -233,6 +180,8 @@ const StudentDetails = ({ }) => {
                         ? "bg-[#FFE5E5]"
                         : contact.status === "pending"
                           ? "bg-[#FFFFE5]"
+                          : contact.status === "hold"
+                            ? "bg-purple-300"
                           : "bg-[#E5E5FF]"
                       }`}
                     onClick={() => handleCandidateClick(contact)}
@@ -253,8 +202,11 @@ const StudentDetails = ({ }) => {
                       {contact.status === "pending" && (
                         <Clock className="absolute -bottom-1 -right-1 text-yellow-500 w-5 h-5 bg-white rounded-full" />
                       )}
-                      {contact.status === "review" && (
+                      {contact.status === "registered" && (
                         <FileSearch className="absolute -bottom-1 -right-1 text-blue-500 w-5 h-5 bg-white rounded-full" />
+                      )}
+                      {contact.status === "hold" && (
+                        <LoaderCircle className="absolute -bottom-1 -right-1 text-blue-500 w-5 h-5 bg-white rounded-full" />
                       )}
                     </div>
                     <div>

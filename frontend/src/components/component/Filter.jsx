@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
-// import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Search, ListFilter } from "lucide-react";
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Filter = ({ onSearch, onStatusChange }) => {
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -43,7 +43,7 @@ const Filter = ({ onSearch, onStatusChange }) => {
             onChange={handleSearchChange}
           />
         </div>
-        {/* <DropdownMenu>
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="filter" size="icon">
               <ListFilter className="h-4 w-4" />
@@ -83,7 +83,7 @@ const Filter = ({ onSearch, onStatusChange }) => {
               }`}
               onClick={() => handleStatusChange("pending")}
             >
-              <span className="h-2.5 w-2.5 bg-yellow-500 rounded-full"></span>
+              <span className="h-2.5 w-2.5 bg-yellow-400 rounded-full"></span>
               <span>Pending</span>
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -95,8 +95,16 @@ const Filter = ({ onSearch, onStatusChange }) => {
               <span className="h-2.5 w-2.5 bg-red-500 rounded-full"></span>
               <span>Rejected</span>
             </DropdownMenuItem>
+            <DropdownMenuItem
+              className={`flex items-center gap-2 ${selectedStatus === "hold" ? "bg-gray-100" : ""
+                }`}
+              onClick={() => handleStatusChange("hold")}
+            >
+              <span className="h-2.5 w-2.5 bg-yellow-800 rounded-full"></span>
+              <span>Hold</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu> */}
+        </DropdownMenu>
       </div>
     </div>
   );
