@@ -10,13 +10,13 @@ import { useNavigate } from "react-router-dom";
 const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
   const { candidates, loading, error } = useContext(CandidatesContext);
   const [filteredCandidates, setFilteredCandidates] = useState(candidates || []);
-  const statusPriority = {
-    "accepted": 1,
-    "pending": 2,
-    "review": 3,
-    "rejected": 4,
-    "registered": 5,
-  };
+  // const statusPriority = {
+  //   "accepted": 1,
+  //   "pending": 2,
+  //   "review": 3,
+  //   "rejected": 4,
+  //   "registered": 5,
+  // };
 
 
   // Fetch interview details
@@ -76,7 +76,6 @@ const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
     navigate("/");
   };
 
-  // if (loading) return <div><CandidateLoader/></div>;
   if (error) return <div>Error: {error}</div>;
 
   return (

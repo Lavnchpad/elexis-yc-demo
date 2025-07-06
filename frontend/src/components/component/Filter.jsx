@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Search, ListFilter } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
 
 const Filter = ({ onSearch, onStatusChange }) => {
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -43,7 +43,7 @@ const Filter = ({ onSearch, onStatusChange }) => {
             onChange={handleSearchChange}
           />
         </div>
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="filter" size="icon">
               <ListFilter className="h-4 w-4" />
@@ -96,7 +96,7 @@ const Filter = ({ onSearch, onStatusChange }) => {
               <span>Rejected</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </div>
     </div>
   );

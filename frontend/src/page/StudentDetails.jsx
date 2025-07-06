@@ -49,13 +49,13 @@ import InterviewQsns from "./components/InterviewQsns";
 const StudentDetails = ({ }) => {
   const { id: candidateidInUrl } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filteredCandidates, setFilteredCandidates] = useState([]);
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
   const { candidates, loading: candidatesLoading } =
     useContext(CandidatesContext);
+  const [filteredCandidates, setFilteredCandidates] = useState(() => (candidates || []));
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
   const { interviewData, fetchInterviewDetails, interviewDataLoading } = useContext(InterviewContext);
   const [selectedInterview, setSelectedInterview] = useState(null);
-  const [candidatesWithStatus, setCandidatesWithStatus] = useState([]);
+  // const [candidatesWithStatus, setCandidatesWithStatus] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedJobId, setSelectedJobId] = useState(null);
@@ -131,47 +131,48 @@ const StudentDetails = ({ }) => {
     }
   }, [selectedJobId, interviewData, selectedInterviewIdFromSearchParam]);
 
-  useEffect(() => {
-    const fetchInterviews = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/interviews/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            "Content-Type": "application/json",
-          }
-        );
-        const interviews = await response.json();
-        const updatedCandidates = candidates.map((candidate) => {
-          const candidateInterviews = interviews.filter(
-            (interview) => interview.candidate.id === candidate.id
-          );
-          let status = "No interviews";
-          if (candidateInterviews.length > 0) {
-            status = candidateInterviews
-              .map((i) => i.status)
-              .sort((a, b) => statusPriority[a] - statusPriority[b])[0];
-          }
-          return {
-            ...candidate,
-            interviews: candidateInterviews,
-            status,
-          };
-        });
-        setCandidatesWithStatus(updatedCandidates);
-      } catch (error) {
-        console.error("Error fetching interviews:", error);
-      }
-    };
+  // useEffect(() => {
+  // const fetchInterviews = async () => {
+  // try {
+  // const token = localStorage.getItem("authToken");
+  // const response = await fetch(
+  //   `${import.meta.env.VITE_API_BASE_URL}/interviews/`,
+  //   {
+  //     headers: {
+  //       Authorization: `Bearer ${token}`,
+  //     },
+  //     "Content-Type": "application/json",
+  //   }
+  // );
+  // const interviews = await response.json();
+  // const updatedCandidates = candidates.map((candidate) => {
+  //   const candidateInterviews = interviews.filter(
+  //     (interview) => interview.candidate.id === candidate.id
+  //   );
+  //   let status = "No interviews";
+  //   if (candidateInterviews.length > 0) {
+  //     status = candidateInterviews
+  //       .map((i) => i.status)
+  //       .sort((a, b) => statusPriority[a] - statusPriority[b])[0];
+  //   }
+  //   return {
+  //     ...candidate,
+  //     interviews: candidateInterviews,
+  //     status,
+  //   };
+  // });
+  // setCandidatesWithStatus(updatedCandidates);
+  //   } catch (error) {
+  //     console.error("Error fetching interviews:", error);
+  //   }
+  // };
 
-    if (candidates.length > 0) fetchInterviews();
-  }, [candidates]);
+  // if (candidates.length > 0) fetchInterviews();
+  // }, [candidates]);
 
   useEffect(() => {
-    let filtered = candidatesWithStatus;
+    let filtered = candidates;
+    console.log("Filtered Candidates", { filtered });
 
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
@@ -182,17 +183,17 @@ const StudentDetails = ({ }) => {
       );
     }
 
-    if (selectedStatus !== "all") {
-      filtered = filtered.filter(candidate =>
-        candidate.interviews.some(interview =>
-          interview.status === selectedStatus &&
-          (!selectedJobId || interview.job.id === selectedJobId)
-        )
-      );
-    }
+    // if (selectedStatus !== "all") {
+    // filtered = filtered.filter(candidate =>
+    //   candidate.interviews.some(interview =>
+    //     interview.status === selectedStatus &&
+    //     (!selectedJobId || interview.job.id === selectedJobId)
+    //   )
+    // );
+    // }
 
     setFilteredCandidates(filtered);
-  }, [searchTerm, selectedStatus, candidatesWithStatus, selectedJobId])
+  }, [searchTerm, candidates])
 
   const handleSearch = (searchValue) => {
     setSearchTerm(searchValue);
@@ -217,12 +218,12 @@ const StudentDetails = ({ }) => {
       </div>
       <div className="flex">
         <div className="w-1/4 p-4 bg-gray-100">
-          <Filter onSearch={handleSearch} onStatusChange={handleStatusChange} />
+          <Filter onSearch={handleSearch} onStatusChange={() => { }} />
           <ScrollArea className="mt-4 h-[520px] overflow-y-auto">
             <ul className="space-y-2 cursor-pointer">
               {candidatesLoading ? (
                 <CandidateLoader />
-              ) : filteredCandidates && filteredCandidates.length > 0 ? (
+              ) : Array.isArray(filteredCandidates) && filteredCandidates.length > 0 ? (
                 filteredCandidates.map((contact) => (
                   <li
                     key={contact.id}

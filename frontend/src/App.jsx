@@ -22,8 +22,6 @@ const App = () => {
   return (
     <BrowserRouter>
       <UserProvider> {/* Move UserProvider outside to wrap all routes */}
-        <CandidatesProvider>
-          <JobsProvider>
         <Toaster richColors toastOptions={{}} />
         <Routes>
           {/* Login Route */}
@@ -34,15 +32,15 @@ const App = () => {
           <Route
             path="/"
             element={
-              // <CandidatesProvider>
-              //   <JobsProvider>
+              <CandidatesProvider>
+                <JobsProvider>
                   <InterviewProvider>
                     <AppLayout>
                       <Outlet /> {/* Outlet for rendering child routes */}
                     </AppLayout>
                   </InterviewProvider>
-              //   </JobsProvider>
-              // </CandidatesProvider>
+                </JobsProvider>
+              </CandidatesProvider>
             }
           >
             {/* Nested Routes */}
@@ -65,8 +63,6 @@ const App = () => {
             }
           />
         </Routes>
-          </JobsProvider>
-        </CandidatesProvider>
       </UserProvider>
     </BrowserRouter>
   );
