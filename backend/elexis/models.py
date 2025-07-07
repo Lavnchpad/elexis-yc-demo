@@ -178,7 +178,8 @@ class Interview(BaseModel):
     current_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     reason_for_leaving_previous_job = models.TextField(
         blank=True, null=True, help_text="Reason for leaving the previous job")
-
+    class Meta:
+        ordering = ['-date', '-time']
     def __str__(self):
         return f"Interview for {self.candidate.name} - {self.job.job_name} - {self.date} - {self.time}"
 
