@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.db.models import Q
 # from django_filters import CharFilter, FilterSet
 # from django_filters.rest_framework import DjangoFilterBackend
 from elexis.services.ecs_task import ECSAIBotTaskService, ECSInterviewLanguages, ECSInterviewTaskContext
@@ -143,6 +144,12 @@ class CandidateViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if self.request.query_params.get('include_interview_status', '').lower() == 'true':
+            return Candidate.objects.filter(
+                organization=self.request.user.organization
+            ).prefetch_related(
+                'interviews'
+            )
         return Candidate.objects.filter(
             organization=self.request.user.organization
         )
@@ -222,7 +229,6 @@ class InterviewViewSet(viewsets.ModelViewSet):
           if self.request.user.is_authenticated:
               queryset = queryset.filter(scheduled_by__organization_id=self.request.user.organization_id)
 
-
           job_id = self.request.query_params.get("job_id")
           candidate_id = self.request.query_params.get("candidate_id")
           status = self.request.query_params.get("status")
@@ -232,7 +238,14 @@ class InterviewViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(job__id=job_id)     
           if candidate_id:
             queryset = queryset.filter(candidate__id=candidate_id)
+            two_hours_ago = datetime.now() - timedelta(hours=2)
+            todays_date_and_before_threshold = Q(date=two_hours_ago.date() ,time__lt= two_hours_ago.time())
+            yesterdays_date = Q(date__lt= two_hours_ago.date())
 
+            # Filter interviews that are scheduled and more than 2 hours old and update their status
+            queryset.filter(
+                Q(status='scheduled') & 
+                (todays_date_and_before_threshold | yesterdays_date)).update(status='Not Joined')
           return queryset
         
         def perform_create(self,serializer):

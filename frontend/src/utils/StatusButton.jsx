@@ -99,6 +99,7 @@ export const InterviewStatus = {
   ENDED: "ended",
   HOLD: "hold",
   REGISTERED: "registered",
+  NOT_JOINED: 'not joined',
 };
 
 export default StatusButton;

@@ -144,6 +144,7 @@ class Interview(BaseModel):
         ('ended', 'Ended'),
         ('hold', 'Hold'),
         ('registered', 'Registered'),
+        ('not_joined', 'Not Joined'),
     ]
 
     candidate = models.ForeignKey(

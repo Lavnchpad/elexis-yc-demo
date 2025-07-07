@@ -109,41 +109,56 @@ class CandidateSerializer(serializers.ModelSerializer):
         return data    
     def get_status(self, obj):
         request = self.context.get('request')
-
-        # Check if the 'include_status' query parameter exists and is set to 'true' (or any value)
         if request and request.query_params.get('include_interview_status', '').lower() == 'true':
-            interviews = obj.interviews.all()
-
             CANDIDATE_STATUS_ACCEPTED = 'accepted'
             CANDIDATE_STATUS_REJECTED = 'rejected'
             CANDIDATE_STATUS_WAITING_FOR_DECISION = 'pending'
             CANDIDATE_STATUS_HOLD = 'hold'
             CANDIDATE_STATUS_REGISTERED = 'registered'
+            # CANDIDATE_STATUS_NOT_JOINED = 'not joined'
             CANDIDATE_STATUS_NO_INTERVIEWS = None
+            interviews = obj.interviews.all()
+            
+            status_flags = {
+            'accepted': False,
+            'rejected': False,
+            'hold': False,
+            'pending': False,
+            'scheduled': False, # For started, registered, scheduled
+            # 'not_joined': False
+        }
 
-            # Priority 1: Accepted
-            if interviews.filter(status='accepted').exists():
+            for interview in interviews:
+                if interview.status.lower() == 'accepted':
+                    status_flags['accepted'] = True
+                    break
+                elif interview.status.lower() == 'rejected':
+                    status_flags['rejected'] = True
+                elif interview.status.lower() == 'hold':
+                    status_flags['hold'] = True
+                elif interview.status.lower() == 'ended':
+                    status_flags['pending'] = True
+                elif interview.status.lower() in ['started', 'registered', 'scheduled']:
+                    status_flags['scheduled'] = True
+                # elif interview.status == 'Not Joined':
+                #     status_flags['not_joined'] = True
+
+                
+
+            if status_flags['accepted']:
                 return CANDIDATE_STATUS_ACCEPTED
-
-            # Priority 2: Rejected (if no 'accepted' interview exists)
-            elif interviews.filter(status='rejected').exists():
+            elif status_flags['rejected']:
                 return CANDIDATE_STATUS_REJECTED
-
-            # Priority 3: Hold (if no 'accepted', 'rejected', or 'ended' exists)
-            if interviews.filter(status='hold').exists():
+            elif status_flags['hold']:
                 return CANDIDATE_STATUS_HOLD
-            # Priority 4: Ended (if no 'accepted' or 'rejected' exists)
-            # Assuming 'ended' implies waiting for a decision
-            elif interviews.filter(status='ended').exists():
+            elif status_flags['pending']:
                 return CANDIDATE_STATUS_WAITING_FOR_DECISION
-
-            # Priority 5: Started or Registered or Scheduled
-            # If any interview is 'started', 'registered', or 'scheduled', the candidate is 'Registered' (or 'In Progress')
-            if interviews.filter(status__in=['started', 'registered', 'scheduled']).exists():
+            elif status_flags['scheduled']:
                 return CANDIDATE_STATUS_REGISTERED
-
-            # If none of the above, it means there are no relevant interviews or no interviews at all
-            return CANDIDATE_STATUS_NO_INTERVIEWS
+            # elif status_flags['not_joined']:
+            #     return CANDIDATE_STATUS_NOT_JOINED
+            else:
+                return CANDIDATE_STATUS_NO_INTERVIEWS
         else:
             return None
 
