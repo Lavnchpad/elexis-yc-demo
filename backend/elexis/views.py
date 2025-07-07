@@ -223,7 +223,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
         permission_classes = [IsAuthenticated]
 
         def get_queryset(self):
-          queryset = Interview.objects.all()
+          queryset = Interview.objects.all().order_by('-date', '-time')
 
         # Filter by the user (if authenticated and is a recruiter)
           if self.request.user.is_authenticated:
