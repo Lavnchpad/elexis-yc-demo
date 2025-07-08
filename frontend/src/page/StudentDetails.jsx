@@ -150,7 +150,7 @@ const StudentDetails = ({ }) => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Candidates</h1>
           <AddCandidate>
-            <Button>Add Candidate</Button>
+          <Button>+ Add Candidate</Button>
         </AddCandidate>
       </div>
       <div className="flex">
