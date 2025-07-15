@@ -42,7 +42,8 @@ export default function QuestionnaireEditor({
     }
     const handleInternalAddQuestion = () => {
         if (newQuestionText.trim()) {
-            const newQuestion = { id: generateUniqueId(questions[questions.length - 1].id + 1), question: newQuestionText.trim() };
+            const tempId = (questions[questions.length - 1]?.id || 0)
+            const newQuestion = { id: generateUniqueId(tempId + 1), question: newQuestionText.trim() };
             setQuestions((prev) => {
                 return [...prev, newQuestion];
             });
