@@ -1,13 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { Move, PlusCircle, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import AiGeneratedQuestions from './AiGeneratedQuestions';
 import { toast } from 'sonner';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { v4 as uuidv4 } from 'uuid';
 
 function generateUniqueId() {
-    return Date.now() + Math.floor(Math.random() * 1000);
+    return uuidv4();
 }
 
 export default function QuestionnaireEditor({
@@ -24,6 +26,7 @@ export default function QuestionnaireEditor({
     const [newQuestionText, setNewQuestionText] = useState('');
     const [aigeneratedQuestions, setAiGeneratedQuestion] = useState([])
     const newQuestionInputRef = useRef(null);
+    const scrollAreaRef = useRef(null);
 
     const handleAddAiQuestion = (id) => {
         const questionToAdd = aigeneratedQuestions.find(q => q.id === id);
@@ -39,7 +42,8 @@ export default function QuestionnaireEditor({
     }
     const handleInternalAddQuestion = () => {
         if (newQuestionText.trim()) {
-            const newQuestion = { id: generateUniqueId(questions[questions.length - 1].id + 1), question: newQuestionText.trim() };
+            const tempId = (questions[questions.length - 1]?.id || 0)
+            const newQuestion = { id: generateUniqueId(tempId + 1), question: newQuestionText.trim() };
             setQuestions((prev) => {
                 return [...prev, newQuestion];
             });
@@ -61,9 +65,22 @@ export default function QuestionnaireEditor({
         }
     };
 
+    const onDragEnd = (result) => {
+        // Dropped outside the list
+        if (!result.destination) {
+            return;
+        }
+        const reorderedQuestions = reorder(
+            questions,
+            result.source.index,
+            result.destination.index
+        );
+        setQuestions(reorderedQuestions);
+    };
+
     return (
         <div className="">
-            <div className="py-6 space-y-6">
+            <div className="py-4 space-y-6" ref={scrollAreaRef}>
                 <div className="flex flex-col gap-3 rounded-lg ">
                     {/* <Label htmlFor="new-question-input" className="text-md font-semibold text-lg">
                         Add New Question
@@ -92,13 +109,61 @@ export default function QuestionnaireEditor({
                         </Button>
                     </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">Selected Questions ({questions.length})</h3>
-                {questions.length === 0 && (
-                    <p className="text-gray-500 text-center italic py-4">No questions added yet. Start by adding one!</p>
-                )}
-                    <ScrollArea className="h-40 max-h-[50vh] pr-4">
-                        <div className="space-y-3">
-                            {questions.map((question, index) => (
+                <ScrollArea className="h-56 pr-4">
+                    <div className="space-y-3">
+                        <DragDropContext onDragEnd={onDragEnd} getContainerForClone={scrollAreaRef.current}>
+                            <Droppable droppableId="questions-list">
+                                {(provided) => (
+                                    <div
+                                        className="space-y-3"
+                                        {...provided.droppableProps}
+                                        ref={provided.innerRef}
+                                    >
+                                        {questions.map((question, index) => (
+                                            <Draggable
+                                                key={question.id}
+                                                draggableId={question.id} // Must be a string
+                                                index={index}
+                                                isDragDisabled={viewOnly} // Disable drag if viewOnly
+                                            >
+                                                {(provided, snapshot) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps} // This makes the entire item draggable
+                                                        className={`flex items-center justify-between p-3 border border-gray-200 bg-white rounded-lg shadow-sm transition-shadow 
+                                                        ${snapshot.isDragging ? 'shadow-lg bg-blue-50' : 'hover:shadow-md'} 
+                                                        ${viewOnly ? 'cursor-not-allowed' : 'cursor-grab'}`}
+                                                        style={{
+                                                            ...provided.draggableProps.style,
+                                                        }}
+                                                    >
+                                                        <Move className='mr-2' />
+                                                        <span className="text-gray-800 text-sm flex-1 mr-4">
+                                                            {index + 1}. {question.question}
+                                                        </span>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="icon"
+                                                            onClick={() => handleInternalRemoveQuestion(question.id)}
+                                                            className="rounded-full w-8 h-8 flex-shrink-0"
+                                                            title="Remove Question"
+                                                            disabled={viewOnly}
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                            <span className="sr-only">Remove</span>
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder} {/* Essential for correct drag behavior */}
+                                    </div>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
+
+                        {/* {questions.map((question, index) => (
                                 <div
                                     key={question.id}
                                     className="flex items-center justify-between p-3 border border-gray-200 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
@@ -118,7 +183,8 @@ export default function QuestionnaireEditor({
                                         <span className="sr-only">Remove</span>
                                     </Button>
                                 </div>
-                            ))}
+                            ))} */}
+
                         </div>
                             {/*  Add AI Generated Questions Section */}
                             <div className="space-y-3 text-xs shadow-sm mt-4">
@@ -148,15 +214,14 @@ export default function QuestionnaireEditor({
 
             </div>
 
-            {/* <div className="flex flex-col sm:flex-row sm:justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
-                <Button
-                    type="submit"
-                    onClick={handleInternalSaveChanges}
-                    className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md shadow-md transition-colors"
-                >
-                    Save Changes
-                </Button>
-            </div> */}
         </div>
     );
 }
+
+
+function reorder(list, startIndex, endIndex) {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    return result;
+};

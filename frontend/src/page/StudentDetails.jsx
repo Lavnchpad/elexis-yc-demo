@@ -150,7 +150,7 @@ const StudentDetails = ({ }) => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Candidates</h1>
           <AddCandidate>
-            <Button>Add Candidate</Button>
+          <Button>+ Add Candidate</Button>
         </AddCandidate>
       </div>
       <div className="flex">
@@ -293,16 +293,21 @@ const StudentDetails = ({ }) => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {interviewData.length > 0
-                          ? interviewData.map((interview) => (
+                            {interviewData?.length > 0
+                              ? interviewData.map((interview) =>
+                              (
                             <SelectItem
                               key={interview.id}
                               value={interview.id}
                             >
-                              {interview.job.job_name}
+                                  {interview.job.job_name}  
+                                  <p className="text-xs text-muted-foreground">{interview?.status?.toLowerCase()} </p>
+                                  <p className="text-xs text-muted-foreground">@{interview?.date} {interview?.time}</p>
+
                             </SelectItem>
-                          ))
-                          : "No Job Available"}
+                              )
+                              )
+                              : "No Interviews Available"}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
