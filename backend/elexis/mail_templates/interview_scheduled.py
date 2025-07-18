@@ -15,8 +15,8 @@ As the next step in the selection process, we invite you to complete a voice-bas
 Estimated time: 15-20 minutes
 Deadline: Please start the interview within half an hour of the scheduled time.
 
-NOTE: Before starting the interview, go through the tutorial link below to setup browser permissions
-https://amaxatech-my.sharepoint.com/:v:/p/aditya_panchal/EVKbuzZp3V5NmAJnYZfKXAsBK1cbStThWxqGM1_kt5CRfg?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=DILzIc
+NOTE: Before starting the interview, please check that your mic and camera permissions are enabled by following the setup tutorial below.
+https://www.youtube.com/shorts/an_FqfLs3K4
 
 🔒 Important Guidelines:
 Please ensure you are in a quiet environment with good lighting and a stable internet connection.
