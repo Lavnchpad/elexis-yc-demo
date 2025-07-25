@@ -72,10 +72,14 @@ def generate_summary_data(data, requirements):
 
                 The final output should be a list of dictionaries, one per requirement, with the added evaluation and remarks fields.
         '''
+    retry_count = 5
     while True:
+        retry_count = retry_count - 1
+        if retry_count < 0:
+            raise Exception("Unable to generate summary after retries")
         try:
             prompt = prompt_template.replace("{{data}}", data).replace("{{requirements}}", str(requirements))
-            model = genai.GenerativeModel('gemini-2.0-flash',
+            model = genai.GenerativeModel('gemini-2.5-flash',
                                           generation_config={"response_mime_type": "application/json"})
             chat = model.start_chat(history=[])
             response = chat.send_message(prompt)
@@ -115,8 +119,27 @@ def generate_summary_data(data, requirements):
                 f"There was an error in the format of the JSON response: {e}. Please ensure the response has the following structure:\n\n"
                 f"1. 'overall_impression' should be an array of points.\n"
                 f"2. 'strengths' should be an array of dictionaries, each with 'strength', 'example', and 'rating'.\n"
-                f"3. 'areas of potential discussion' should be an array of dictionaries, each with 'area', 'details', and 'suggestions'.\n"
+                f"3. 'areas_for_improvement' should be an array of dictionaries, each with 'area', 'details', and 'suggestions'.\n"
                 f"4. 'final_recommendation' should be an array of points.\n\n"
+                f"5. skills: It should be an list of Dictionary and each item should be a dictionary with the following fields: ['title', 'skills']"
+                """
+                    and example object of skills should look like this: 
+                        [
+                            {
+                                title: "Languages",
+                                skills: [
+                                { name: "C++", rating: 5 },
+                                ],
+                            },
+                            {
+                                title: "Job Related Skills",
+                                skills: [
+                                { name: "Frontend Dev.", rating: 5 },
+                                { name: "Backend Dev.", rating: 5 },
+                                ],
+                            },
+                        ]
+                """
                 f"Please correct and reformat the response accordingly."
             )
             prompt_template = correction_prompt

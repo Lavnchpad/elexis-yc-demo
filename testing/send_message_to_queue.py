@@ -23,9 +23,11 @@ sqs_client = boto3.client(
 
 # Sample JSON message (modify as needed)
 message_body = {
-    "s3_file_url": "https://demo-soltech-elexis-transcript.s3.us-west-1.amazonaws.com/transcript_Aditya Panchal.txt-a84a4dc3-17e4-4e95-8075-05e8cf407721",
-    "room_url": "https://google.com"
-    # Optional: "type": "proctor" etc.
+    "video_url": "https://amaxa-amaxa-elexis-transcript.s3.us-west-1.amazonaws.com//recordings-storage/0S1GXAwhz3HEsVjUgjZ6_1753250574.4591181.mp4",
+    "candidate_id": "dd53ce29-1d00-4c10-a98a-6563076614a4",
+    "room_url": "https://amaxatechdev.daily.co/0S1GXAwhz3HEsVjUgjZ6",
+    "interview_id": "29313249-4218-440a-8d64-d6a300d4d3cb",
+    "type": "proctor"
 }
 
 # Send the message to the SQS queue
