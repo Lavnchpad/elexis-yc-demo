@@ -1,6 +1,6 @@
 import json
 import os
-
+import io
 import dotenv
 import google.generativeai as genai
 from google.generativeai.types import BlobDict
@@ -227,3 +227,45 @@ def resume_summary_generator(signed_url):
     except Exception as e:
         logger.error(f"Error generating resume summary: {e}")
         return None
+
+
+
+def extract_text_from_pdf(signed_url: str) -> str:
+    """
+    Extracts all text content from a PDF given url.
+
+    Args:
+        signed_url (url string): The url of the PDF file.
+
+    Returns:
+        str: The concatenated text from all pages of the PDF.
+             Returns an empty string if extraction fails or PDF is empty.
+    """
+    if not signed_url:
+        print("No PDF data provided for text extraction.")
+        return ""
+    response = requests.get(signed_url)
+    if response.status_code != 200:
+        print("Failed to download file from signed URL", signed_url)
+        return None
+
+    pdf_blob = BlobDict(data=response.content, mime_type="application/pdf")
+    try:
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        prompt = (
+            "Extract all the etxt content from the candidates resume please."
+        )
+        response = model.generate_content(
+            [prompt, pdf_blob],
+            stream=False,
+            generation_config={
+                "response_mime_type": "text/plain",
+            }
+        )
+        resume_full_text = ''.join(response.text.splitlines()).strip()
+        print("Response from model:", resume_full_text)
+        return  resume_full_text # Join lines and strip whitespace
+
+    except Exception as e:
+        logger.error(f"Error extracting text from PDF: {e}", exc_info=True)
+        return ""

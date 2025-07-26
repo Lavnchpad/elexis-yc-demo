@@ -101,7 +101,10 @@ class Candidate(BaseModel):
     profile_photo = models.ImageField(upload_to="profile_photos", blank=True, null=True)
     applied_for = models.CharField(max_length=100, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-
+    resume_embedding_id = models.CharField(
+        max_length=255, blank=True, null=True,
+        help_text="ID of the resume embedding in the vector database."
+    )
     def __str__(self):
         return self.name
 class Job(BaseModel):
@@ -113,6 +116,10 @@ class Job(BaseModel):
     )
     job_name = models.CharField(max_length=255)
     job_description = models.TextField()
+    job_description_embedding_id = models.CharField(
+        max_length=255, blank=True, null=True,
+        help_text="ID of the job description embedding in the vector database."
+    )
     additional_data = models.TextField(blank=True)
     location = models.CharField(max_length=255, blank=True)
     min_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
@@ -179,7 +186,7 @@ class Interview(BaseModel):
     reason_for_leaving_previous_job = models.TextField(
         blank=True, null=True, help_text="Reason for leaving the previous job")
     def __str__(self):
-        return f"Interview for {self.candidate.name} - {self.job.job_name} - {self.date} - {self.time}"
+        return f"{self.organization.org_name} :: Interview for {self.candidate.name} - {self.job.job_name} - {self.date} - {self.time}"
 
 class Snapshots(BaseModel):
     interview = models.ForeignKey(
