@@ -48,7 +48,7 @@ class JobSerializer(serializers.ModelSerializer):
         fields = [
             'job_name', 'id', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description',
             'requirements', 'questions', 'recruiter', 'organization', 'allowed_interview_languages',
-            'ask_for_reason_for_leaving_previous_job', 'ask_for_ctc_info'
+            'ask_for_reason_for_leaving_previous_job', 'ask_for_ctc_info', 'job_description_embedding_id'
         ]
 
     def to_representation(self, instance):

@@ -1,14 +1,11 @@
 from django.contrib.auth import authenticate
 from django.db.models import Q
-# from django_filters import CharFilter, FilterSet
-# from django_filters.rest_framework import DjangoFilterBackend
-from django.http import JsonResponse
+from elexis.utils.general import upsert_jd_vector, upsert_resume_vector
 from elexis.services.ecs_task import ECSAIBotTaskService, ECSInterviewLanguages, ECSInterviewTaskContext
 from elexis.services.daily import DailyMeetingService
 from elexis.services.questions_generator import generate_questions, GeneratedQuestionsDto
 from elexis.utils.summary_generation import resume_summary_generator , extract_text_from_pdf
-from rest_framework.exceptions import ValidationError
-from elexis.utils.get_file_data_from_s3 import generate_signed_url
+# from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import redirect
@@ -18,7 +15,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions , JobRequirementEvaluation, JobQuestions
+from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions ,JobMatchingResume, JobRequirementEvaluation, JobQuestions
 from elexis.utils.general import getHumanReadableTime
 from .serializers import (
     RecruiterSerializer,
@@ -40,12 +37,9 @@ from django.shortcuts import redirect
 import logging
 from .services.pinecone_service import pinecone_client
 from elexis.services.gemini_embedding_service import generate_embedding, split_text_into_chunks
-import numpy as np
 from django.db.models import F, Sum, ExpressionWrapper, IntegerField
 import os
 from dotenv import load_dotenv      
-# from django.core.files.storage import default_storage
-# print("default storage is::: ",default_storage.__class__)
 from .mail_templates.interview_scheduled import interview_scheduled_template
 import time
 load_dotenv()
@@ -289,6 +283,20 @@ class InterviewViewSet(viewsets.ModelViewSet):
             self._update_status_fields(interview)
             interview.save()
             subject, message = interview_scheduled_template(interview.scheduled_by.organization.org_name, interview.candidate.name, interview.job.job_name, interview.link, f"{interview.date} at {interview.time}", interview.scheduled_by.email)
+    # Doing this here as this is the only place where a candidate gets associated with a Job
+            # TODO : check if the cosine similarity for this candidate's resume and jd is already present in DB , if not , get the cosine similarity and add it to the DB 
+            resume_embedding_id = interview.candidate.resume_embedding_id
+            jd_embedding_id = interview.job.job_description_embedding_id
+            if resume_embedding_id and  jd_embedding_id:
+                try:
+                    similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id)
+                    JobMatchingResume(
+                    job= interview.job,
+                    candidate=interview.candidate,
+                    score=similarityScore
+                    ).save()
+                except Exception as e:
+                    print("Error in getting similarity score between job and candidate resume", e)
             try:
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email, interview.scheduled_by.email])
             except Exception as e:
@@ -474,8 +482,10 @@ class JobViewSet(viewsets.ModelViewSet):
             created_by = self.request.user,
             modified_by = self.request.user
         )
-        job_embedding_id = upsert_jd_vector(requirements_text=" ".join([req.requirement for req in job.requirements.all()]))
-        serializer.save(job_embedding_id=job_embedding_id)
+        jd_embedding_id = upsert_jd_vector(requirements_text=" ".join([req.requirement for req in job.requirements.all()]), job=job)
+        # serializer.save(job_description_embedding_id=job_embedding_id)
+        job.job_description_embedding_id = jd_embedding_id
+        job.save(update_fields=['job_description_embedding_id'])
 
         
     def perform_update(self, serializer):
@@ -524,11 +534,12 @@ class JobViewSet(viewsets.ModelViewSet):
                 "rating":evaluation["rating"],
                 "requirementName": evaluation["requirement_name"],
                 }
-            if candidateId in response:
-                response[candidateId]["evaluations"][requirementName]= requirementevaluation
-                response[candidateId]["totalScore"] = response[candidateId]["totalScore"] + requirementevaluation['weightedScore']
+            interviewId = str(interviewId[0]) if isinstance(interviewId, tuple) else str(interviewId)
+            if interviewId in response:
+                response[interviewId]["evaluations"][requirementName]= requirementevaluation
+                response[interviewId]["totalScore"] = response[interviewId]["totalScore"] + requirementevaluation['weightedScore']
             else:
-                response[candidateId]={"evaluations":{requirementName : requirementevaluation},
+                response[interviewId]={"evaluations":{requirementName : requirementevaluation},
                 "totalScore": requirementevaluation['weightedScore'],
                 "candidateName": evaluation["candidates_name"],
                 "candidateId": candidateId,
@@ -656,109 +667,5 @@ class QuestionsGeneratorAPIView(APIView):
 
         return Response(output_serializer.data, status=status.HTTP_200_OK)
 
-def upsert_jd_vector(requirements_text: str, job_description_text: str, job: Job):
-    try:
-            job_embedding_id = ''
-            job_description_text = f"{job.job_name} at {job.organization.org_name}\nDescription: {job.job_description}\nRequirements: {requirements_text}"
-            job_chunks = split_text_into_chunks(job_description_text)
-            job_embeddings = []
-            for i, chunk_text in enumerate(job_chunks):
-                chunk_embedding = generate_embedding(chunk_text)
-                if not chunk_embedding or all(val == 0 for val in chunk_embedding):
-                    logger.warning(f"Skipping chunk {i} for job {job.id} due to empty embedding.")
-                    continue
-                job_embeddings.append(chunk_embedding)
-            
-            if not job_embeddings:
-                logger.warning(f"No valid chunk embeddings for job {job.id}, cannot create aggregate embedding.")
-                raise ValidationError("Failed to generate a valid embedding for the job description. Please check job content or Gemini API.")
-
-            # Aggregate job embeddings (e.g., by averaging)
-            aggregate_job_embedding = np.mean(job_embeddings, axis=0).tolist()
-            
-            if not aggregate_job_embedding or all(val == 0 for val in aggregate_job_embedding):
-                logger.warning(f"Aggregate embedding for job {job.id} is empty or zero.")
-                raise ValidationError("Failed to generate a valid aggregate embedding for the job description.")
-
-            # Store job embedding in Pinecone
-            job_embedding_id = f"job-{job.id}"
-            pinecone_client.upsert_vectors(
-                vectors=[{
-                    'id': job_embedding_id, # Unique ID for the job embedding in Pinecone
-                    'values': aggregate_job_embedding,
-                    'metadata': {
-                        'type': 'job', # Add a type for filtering if needed
-                        'job_id': str(job.id),
-                        'job_title': job.job_name,
-                        'company_name': job.organization.org_name
-                    }
-                }]
-            )
-            logger.info(f"Indexed job {job.id} aggregate embedding in Pinecone during creation.")
-            return job_embedding_id
-    except Exception as e:
-        logger.error(f"Error generating or storing embedding for job {job.id}: {e}", exc_info=True)
-        # Decide how to handle this error: e.g., log, return error response, or allow job creation to proceed without embedding
-def upsert_resume_vector(candiate_name: str, candidate_email: str, resume_full_text : str, candidate_id: str): 
-            
-            try:
-                print("resume full text here:", resume_full_text)
-                resume_chunks = split_text_into_chunks(resume_full_text)
-            
-                pinecone_resume_vectors_to_upsert = []
-                resume_chunk_embeddings = [] # Collect all chunk embeddings here
-                
-                for i, chunk_text in enumerate(resume_chunks):
-                    chunk_embedding = generate_embedding(chunk_text)
-                    if not chunk_embedding or all(val == 0 for val in chunk_embedding):
-                        logger.warning(f"Skipping chunk {i} for resume of candidate: {resume.id} due to empty embedding.")
-                        continue
-                    
-                    # Add individual chunk embedding to the list for upserting
-                    pinecone_resume_vectors_to_upsert.append({
-                        'id': f"resume-{candidate_id}-chunk-{i}", # Unique ID for each chunk
-                        'values': chunk_embedding,
-                        'metadata': {
-                            'type': 'resume_chunk',
-                            'resume_id': str(candidate_id),
-                            'chunk_text': chunk_text,
-                            'candidate_name': candiate_name,
-                            'candidate_email': candidate_email,
-                            'chunk_index': i
-                        }
-                    })
-                    resume_chunk_embeddings.append(chunk_embedding) # Also collect for aggregation
-                
-                if not resume_chunk_embeddings:
-                    logger.warning(f"No valid chunk embeddings for resume (candidate_id) {candidate_id}, cannot calculate aggregate embedding.")
-                    # return JsonResponse({'status': 'Resume uploaded but embedding failed', 'resume_id': str(candidate_id)}, status=500)
-                    return ''
-
-                # CORRECTED: Aggregate resume embeddings using numpy.mean
-                aggregate_resume_embedding = np.mean(resume_chunk_embeddings, axis=0).tolist()
-                
-                # Add the aggregate resume embedding to the list for upserting
-                embedding_id = f"resume-{candidate_id}-aggregate"
-                pinecone_resume_vectors_to_upsert.append({
-                    'id': embedding_id,
-                    'values': aggregate_resume_embedding,
-                    'metadata': {
-                        'type': 'resume_aggregate',
-                        'resume_id': str(candidate_id),
-                        'candidate_name': candiate_name,
-                        'candidate_email': candidate_email,
-                    }
-                })
-
-                if pinecone_resume_vectors_to_upsert:
-                    pinecone_client.upsert_vectors(pinecone_resume_vectors_to_upsert)
-                    logger.info(f"Upserted {len(pinecone_resume_vectors_to_upsert)} vectors for resume (candidate_id) {candidate_id} to Pinecone.")
-                else:
-                    logger.warning(f"No vectors to upsert for resume {candidate_id}.")
-                return embedding_id
-            except Exception as e:
-                logger.error(f"Error fetching embedding for job {job.id}: {e}", exc_info=True)
-                return ''
-                # return Response({'error': 'Internal server error during embedding retrieval'}, status=500)
 
             

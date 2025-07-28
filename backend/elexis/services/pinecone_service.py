@@ -1,5 +1,6 @@
 import logging
 from django.conf import settings
+import numpy as np
 from pinecone import Pinecone, PodSpec
 from typing import Any # Import Any for type hinting
 import dotenv
@@ -151,12 +152,59 @@ class PineconeClient:
             }
             logger.info(f"Fetched {len(fetched_data)} vectors from Pinecone.")
             return fetched_data
-        # except GRPCStatusError as e:
-        #     logger.error(f"gRPC error during Pinecone fetch: {e.details}", exc_info=True)
-        #     raise
         except Exception as e:
             logger.error(f"Error fetching vectors from Pinecone: {e}", exc_info=True)
             raise
+
+    def get_similarity_between_stored_vectors(self, id1: str, id2: str) -> float | None:
+            """
+            Calculates the similarity between two vectors already stored in the Pinecone index.
+
+            Args:
+                id1 (str): The ID of the first vector in Pinecone.
+                id2 (str): The ID of the second vector in Pinecone.
+
+            Returns:
+                float | None: The similarity score (e.g., cosine similarity) between the two vectors,
+                            or None if either vector is not found or an error occurs.
+            """
+
+            if not id1 or not id2:
+                logger.warning("Both vector IDs must be provided to calculate similarity.")
+                return None
+
+            try:
+                logger.info(f"Attempting to fetch vector '{id1}' for query to calculate similarity with '{id2}'.")
+                # 1. Fetch the embedding of the first vector to use as the query vector
+                fetched_data = self.fetch_vectors(ids=[id1])
+                vector1_embedding = fetched_data.get(id1)
+
+                if not vector1_embedding:
+                    logger.warning(f"Vector with ID '{id1}' not found in Pinecone. Cannot perform query for similarity.")
+                    return None
+
+                # 2. Query Pinecone using the first vector's embedding, and filter specifically for the second vector's ID
+                # We use 'resume_id' in metadata because we explicitly added it during upsert.
+                query_results = self.index.query(
+                    vector=vector1_embedding,
+                    top_k=1, # We only need the similarity to one specific other vector (id2)
+                    include_metadata=True, # We don't need metadata in the result for this specific task
+                    filter={"resume_id": {"$eq": id2}} # Filter by the 'resume_id' field in metadata
+                )
+
+                # 3. Extract the similarity score from the result
+                if query_results.matches and query_results.matches[0].id == id2:
+                    similarity = query_results.matches[0].score
+                    logger.info(f"Pinecone calculated similarity between '{id1}' and '{id2}': {similarity}")
+                    return similarity
+                else:
+                    logger.warning(f"Vector with ID '{id2}' not found when querying with '{id1}' or filter yielded no match.")
+                    return None
+
+
+            except Exception as e:
+                logger.error(f"Error calculating similarity between stored vectors '{id1}' and '{id2}': {e}", exc_info=True)
+                return None
 
 # Initialize the Pinecone client (Singleton instance)
 pinecone_client = PineconeClient()

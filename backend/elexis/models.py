@@ -137,7 +137,7 @@ class Job(BaseModel):
         max_length=255, # Increased max_length to safely store multiple languages
         default="english",
         help_text="Comma-separated list of allowed interview languages (e.g., 'english,hindi')."
-    )
+    ) 
     def __str__(self):
         return self.job_name
     
@@ -273,3 +273,22 @@ class InterviewQuestions(BaseModel):
     )
     def __str__(self):
         return f"Question for Interview {self.interview.id}: {self.question}"
+    
+class JobMatchingResume(BaseModel):
+    job = models.ForeignKey(
+        Job, on_delete=models.CASCADE, related_name="matching_resumes"
+    )
+    candidate = models.ForeignKey(
+        Candidate, on_delete=models.CASCADE, related_name="matching_resumes"
+    )
+    score = models.DecimalField(
+        max_digits=10, decimal_places=10,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Score indicating how well the candidate's resume matches the job description"
+    )
+    class Meta:
+        # Enforce uniqueness for job and candidate combination
+        unique_together = ('job', 'candidate') 
+        ordering = ['-score'] 
+    def __str__(self):
+        return f"Resume Match: {self.candidate.name} for {self.job.job_name} - Score: {self.score}"
