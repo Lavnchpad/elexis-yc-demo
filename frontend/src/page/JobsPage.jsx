@@ -83,24 +83,23 @@ const JobsPage = () => {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">Jobs</h1>
-          <ManageJobs onJobCreated={fetchJobs}>
+    <div className="">
+      <div className="flex justify-between items-center">
+        {/* <h1 className="text-2xl font-bold">Jobs</h1> */}
+        {/* <ManageJobs onJobCreated={fetchJobs}>
             <Button className="bg-black hover:bg-gray-800">+ Create Job</Button>
-          </ManageJobs>
+          </ManageJobs> */}
         </div>
-        <div className="flex items-center gap-4 p-2 bg-[#D1D1D1]">
+      <div className="flex items-center gap-4 p-2 bg-black text-white rounded-t-lg">
           <Input
             placeholder="Search for Jobs"
-            className="max-w-sm"
+          className="max-w-sm text-black"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)} // Update search term
           />
-          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by Location" />
+        <Select value={selectedLocation} onValueChange={setSelectedLocation} className="color-black">
+          <SelectTrigger className="w-[180px] text-muted-foreground">
+            <SelectValue placeholder="Filter by Location" className='text-black' />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Locations</SelectItem>
@@ -115,8 +114,7 @@ const JobsPage = () => {
           hasPagination={false}
           columns={jobColumns(deleteJob)}
           data={filteredData} // Use filtered data
-        />
-      </div>
+      />
     </div>
   );
 };

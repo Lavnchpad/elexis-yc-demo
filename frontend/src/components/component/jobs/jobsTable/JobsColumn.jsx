@@ -18,38 +18,29 @@ export const jobColumns = (deleteJob) => [
     accessorKey: "max_ctc",
     header: "CTC",
   },
-  
   {
     id: "actions",
-    header: "",
     cell: ({ row }) => {
-      const job = row.original;
+      const jobId = row.original.id
       return (
-        <div className="flex gap-2 justify-end">
+        <div className="flex gap-2">
+          <Button asChild size="sm" className='bg-gray-300 text-black hover:bg-gray-300 hover:scale-95'>
+            <Link to={`/job/${jobId}`}>
+              View Details
+            </Link>
+          </Button>
           <Button
             variant="destructive"
             size="sm"
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-red-300 text-black hover:bg-red-300 hover:scale-95"
             onClick={() => deleteJob(job.id, job.created_by)}
           >
             Delete
           </Button>
         </div>
-        
-      );
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-        const jobId = row.original.id
-        return <Link to={`/job/${jobId}`}>
-            <Button size="sm">
-                View Details
-            </Button>
-        </Link>
+      )
     }
-}
+  },
 ];
 
 
