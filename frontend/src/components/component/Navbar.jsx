@@ -40,7 +40,7 @@ const Navbar = () => {
                 <>
                   <h1 className="text-xl font-bold">Job Database</h1>
                   <ManageJobs>
-                    <Button className='bg-red-700 shadow-2xl rounded-full'><Plus /> Add Job</Button>
+                    <Button className='bg-red-700 shadow-2xl rounded-full'><Plus /> Create Job</Button>
                   </ManageJobs>
                 </>
               ) :

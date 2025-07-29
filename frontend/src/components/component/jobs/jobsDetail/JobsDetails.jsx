@@ -9,6 +9,7 @@ import JobsQuestions from "./JobsQuestions";
 import Tooltip from "@/page/components/ToolTipCustom";
 import EditJobForm from "./EditJobForm";
 import ScheduledInterviews from "./ScheduledInterview";
+import CollapsibleSection from "../../resuable/CollapsibleSection";
 
 const JobDetails = () => {
   const navigate = useNavigate();
@@ -90,7 +91,21 @@ const JobDetails = () => {
           <TabsContent className="mt-0" value="job-details">
             <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
               <div className="grid grid-cols-8 gap-x-8 space-y-4">
-                <div className="shadow-lg px-4 col-span-5 py-4 flex flex-col gap-y-4 rounded-md border">
+                <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
+                  <CollapsibleSection title={"Key Information"}>
+                    <p className="">
+
+                    </p>
+                  </CollapsibleSection>
+                </div>
+                <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
+                  <CollapsibleSection title={"Job Description"}>
+                    <p className="">
+                      {jobData.job_description}
+                    </p>
+                  </CollapsibleSection>
+                </div>
+                {/* <div className="shadow-lg px-4 col-span-5 py-4 flex flex-col gap-y-4 rounded-md border">
                   <div className="flex flex-col gap-y-2">
                     <h1 className="font-semibold text-primaryButtonColor text-lg">
                       Job Description
@@ -112,7 +127,7 @@ const JobDetails = () => {
                       </p>
                     </div>
                   </div>
-                </div>
+                </div> */}
                 <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
                   <ErrorBoundary>
                     <JobsEvaluationTable id={jobId} />
