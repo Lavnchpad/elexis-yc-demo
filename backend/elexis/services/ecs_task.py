@@ -1,5 +1,6 @@
 import boto3
 from django.conf import settings
+from django.utils import timezone
 import enum
 import json
 import datetime
@@ -82,6 +83,12 @@ class ECSAIBotTaskService:
             aws_access_key_id= settings.AWS_ACCESS_KEY_ID,
             region_name=settings.BOT_AWS_REGION
         )
+        self.scheduler_client = boto3.client(
+            'scheduler',
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            aws_access_key_id= settings.AWS_ACCESS_KEY_ID,
+            region_name=settings.BOT_AWS_REGION
+        )
 
     def _ecs_interview_task_context_to_overrides(self, context: ECSInterviewTaskContext):
         """
@@ -138,5 +145,70 @@ class ECSAIBotTaskService:
         )
         return response
     
-    def schedule_task(self, interview_context: ECSInterviewTaskContext, schedule_at: datetime.datetime):
-        return 
+    def schedule_task(self, interview_context: ECSInterviewTaskContext, schedule_time: datetime.datetime):
+        """
+        Schedule an ECS task to run at a specific UTC time using EventBridge Scheduler.
+        """
+        schedule_name = f"{self.project_name}-interview-{interview_context.interview_id}-{schedule_time.strftime('%Y%m%d%H%M%S')}"
+        aware_local_time = schedule_time
+        if not timezone.is_aware(schedule_time):
+            aware_local_time = timezone.make_aware(schedule_time)
+        schedule_time_utc = timezone.localtime(aware_local_time, timezone=timezone.utc)
+        # EventBridge Scheduler 'at' expression expects YYYY-MM-DDTHH:MM:SS format
+        schedule_expression = f"at({schedule_time_utc.strftime('%Y-%m-%dT%H:%M:%S')})"
+
+        # Convert overrides to the JSON string expected by EventBridge Scheduler target input
+        ecs_task_parameters = {
+            "TaskDefinitionArn": self.task_definition_arn,
+            "LaunchType": ECSLaunchType.EC2, # Or FARGATE
+            "NetworkConfiguration": {
+                "awsvpcConfiguration": {
+                    "subnets": self.subnet_ids,
+                    "securityGroups": self.security_group_ids,
+                    "assignPublicIp": "ENABLED" if self.assign_public_ip else "DISABLED"
+                }
+            },
+            "Overrides": self._ecs_interview_task_context_to_overrides(interview_context)
+        }
+        
+        # EventBridge Scheduler expects the ECS parameters to be embedded in an 'Input' field
+        # and this Input must be a JSON string.
+        # It's important to craft this exactly as the EventBridge Scheduler API expects.
+        target_input = {
+            "ContainerOverrides": ecs_task_parameters["Overrides"]["containerOverrides"],
+            "ExecutionRoleArn": ecs_task_parameters["Overrides"].get("executionRoleArn"),
+            "TaskRoleArn": ecs_task_parameters["Overrides"].get("taskRoleArn")
+        }
+        
+        # Remove None values from target_input to avoid issues with JSON serialization
+        target_input_clean = {k: v for k, v in target_input.items() if v is not None}
+
+
+        try:
+            response = self.scheduler_client.create_schedule(
+                Name=schedule_name,
+                ScheduleExpression=schedule_expression,
+                ScheduleExpressionTimezone="UTC", # Always use UTC for 'at' expressions, or specific TZ for others
+                FlexibleTimeWindow={'Mode': 'OFF'}, # For precise scheduling
+                Target={
+                    'Arn': self.cluster_arn,
+                    'RoleArn': self.scheduler_role_arn, # EventBridge Scheduler's role to call ECS
+                    'EcsParameters': {
+                        'TaskDefinitionArn': ecs_task_parameters["TaskDefinitionArn"],
+                        'LaunchType': ecs_task_parameters["LaunchType"],
+                        'NetworkConfiguration': ecs_task_parameters["NetworkConfiguration"],
+                        # The 'Overrides' structure in EcsParameters is different from run_task
+                        # It should directly contain containerOverrides, executionRoleArn, etc.
+                        'ContainerOverrides': ecs_task_parameters["Overrides"]["containerOverrides"],
+                        'ExecutionRoleArn': ecs_task_parameters["Overrides"].get("executionRoleArn"),
+                        'TaskRoleArn': ecs_task_parameters["Overrides"].get("taskRoleArn")
+                    }
+                },
+                ActionAfterCompletion='DELETE', # Automatically delete schedule after it runs successfully
+                Description=f"Scheduled interview bot for {interview_context.candidate_name} (ID: {interview_context.interview_id})"
+            )
+            print(f"Successfully created schedule: {response['ScheduleArn']}")
+            return response['ScheduleArn']
+        except Exception as e:
+            print(f"Error creating schedule: {e}")
+            raise
