@@ -2,6 +2,7 @@ import boto3
 from django.conf import settings
 import enum
 import json
+import datetime
 
 class ECSLaunchType:
     """
@@ -136,3 +137,6 @@ class ECSAIBotTaskService:
             cluster=cluster
         )
         return response
+    
+    def schedule_task(self, interview_context: ECSInterviewTaskContext, schedule_at: datetime.datetime):
+        return 
