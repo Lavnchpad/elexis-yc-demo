@@ -273,22 +273,50 @@ class InterviewQuestions(BaseModel):
     )
     def __str__(self):
         return f"Question for Interview {self.interview.id}: {self.question}"
-    
-class JobMatchingResume(BaseModel):
+
+class JobMatchingResumeScore(BaseModel):
+    """
+    Candiates who are associated with a job, their progress(in the interview stages) is visible here with resume matching score
+    """
+    STAGES = [
+        ('candidate_onboard', 'Onboard'),
+        ('seleted_for_interview', 'Selected for Interview'),
+        ('scheduled', 'Interview Scheduled'),
+        ('completed', 'Interview Completed'),
+    ]
     job = models.ForeignKey(
         Job, on_delete=models.CASCADE, related_name="matching_resumes"
     )
     candidate = models.ForeignKey(
         Candidate, on_delete=models.CASCADE, related_name="matching_resumes"
     )
+    organization = models.ForeignKey(
+        Organization, related_name="matching_resumes", on_delete=models.CASCADE, blank=False, null=False
+    )
     score = models.DecimalField(
         max_digits=10, decimal_places=10,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         help_text="Score indicating how well the candidate's resume matches the job description"
     )
+    stage = models.CharField(
+        max_length=50, choices=STAGES, default='candidate_onboard',
+        help_text="Current stage of the candidate in the inbound process"
+    )
+    is_archieved = models.BooleanField(
+        default=False,
+        help_text="If True, this row is not the present state of the candidate in our interview process. He progressed or maybe archived."
+    )
     class Meta:
         # Enforce uniqueness for job and candidate combination
-        unique_together = ('job', 'candidate') 
+        unique_together = ('job', 'candidate','stage') 
         ordering = ['-score'] 
+
+    def save(self, *args, **kwargs):
+        # Only set the organization if it hasn't been explicitly set
+        # and the job is already set.
+        if not self.organization_id and self.job:
+            self.organization = self.job.organization
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"Resume Match: {self.candidate.name} for {self.job.job_name} - Score: {self.score}"
+        return f"Resume Match: {self.candidate.name} for {self.job.job_name} - Score: {self.score} - Stage: {self.stage}"

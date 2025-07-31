@@ -15,7 +15,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions ,JobMatchingResume, JobRequirementEvaluation, JobQuestions
+from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions ,JobMatchingResumeScore, JobRequirementEvaluation, JobQuestions
 from elexis.utils.general import getHumanReadableTime
 from .serializers import (
     RecruiterSerializer,
@@ -29,7 +29,8 @@ from .serializers import (
     GeneratedQuestionsSerializer,
     QuestionsRequestSerializer,
     InterviewQuestionsSerializer,
-    JobQuestionsSerializer
+    JobQuestionsSerializer,
+    JobMatchingResumeScoreSerializer
 )
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, now
@@ -162,15 +163,36 @@ class CandidateViewSet(viewsets.ModelViewSet):
             recruiter=self.request.user,
         )
         resume_text = extract_text_from_pdf(candidate.resume.url) if candidate.resume else ""
-        print("Resume text extracted:", candidate.resume.url)
-        embedding_id = upsert_resume_vector(candiate_name=candidate.name,
+        resume_embedding_id = upsert_resume_vector(candiate_name=candidate.name,
                                 candidate_id=candidate.id,
                                 resume_full_text=resume_text,
                                 candidate_email=candidate.email,
                                 )
-        candidate.resume_embedding_id = embedding_id
-        print("Resume embedding ID:", embedding_id)
-        serializer.save(resume_embedding_id=embedding_id)
+        candidate.resume_embedding_id = resume_embedding_id
+        # if job Id is there , that means the candidate is getting created from a job details page , so do calculations like getMatchingScore with job description and store in JobMatchingResumeScore table with default stage
+        if(self.request.query_params.get('job_id')):
+            stage = self.request.query_params.get('stage', 'candidate_onboard')  # Default to 'applied' if not provided
+            job_id = self.request.query_params.get('job_id')
+            try:
+                job = Job.objects.get(id=job_id, organization=self.request.user.organization)
+                # get the embedding id of the job description
+                jd_embedding_id = job.job_description_embedding_id
+                if jd_embedding_id and resume_embedding_id:
+                    try:
+                        similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id)
+                        JobMatchingResumeScore(
+                            job=job,
+                            candidate=candidate,
+                            score=similarityScore,
+                            stage=stage,
+                            created_by=self.request.user,
+                            modified_by=self.request.user
+                        ).save()
+                    except Exception as e:
+                        print("Error in getting similarity score between job and candidate resume", e)
+            except Job.DoesNotExist:
+                print("Job with ID {} does not exist.".format(job_id))
+        serializer.save(resume_embedding_id=resume_embedding_id)
 
     def perform_update(self, serializer):
         serializer.save(modified_by=self.request.user)
@@ -261,7 +283,10 @@ class InterviewViewSet(viewsets.ModelViewSet):
         def perform_create(self,serializer):
          candidate = serializer.validated_data.get('candidate')  # Fetch the candidate data
          if candidate:
-
+            serializer.save(
+                created_by = self.request.user,
+                modified_by = self.request.user
+            )
         # Set the organization based on the candidate's organization
             organization = candidate.organization
             interview = serializer.save(scheduled_by=self.request.user,organization=organization)
@@ -289,12 +314,14 @@ class InterviewViewSet(viewsets.ModelViewSet):
             jd_embedding_id = interview.job.job_description_embedding_id
             if resume_embedding_id and  jd_embedding_id:
                 try:
-                    similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id)
-                    JobMatchingResume(
-                    job= interview.job,
-                    candidate=interview.candidate,
-                    score=similarityScore
-                    ).save()
+                # in which stage you want to store this? if it is action taken from jobs oage , and what if interview scheduled from candidates page
+                    # similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id)
+                    # JobMatchingResumeScore(
+                    # job= interview.job,
+                    # candidate=interview.candidate,
+                    # score=similarityScore
+                    # ).save()
+                    pass
                 except Exception as e:
                     print("Error in getting similarity score between job and candidate resume", e)
             try:
@@ -307,7 +334,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             )
          
         def perform_update(self, serializer):
-            interview = serializer.save()
+            interview = serializer.save(modified_by = self.request.user)
             self._update_status_fields(interview)
             interview.save()
 
@@ -474,7 +501,7 @@ class JobViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Job.objects.filter(organization = self.request.user.organization,is_disabled=False).prefetch_related('requirements')
+        return Job.objects.filter(organization = self.request.user.organization,is_disabled=False).select_related('recruiter').prefetch_related('requirements')
 
     def perform_create(self, serializer):
         job = serializer.save(
@@ -552,31 +579,6 @@ class JobViewSet(viewsets.ModelViewSet):
                          "criterias":  JobRequirementSerializer(job.requirements, many=True).data
                          })
 
-#  Action to retrieve the embedding for a specific job
-    @action(detail=True, methods=['get'])
-    def get_embedding(self, request, pk=None):
-        """
-        Retrieves the Pinecone embedding for a specific job.
-        """
-        job = self.get_object() # Get the Job instance based on the PK from the URL
-        
-        try:
-            pinecone_id = f"job-{job.id}"
-            fetched_data = pinecone_client.fetch_vectors(ids=[pinecone_id])
-            
-            job_embedding = fetched_data.get(pinecone_id)
-
-            if job_embedding:
-                return Response({
-                    'job_id': str(job.id),
-                    'job_title': job.job_name,
-                    'embedding': job_embedding
-                })
-            else:
-                return Response({'error': f'Embedding for job {job.id} not found in Pinecone.'}, status=404)
-        except Exception as e:
-            logger.error(f"Error fetching embedding for job {job.id}: {e}", exc_info=True)
-            return Response({'error': 'Internal server error during embedding retrieval'}, status=500)
 
 class JobQuestionsViewSet(viewsets.ModelViewSet):
     queryset = JobQuestions.objects.all().order_by('sort_order')
@@ -667,5 +669,25 @@ class QuestionsGeneratorAPIView(APIView):
 
         return Response(output_serializer.data, status=status.HTTP_200_OK)
 
+class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
+    queryset = JobMatchingResumeScore.objects.all()
+    serializer_class = JobMatchingResumeScoreSerializer
+    permission_classes = [IsAuthenticated]
 
-            
+    def get_queryset(self):
+        queryset = JobMatchingResumeScore.objects.all()
+        jobId = self.request.query_params.get('job_id', '')
+        isArchieved = self.request.query_params.get('is_archieved', 'false').lower() == 'true'
+        if jobId:
+            queryset = queryset.filter(job__id=jobId)
+        if isArchieved:
+            queryset = queryset.filter(is_archieved=True)
+        else:
+            queryset = queryset.filter(is_archieved=False)
+        return queryset.select_related('candidate', 'created_by' , 'modified_by').order_by('-score')
+    
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, modified_by=self.request.user, organization=self.request.user.organization)
+    
+    def perform_update(self, serializer):
+        serializer.save(modified_by=self.request.user)

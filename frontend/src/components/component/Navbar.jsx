@@ -33,24 +33,17 @@ const Navbar = () => {
       <div className="flex h-16 items-center px-4 gap-2 container mx-auto">
         {/* Logo */}
         <div className="flex items-center space-x-4">
-          <img src={logo} className="w-20 h-auto"/>
+          <img src={logo} className="w-20 h-auto" onClick={() => navigate('/jobs')} />
           <JobsProvider>
             {
               activePath === "jobs" ? (
-                <>
                   <h1 className="text-xl font-bold">Job Database</h1>
-                  <ManageJobs>
-                    <Button className='bg-red-700 shadow-2xl rounded-full'><Plus /> Create Job</Button>
-                  </ManageJobs>
-                </>
               ) :
-                <>
-                  <h1 className="text-xl font-bold">Candidate Database</h1>
-                  <AddCandidate>
-                    <Button variant='' className='bg-red-700 shadow-2xl rounded-full'><Plus /> Add Candidate </Button>
-                  </AddCandidate>
-                </>
+                <h1 className="text-xl font-bold">Candidate Database</h1>
             }
+            <ManageJobs>
+              <Button className='bg-red-700 shadow-2xl rounded-full'><Plus /> Create Job</Button>
+            </ManageJobs>
           </JobsProvider>
         </div>
 

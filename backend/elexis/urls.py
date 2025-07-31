@@ -10,7 +10,8 @@ from .views import (
     LoginView,
     QuestionsGeneratorAPIView,
     InterviewQuestionsViewSet,
-    JobQuestionsViewSet
+    JobQuestionsViewSet,
+    JobMatchingResumeScoreViewSet
 )
 
 router = DefaultRouter()
@@ -20,6 +21,7 @@ router.register(r'jobs', JobViewSet)
 router.register(r'interviews', InterviewViewSet)
 router.register(r'interview-questions', InterviewQuestionsViewSet)
 router.register(r'job-questions', JobQuestionsViewSet)
+router.register(r'job-ats', JobMatchingResumeScoreViewSet) 
 
 
 urlpatterns = [

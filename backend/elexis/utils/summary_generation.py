@@ -263,7 +263,6 @@ def extract_text_from_pdf(signed_url: str) -> str:
             }
         )
         resume_full_text = ''.join(response.text.splitlines()).strip()
-        print("Response from model:", resume_full_text)
         return  resume_full_text # Join lines and strip whitespace
 
     except Exception as e:

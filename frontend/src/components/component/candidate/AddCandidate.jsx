@@ -23,7 +23,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CandidatesContext } from "../candidate/CandidatesContext";
-import { JobsContext } from "../jobs/JobsContext";
 import { Loader } from "lucide-react";
 
 const candidateSchema = z.object({
@@ -37,11 +36,12 @@ const candidateSchema = z.object({
   resume: z.any().optional(),
 });
 
-const AddCandidate = ({ children }) => {
+// Job data is passed so that , we can create a JobMatchingResume row for this candidate, 
+// if Job data is passed , that means it is created from the job details page , otherwise it is invoked from candidates page
+const AddCandidate = ({ children, jobData }) => {
   const { candidates, setCandidates } = useContext(CandidatesContext);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
-  const { jobs, fetchJobs } = useContext(JobsContext);
 
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -56,10 +56,6 @@ const AddCandidate = ({ children }) => {
       resume: undefined,
     },
   });
-
-  // useEffect(() => {
-  //   fetchJobs();
-  // }, []);
 
   const uploadFile = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -82,7 +78,7 @@ const AddCandidate = ({ children }) => {
 
     try {
       const token = localStorage.getItem("authToken");
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/candidates/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/candidates/${jobData?.id ? `?job_id=${jobData.id}` : ''}`, {
         method: "POST",
         body: formData,
         headers: { Authorization: `Bearer ${token}` },

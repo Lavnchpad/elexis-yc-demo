@@ -193,18 +193,73 @@ class PineconeClient:
                 )
 
                 # 3. Extract the similarity score from the result
+                print(f"Query (Job matcing with resume) results for jobId: {id1} and resume : {id2} : {query_results}")
                 if query_results.matches and query_results.matches[0].id == id2:
                     similarity = query_results.matches[0].score
                     logger.info(f"Pinecone calculated similarity between '{id1}' and '{id2}': {similarity}")
                     return similarity
                 else:
                     logger.warning(f"Vector with ID '{id2}' not found when querying with '{id1}' or filter yielded no match.")
-                    return None
+
+                    return self._calculate_similarity_fallback_numpy(id1, id2)
 
 
             except Exception as e:
                 logger.error(f"Error calculating similarity between stored vectors '{id1}' and '{id2}': {e}", exc_info=True)
                 return None
+    def _calculate_similarity_fallback_numpy(self, id1: str, id2: str) -> float | None:
+        """
+        FALLBACK METHOD: Fetches both vectors and calculates cosine similarity using NumPy.
+
+        Args:
+            id1 (str): The ID of the first vector.
+            id2 (str): The ID of the second vector.
+
+        Returns:
+            float | None: The similarity score (cosine similarity), or None if an error occurs
+                          or vectors are not found.
+        """
+        if not id1 or not id2:
+            logger.warning("Both vector IDs must be provided for NumPy similarity calculation.")
+            return None
+
+        try:
+            logger.info(f"Attempting to fetch both vectors '{id1}' and '{id2}' for NumPy similarity calculation.")
+            # Fetch both vectors in a single call to your existing fetch_vectors method
+            fetched_data = self.fetch_vectors(ids=[id1, id2])
+
+            vector1_embedding = fetched_data.get(id1)
+            vector2_embedding = fetched_data.get(id2)
+
+            if not vector1_embedding:
+                logger.warning(f"Vector with ID '{id1}' not found for NumPy similarity calculation.")
+                return None
+            if not vector2_embedding:
+                logger.warning(f"Vector with ID '{id2}' not found for NumPy similarity calculation.")
+                return None
+
+            # Convert to numpy arrays
+            vec1 = np.array(vector1_embedding)
+            vec2 = np.array(vector2_embedding)
+
+            # Calculate cosine similarity
+            # Cosine Similarity = (A . B) / (||A|| * ||B||)
+            dot_product = np.dot(vec1, vec2)
+            norm_vec1 = np.linalg.norm(vec1)
+            norm_vec2 = np.linalg.norm(vec2)
+
+            if norm_vec1 == 0 or norm_vec2 == 0:
+                logger.warning(f"One or both vectors ('{id1}', '{id2}') have zero norm. Similarity undefined.")
+                return 0.0 # Or handle as per your application's logic, e.g., raise error or return None
+
+            similarity = dot_product / (norm_vec1 * norm_vec2)
+
+            logger.info(f"NumPy calculated similarity between '{id1}' and '{id2}': {similarity}")
+            return float(similarity) # Ensure float return type
+
+        except Exception as e:
+            logger.error(f"Error in NumPy fallback similarity calculation for '{id1}' and '{id2}': {e}", exc_info=True)
+            return None
 
 # Initialize the Pinecone client (Singleton instance)
 pinecone_client = PineconeClient()

@@ -148,10 +148,9 @@ const StudentDetails = ({ }) => {
   return (
     <>
       <div className="flex justify-between items-center mb-8">
-        {/* <h1 className="text-2xl font-bold">Candidates</h1>
           <AddCandidate>
           <Button>+ Add Candidate</Button>
-        </AddCandidate> */}
+        </AddCandidate> 
       </div>
       <div className="flex">
         <div className="w-1/4 p-4 bg-gray-100">
