@@ -280,12 +280,28 @@ class QuestionsRequestSerializer(serializers.Serializer):
     num_resume_questions = serializers.IntegerField(required=False, default=3)
     num_job_role_questions = serializers.IntegerField(required=False, default=3)
     num_job_role_experience_questions = serializers.IntegerField(required=False, default=3)
-
+class BasicInterViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Interview
+        fields = '__all__'
 class JobMatchingResumeScoreSerializer(serializers.ModelSerializer):
     candidate = CandidateSerializer(read_only=True)
     modified_by = RecruiterSerializer(read_only=True)
     created_by = RecruiterSerializer(read_only=True)
+    interviews = BasicInterViewSerializer(read_only=True, many=True)
+
+    job_id = serializers.PrimaryKeyRelatedField(
+        queryset=Job.objects.all(),
+        source='job',
+        write_only=True
+    )
+    
+    candidate_id = serializers.PrimaryKeyRelatedField(
+        queryset=Candidate.objects.all(),
+        source='candidate',
+        write_only=True
+    )
     class Meta:
         model = JobMatchingResumeScore
-        fields = ['id', 'job', 'candidate', 'score', 'created_by', 'modified_by', 'created_date', 'modified_date', 'stage']
+        fields = ['id', 'job', 'candidate','interviews', 'score','job_id', 'candidate_id', 'created_by', 'modified_by', 'created_date', 'modified_date', 'stage','is_archieved']
         read_only_fields = ('job', 'candidate')

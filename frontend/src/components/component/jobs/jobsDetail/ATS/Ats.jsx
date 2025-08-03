@@ -1,19 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import React from 'react'
-import InboundApplications from "./components/InboundApplications";
-import useInboundApplications from "./hooks/useInboundApplications";
+import ApplicationsTrackingTable from "./components/ApplicationsTrackingTable";
 
 export default function Ats({ jobData }) {
-    const { loading: inboubndApplicantsLoading, applications: inboundAplicants, setApplications: setInboundApplicants } = useInboundApplications({ job_id: jobData.id })
-    async function inboundApplicantActions({ type, ...application }) {
-        switch (type) {
-            case "shortlist":
-            // Shortlist the applicant , move this candidate to next stage only if API returns 200, remove from this inboundAplicants and put into shortlistedforInterview candidates state with current user as updated
-            default:
-                console.error("Unknown action type:", type);
-                break;
-        }
-    }
 
     return (
         <Tabs defaultValue="Inbound Applicants">
@@ -45,7 +34,16 @@ export default function Ats({ jobData }) {
                 </TabsTrigger>
             </TabsList>
             <TabsContent className="mt-0" value="Inbound Applicants">
-                <InboundApplications jobData={jobData} applicants={inboundAplicants} inboundApplicantActions={inboundApplicantActions} />
+                <ApplicationsTrackingTable jobData={jobData} button1Text='Shortlist' title='Confirm Action' applicationtype='candidate_onboard' />
+            </TabsContent>
+            <TabsContent className="mt-0" value="Selected for Interview">
+                <ApplicationsTrackingTable jobData={jobData} button1Text='Schedule Interview' title='Schedule Interview' applicationtype='selected_for_interview' />
+            </TabsContent>
+            <TabsContent className="mt-0" value="Interview Scheduled">
+                <ApplicationsTrackingTable jobData={jobData} applicationtype='scheduled_interview' button1Text='Reschedule' />
+            </TabsContent>
+            <TabsContent className="mt-0" value="Interview Completed">
+                <ApplicationsTrackingTable jobData={jobData} button1Text='Schedule Again?' applicationtype='completed_interview' />
             </TabsContent>
         </Tabs>
     )

@@ -1,4 +1,4 @@
-from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementEvaluation
+from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementEvaluation, JobMatchingResumeScore
 from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3, put_dict_as_json_to_s3
 from elexis.utils.summary_generation import generate_summary, experience_information_generation
 from elexis.serializers import JobRequirementSerializer
@@ -88,7 +88,7 @@ def process_message(message_body):
                 return
                 
                 
-        # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://googly.com"}
+        # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://meeting01.com"}
         # {"type":"proctor","video":"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4","room_url":"https://google.com"}
         elif not room_url or not transcript_url:
             print(f"Invalid data in message: meeting_room={room_url}, transcript_url={transcript_url}")
@@ -165,7 +165,26 @@ def process_message(message_body):
             
             evaluations_to_create=[]
             candidate = interview.candidate
-
+            try:
+                # create a new row in JobResumeMatchingScore table, Completed stage
+                # get the JobResumeMatchingScore row from the interview scheduled stage
+                existingData = JobMatchingResumeScore.objects.filter(candidate=candidate, job=interview.job, stage='scheduled_interview')
+                existingData = existingData.first() if existingData.exists() else None
+                existingData.is_archieved=True
+                existingData.save()
+                # create a new row in JobResumeMatchingScore table, Completed stage
+                jobResumeScoreinstance = JobMatchingResumeScore.objects.create(
+                    candidate=candidate,
+                    job=interview.job,
+                    score=existingData.score if existingData else 0,
+                    stage='completed_interview',
+                    created_by=existingData.created_by if existingData else None,
+                )
+                interview.job_matching_resume_score = jobResumeScoreinstance
+                interview.save()
+            except JobMatchingResumeScore.DoesNotExist:
+                print(f"SQS_consumer.py ::: JobMatchingResumeScore in scheduled_interview stage does not exist for candidate {candidate.id} and job {interview.job.id}")
+        
             for item in summary_json['requirements_evaluation']:
                 print("item",item)
                 try:

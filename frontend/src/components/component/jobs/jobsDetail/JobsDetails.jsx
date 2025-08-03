@@ -16,16 +16,14 @@ import { Button } from "@/components/ui/button";
 
 const JobDetails = () => {
   const navigate = useNavigate();
+  // This candidateAdded state is used to trigger a re-render when a candidate is added
+  const [candidateAdded, setCandidateAdded] = useState(false);
   const { jobId } = useParams();
   const [jobData, setJobData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const navigateBack = () => {
     navigate(-1);
-  };
-  const handleNavigation = (jobId, status) => {
-    localStorage.setItem("jobState", JSON.stringify({ jobId, status }));
-    navigate("/", { state: { jobId, status } });
   };
 
   useEffect(() => {
@@ -102,7 +100,7 @@ const JobDetails = () => {
                 Application Tracking
             </TabsTrigger>
           </TabsList>
-            <AddCandidate jobData={jobData}>
+            <AddCandidate jobData={jobData} onCloseCb={() => setCandidateAdded(prev => !prev)}>
               <Button variant='' className='bg-red-700 shadow-2xl rounded-full m-1'><Plus /> Add Candidate </Button>
             </AddCandidate>
           </div>
@@ -154,7 +152,7 @@ const JobDetails = () => {
           </TabsContent>
           <TabsContent className="mt-0" value="ATS">
             <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
-              <Ats jobData={jobData} />
+              <Ats jobData={jobData} key={candidateAdded} />
             </div>
           </TabsContent>
         </Tabs>

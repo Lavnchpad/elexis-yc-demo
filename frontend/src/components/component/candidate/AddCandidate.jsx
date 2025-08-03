@@ -38,7 +38,7 @@ const candidateSchema = z.object({
 
 // Job data is passed so that , we can create a JobMatchingResume row for this candidate, 
 // if Job data is passed , that means it is created from the job details page , otherwise it is invoked from candidates page
-const AddCandidate = ({ children, jobData }) => {
+const AddCandidate = ({ children, jobData, onCloseCb }) => {
   const { candidates, setCandidates } = useContext(CandidatesContext);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -99,6 +99,7 @@ const AddCandidate = ({ children, jobData }) => {
     } finally {
       setOpen(false);
       setLoading(false);
+      onCloseCb && onCloseCb()
     }
   };
 

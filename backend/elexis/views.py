@@ -171,7 +171,6 @@ class CandidateViewSet(viewsets.ModelViewSet):
         candidate.resume_embedding_id = resume_embedding_id
         # if job Id is there , that means the candidate is getting created from a job details page , so do calculations like getMatchingScore with job description and store in JobMatchingResumeScore table with default stage
         if(self.request.query_params.get('job_id')):
-            stage = self.request.query_params.get('stage', 'candidate_onboard')  # Default to 'applied' if not provided
             job_id = self.request.query_params.get('job_id')
             try:
                 job = Job.objects.get(id=job_id, organization=self.request.user.organization)
@@ -180,16 +179,16 @@ class CandidateViewSet(viewsets.ModelViewSet):
                 if jd_embedding_id and resume_embedding_id:
                     try:
                         similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id)
+                        print("Similarity Score", similarityScore)
                         JobMatchingResumeScore(
                             job=job,
                             candidate=candidate,
-                            score=similarityScore,
-                            stage=stage,
+                            score=similarityScore if similarityScore else 0,
                             created_by=self.request.user,
                             modified_by=self.request.user
                         ).save()
                     except Exception as e:
-                        print("Error in getting similarity score between job and candidate resume", e)
+                        print("CandidateViewset:: Error in getting similarity score between job and candidate resume", e)
             except Job.DoesNotExist:
                 print("Job with ID {} does not exist.".format(job_id))
         serializer.save(resume_embedding_id=resume_embedding_id)
@@ -283,13 +282,10 @@ class InterviewViewSet(viewsets.ModelViewSet):
         def perform_create(self,serializer):
          candidate = serializer.validated_data.get('candidate')  # Fetch the candidate data
          if candidate:
-            serializer.save(
-                created_by = self.request.user,
-                modified_by = self.request.user
-            )
         # Set the organization based on the candidate's organization
             organization = candidate.organization
-            interview = serializer.save(scheduled_by=self.request.user,organization=organization)
+            interview = serializer.save(scheduled_by=self.request.user,organization=organization, created_by = self.request.user,
+                modified_by = self.request.user)
             #  save copy of the job questions to the Interview questions table
             job_Questions = JobQuestions.objects.filter(job=interview.job)
             new_interview_questions_instances = []
@@ -309,21 +305,67 @@ class InterviewViewSet(viewsets.ModelViewSet):
             interview.save()
             subject, message = interview_scheduled_template(interview.scheduled_by.organization.org_name, interview.candidate.name, interview.job.job_name, interview.link, f"{interview.date} at {interview.time}", interview.scheduled_by.email)
     # Doing this here as this is the only place where a candidate gets associated with a Job
-            # TODO : check if the cosine similarity for this candidate's resume and jd is already present in DB , if not , get the cosine similarity and add it to the DB 
             resume_embedding_id = interview.candidate.resume_embedding_id
             jd_embedding_id = interview.job.job_description_embedding_id
+
+            # TODO : check if the cosine similarity for this candidate's resume and jd is already present in DB , if not , get the cosine similarity and add it to the DB 
+            if not resume_embedding_id:
+                resume_text = extract_text_from_pdf(candidate.resume.url) if candidate.resume else ""
+                resume_embedding_id = upsert_resume_vector(candiate_name=candidate.name,
+                                        candidate_id=candidate.id,
+                                        resume_full_text=resume_text,
+                                        candidate_email=candidate.email,
+                                        )
+                candidate.resume_embedding_id = resume_embedding_id
+                candidate.save(update_fields=['resume_embedding_id'])
+            if not jd_embedding_id:
+                jd_embedding_id = upsert_jd_vector(requirements_text=" ".join([req.requirement for req in interview.job.requirements.all()]), job=interview.job)
+                interview.job.job_description_embedding_id = jd_embedding_id
+                interview.job.save(update_fields=['job_description_embedding_id'])
+                
+            # If the candidate is associated with a job, calculate the similarity score between the resume and job description
+            # and save it in the JobMatchingResumeScore table
             if resume_embedding_id and  jd_embedding_id:
                 try:
+                    #TODO if already score is present no work , else...
+                    print("Resume Embedding ID", resume_embedding_id)
+                    print("Job Description Embedding ID", jd_embedding_id)
+                    similarityScoreObject = JobMatchingResumeScore.objects.filter(
+                        job=interview.job,
+                        candidate=interview.candidate,
+                        stage='candidate_onboard').first()
+                    similarityScore = similarityScoreObject.score if similarityScoreObject else None
+                    if not similarityScore:
+                        print("Calculating similarity score between job and resume")
+                        # If the similarity score is not present, calculate it and save it
+                        similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id)
+    
+                        
+                    JobMatchingResumeScore.objects.filter(
+                        job=interview.job,
+                        candidate=interview.candidate,
+                        stage__in=['candidate_onboard', 'selected_for_interview','completed_interview']).update(
+                            is_archieved=True
+                        )
+                    newJobMatchingResumeScore = JobMatchingResumeScore.objects.create(
+                        job=interview.job,
+                        candidate=interview.candidate,
+                        score=similarityScore,
+                        stage='scheduled_interview',
+                        created_by=self.request.user,
+                        modified_by=self.request.user,
+                        organization=interview.organization,
+                        is_archieved=False,
+                    )
+                    newJobMatchingResumeScore.save()
+                    print("New Job Matching Resume Score", newJobMatchingResumeScore)
+                    interview.job_matching_resume_score = newJobMatchingResumeScore
+                    interview.save(update_fields=['job_matching_resume_score'])
+                    # Save the new JobMatchingResumeScore instance
                 # in which stage you want to store this? if it is action taken from jobs oage , and what if interview scheduled from candidates page
-                    # similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id)
-                    # JobMatchingResumeScore(
-                    # job= interview.job,
-                    # candidate=interview.candidate,
-                    # score=similarityScore
-                    # ).save()
                     pass
                 except Exception as e:
-                    print("Error in getting similarity score between job and candidate resume", e)
+                    print("Error hain bhai", e)
             try:
                 send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email, interview.scheduled_by.email])
             except Exception as e:
@@ -332,7 +374,8 @@ class InterviewViewSet(viewsets.ModelViewSet):
                 {"message": "Interview scheduled and email sent.", "link": interview.link},
                 status=status.HTTP_201_CREATED,
             )
-         
+         else :
+             raise ValueError("Candidate data is required to schedule an interview.")
         def perform_update(self, serializer):
             interview = serializer.save(modified_by = self.request.user)
             self._update_status_fields(interview)
@@ -678,13 +721,16 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
         queryset = JobMatchingResumeScore.objects.all()
         jobId = self.request.query_params.get('job_id', '')
         isArchieved = self.request.query_params.get('is_archieved', 'false').lower() == 'true'
+        stage = self.request.query_params.get('stage', '')
+        if stage:
+            queryset = queryset.filter(stage=stage)
         if jobId:
             queryset = queryset.filter(job__id=jobId)
         if isArchieved:
             queryset = queryset.filter(is_archieved=True)
         else:
             queryset = queryset.filter(is_archieved=False)
-        return queryset.select_related('candidate', 'created_by' , 'modified_by').order_by('-score')
+        return queryset.prefetch_related('interviews').select_related('candidate', 'created_by' , 'modified_by').order_by('-score')
     
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user, modified_by=self.request.user, organization=self.request.user.organization)

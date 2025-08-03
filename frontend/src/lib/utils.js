@@ -39,3 +39,25 @@ export const isInterviewEnded = (status) => {
   // console.log("Interview is not ended yet");
   return false;
 }
+
+export function getRoundedFutureTime() {
+  const now = new Date();
+  const minutes = now.getMinutes();
+  const futureTime = new Date(now.getTime());
+
+  if (minutes < 30) {
+    futureTime.setMinutes(30);
+  } else {
+    futureTime.setHours(futureTime.getHours() + 1);
+    futureTime.setMinutes(0);
+  }
+
+  // Ensure the seconds and milliseconds are set to 0 for consistency
+  futureTime.setSeconds(0);
+  futureTime.setMilliseconds(0);
+
+  const hour = futureTime.getHours().toString().padStart(2, "0");
+  const minute = futureTime.getMinutes().toString().padStart(2, "0");
+
+  return `${hour}:${minute}`;
+};
