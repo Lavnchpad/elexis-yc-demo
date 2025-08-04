@@ -6,12 +6,12 @@ import CollapsibleSection from "@/components/component/resuable/CollapsibleSecti
 
 
 
-export function JobsEvaluationTable({ id }) {
+export function JobsEvaluationTable({ id, defaultShow = false }) {
     const { evaluations: candidateEvaluations, criterias } = useJobEvaluation({ jobId: id })
     const fullmarks = criterias?.reduce((acc, criteria) => acc + (criteria?.weightage || 0) * 100, 0) || 0;
     return (
 
-        <CollapsibleSection title="Candidate Evaluations">
+        <CollapsibleSection title="Candidate Evaluations" defaultShow={defaultShow}>
 
                 <Table>
                     <TableCaption>Candidate Evaluation</TableCaption>
@@ -40,7 +40,7 @@ export function JobsEvaluationTable({ id }) {
                                     })
                                 }
                                 <TableCell className="text-right">{item?.totalScore}</TableCell>
-                                <TableCell className="text-right"><Link className="hover:underline" to={`/candidate/${item.candidateId}?interview_id=${item?.interviewId?.[0] || ""}`}>View Details</Link></TableCell>
+                                <TableCell className="text-right"><Link className="hover:underline" to={`/candidate/${item.candidateId}?interview_id=${item?.interviewId || ""}`}>View Details</Link></TableCell>
 
                             </TableRow>
                         ))}

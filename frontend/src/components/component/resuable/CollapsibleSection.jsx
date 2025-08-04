@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { ChevronDown, ChevronUp } from "lucide-react"
-export default function CollapsibleSection({ children, title }) {
-    const [show, setShow] = useState(false);
+export default function CollapsibleSection({ children, title, defaultShow = false }) {
+    const [show, setShow] = useState(defaultShow);
 
     return <>
         <div className="flex justify-between items-center">

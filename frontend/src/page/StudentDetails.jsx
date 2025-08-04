@@ -109,7 +109,9 @@ const StudentDetails = ({ }) => {
     }
     else if (selectedJobId && interviewData.length > 0) {
       const interview = interviewData.find(i => i.job.id === selectedJobId);
-      setSelectedInterview(interview);
+      if (interview) {
+        setSelectedInterview(interview);
+      }
     } else {
       // Reset selected interview when no jobId or on refresh
       setSelectedInterview(null);
@@ -145,14 +147,14 @@ const StudentDetails = ({ }) => {
   return (
     <>
       <div className="flex justify-between items-center">
-          <AddCandidate>
+        <AddCandidate>
           {/* <Button>+ Add Candidate</Button> */}
-        </AddCandidate> 
+        </AddCandidate>
       </div>
       <div className="flex">
         <div className="w-1/4 p-4 bg-gray-100">
           <Filter onSearch={handleSearch} onStatusChange={(status) => setSelectedStatus(status)} />
-          <ScrollArea className="mt-4 h-[520px] overflow-y-auto">
+          <ScrollArea className="mt-4 max-h-[520px] overflow-y-auto">
             <ul className="space-y-2 cursor-pointer">
               {candidatesLoading ? (
                 <CandidateLoader />
@@ -170,102 +172,120 @@ const StudentDetails = ({ }) => {
             </ul>
           </ScrollArea>
         </div>
-        <div className="w-3/4 p-6">
+        <div className="w-3/4 p-6 max-h-[90vh] overflow-y-auto">
           {!selectedCandidate ? (
             <div>Please select a candidate to view details.</div>
           ) : (interviewDataLoading) ? (
             <StudentDetailsSkeleton />
           ) : (
             <div>
-                  <div className="bg-white p-6 rounded shadow mb-6 flex flex-wrap items-center">
-                <div className="flex items-center space-x-6">
-                      <Avatar className="w-40 h-40 rounded-full">
+                  <div className=" p-6 rounded-xl shadow mb-6 flex text-white bg-[#2B2A29] flex-wrap items-center">
+                    <div className="flex items-center space-x-6 w-full">
+                      <Avatar className="w-24 h-24 rounded-full">
                     <AvatarImage
                       src={selectedCandidate.profile_photo}
                       alt={selectedCandidate.name}
                     />
-                    <AvatarFallback>
+                        <AvatarFallback className='text-black'>
                       {selectedCandidate.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <h1 className="text-2xl font-bold">
+                      <div className="flex justify-between w-full">
+                        <div>
+                          <h1 className="text-2xl font-bold text-primary-foreground">
                       {selectedCandidate.name}
                     </h1>
-                    <p className="text-muted-foreground flex items-center mt-2">
-                      <Mail className="mr-2 w-5 h-5" />
-                      {selectedCandidate.email}
-                    </p>
-                    <p className="text-muted-foreground flex items-center mt-2">
-                      <Phone className="mr-2 w-5 h-5" />
-                      {selectedCandidate.phone_number}
-                    </p>
+                          <div className="flex items-center gap-2 font-light">
+                            <p className=" flex items-center mt-2">
+                              <Mail className="mr-2 w-5 h-5" />
+                              {selectedCandidate.email}
+                            </p>
+                            <p className="flex items-center mt-2">
+                              <Phone className="mr-2 w-5 h-5" />
+                              {selectedCandidate.phone_number}
+                            </p>
+                          </div>
                         {selectedInterview?.link && selectedInterview?.status !== InterviewStatus.ENDED &&
                           <>
-                            <p className="mt-2 flex items-center text-muted-foreground">
+                            <p className="mt-2 flex items-center ">
                               <Copy className="mr-2 w-5 h-5 cursor-pointer" onClick={() => copyLink(selectedInterview?.link)} />
                               Interview Link
                             </p>
 
                           </>
                         }
-                        {
-                          selectedInterview &&
-                          <>
-                            <p className="mt-2 flex items-center text-muted-foreground">
+
+                        </div>
+                        {selectedInterview && (
+                          <div className="">
+                            <p className="mt-2 flex items-center">
                               <Calendar className="mr-2 w-5 h-5" />
                               {selectedInterview?.date} @{selectedInterview?.time}
                             </p>
-                            <p className="mt-2 flex items-center text-muted-foreground">
+                            <p className="mt-2 flex items-center">
+
                               <SatelliteDishIcon className="mr-2 w-5 h-5" />
                               {selectedInterview?.status}
+
                             </p>
-                          </>
-                        }
+                          </div>
+
+                        )}
+                      </div>
+
+                    </div>
                   </div>
-                </div>
-                    <div className="mx-4 w-40">
-                  <Select
+
+
+
+                  <div className="flex my-6 gap-2">
+                    {/* Interview Select DD starts */}
+                    <div className="w-80 text-black">
+                      <Select
                         //  disabled={!!selectedJobId}
 
-                    onValueChange={(value) => {
-                      const interview = interviewData.find(
-                        (interview) => interview.id === value
-                      );
-                      setSelectedInterview(interview);
-                    }}
+                        onValueChange={(value) => {
+                          const interview = interviewData.find(
+                            (interview) => interview.id === value
+                          );
+                          setSelectedInterview(interview);
+                        }}
                         value={selectedInterview?.id || ""}
-                  >
-                    <SelectTrigger>
+                        className="w-full"
+                      >
+                        <SelectTrigger>
                           <SelectValue placeholder="Select a job role">
                             {selectedInterview ?
                               `${selectedInterview.job.job_name}${selectedJobId ? " (Preselected)" : ""}` :
                               "Select a job role"
                             }
                           </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
                             {interviewData?.length > 0
                               ? interviewData.map((interview) =>
                               (
-                            <SelectItem
-                              key={interview.id}
-                              value={interview.id}
-                            >
-                                  {interview.job.job_name}  
+                                <SelectItem
+                                  key={interview.id}
+                                  value={interview.id}
+                                >
+                                  {interview.job.job_name}
                                   <p className="text-xs text-muted-foreground">{interview?.status?.toLowerCase()} </p>
                                   <p className="text-xs text-muted-foreground">@{interview?.date} {interview?.time}</p>
 
-                            </SelectItem>
+                                </SelectItem>
                               )
                               )
                               : "No Interviews Available"}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-                    <div className="flex gap-2">
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {/* Interview Select DD ends */}
+
+                    {/* send mail & view resume starts */}
+                    <div className="flex gap-2 text-black">
                       <a href={`mailto:${selectedCandidate?.email}`}>
                     <Button variant="outline" className="gap-2">
                       <Mail className="w-4 h-4" />
@@ -280,7 +300,19 @@ const StudentDetails = ({ }) => {
                         <View className="w-4 h-4" />
                         View Resume
                   </Button>
-                </div>
+                    </div>
+                    {/* send mail & view resume ends */}
+                    <div>
+
+                      <StatusButton
+                        interviewData={interviewData}
+                        selectedCandidate={selectedCandidate}
+                        selectedInterview={selectedInterview}
+                        setSelectedInterview={setSelectedInterview}
+                      />
+
+
+                    </div>
                   </div>
                   {selectedInterview && <InterviewQsns viewOnly={isInterviewEnded(selectedInterview?.status)} initialQuestions={selectedInterview?.interview_questions} interviewDetails={selectedInterview} />}
                   {
@@ -346,14 +378,14 @@ const StudentDetails = ({ }) => {
                           Proctoring
                         </TabsTrigger>
                       </TabsList>
-                      <div className="ml-auto flex space-x-4">
+                          {/* <div className="ml-auto flex space-x-4">
                         <StatusButton
                           interviewData={interviewData}
                           selectedCandidate={selectedCandidate}
                               selectedInterview={selectedInterview}
                               setSelectedInterview={setSelectedInterview}
                         />
-                      </div>
+                      </div> */}
                     </div>
                     <TabsContent value="summary">
                       <div className="p-4 bg-background rounded-lg">

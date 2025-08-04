@@ -11,7 +11,7 @@ export default function CandidateListCard({ clickhandler, contact, selectedCandi
     return (
         <li
             className={`flex items-center p-4 rounded-lg shadow-sm transition-transform overflow-hidden duration-300 ease-in-out ${isSelected
-                ? "bg-black "
+                ? "bg-[#2B2A29] "
                 :
                 "bg-white"}`}
             onClick={() => clickhandler(contact)}

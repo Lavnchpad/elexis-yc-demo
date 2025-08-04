@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import axios from 'axioss';
 import CollapsibleSection from '../../resuable/CollapsibleSection';
 
-export default function JobsQuestions({ job }) {
+export default function JobsQuestions({ job, defaultShow }) {
     const [questions, setQuestions] = useState(job?.questions || []);
     const saveJobQuestions = async () => {
         try {
@@ -27,7 +27,7 @@ export default function JobsQuestions({ job }) {
         }
     }
     return (
-        <CollapsibleSection title="Questions">
+        <CollapsibleSection title="Questions" defaultShow={defaultShow}>
             <QuestionnaireEditor questions={questions} setQuestions={setQuestions} getJdAndRole={() => ({ role: job.job_name, jd: job.job_description })} jobView={true} />
             <Button onClick={saveJobQuestions}>Save</Button>
         </CollapsibleSection>

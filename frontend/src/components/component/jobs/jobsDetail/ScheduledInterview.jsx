@@ -11,7 +11,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
 import CollapsibleSection from "../../resuable/CollapsibleSection";
 
-export default function ScheduledInterviews({ id }) {
+export default function ScheduledInterviews({ id, defaultShow = false }) {
     const { interviews } = useJobInterviews({ jobId: id });
     const [filteredInterviews, setFilteredInterviews] = useState([]);
     const [selectedStatus, setSelectedStatus] = useState("all"); // This should be managed in state if you want to filter interviews by status
@@ -35,7 +35,7 @@ export default function ScheduledInterviews({ id }) {
         }
     }, [interviews])
     return (
-        <CollapsibleSection title="Scheduled Interviews" >
+        <CollapsibleSection title="Scheduled Interviews" defaultShow={defaultShow}>
                     <Table>
                         <TableCaption>Interviews for this job</TableCaption>
                         <TableHeader>

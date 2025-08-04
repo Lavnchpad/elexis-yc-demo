@@ -95,10 +95,28 @@ const JobDetails = () => {
               </TabsTrigger>
               <TabsTrigger
                 className="py-2 px-6 text-base bg-accentColor text-lightColor rounded-none rounded-tl-xl"
+                value="job-questions"
+              >
+                Questions
+              </TabsTrigger>
+              <TabsTrigger
+                className="py-2 px-6 text-base bg-accentColor text-lightColor rounded-none rounded-tl-xl"
+                value="job-interviews"
+              >
+                Interviews
+              </TabsTrigger>
+              <TabsTrigger
+                className="py-2 px-6 text-base bg-accentColor text-lightColor rounded-none rounded-tl-xl"
+                value="candidate-evaluation"
+              >
+                Candidate Evaluation
+              </TabsTrigger>
+              <TabsTrigger
+                className="py-2 px-6 text-base bg-accentColor text-lightColor rounded-none rounded-tl-xl"
                 value="ATS"
               >
-                Application Tracking
-            </TabsTrigger>
+                Applications
+              </TabsTrigger>
           </TabsList>
             <AddCandidate jobData={jobData} onCloseCb={() => setCandidateAdded(prev => !prev)}>
               <Button variant='' className='bg-red-700 shadow-2xl rounded-full m-1'><Plus /> Add Candidate </Button>
@@ -108,7 +126,7 @@ const JobDetails = () => {
             <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
               <div className="grid grid-cols-8 gap-x-8 space-y-4">
                 <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
-                  <CollapsibleSection title={"Key Information"}>
+                  <CollapsibleSection title={"Key Information"} defaultShow={true}>
                     <div className=" text-muted-foreground">
                       {/* TODO : Job details */}
                       <p>
@@ -124,35 +142,58 @@ const JobDetails = () => {
                   </CollapsibleSection>
                 </div>
                 <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
-                  <CollapsibleSection title={"Job Description"}>
+                  <CollapsibleSection title={"Job Description"} defaultShow={true}>
                     <p className="">
                       {jobData.job_description}
                     </p>
                   </CollapsibleSection>
                 </div>
-                <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
+                {/* <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
                   <ErrorBoundary>
                     <JobsEvaluationTable id={jobId} />
                   </ErrorBoundary>
-                </div>
-                <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
+                </div> */}
+                {/* <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
                   <ErrorBoundary>
                   <JobsQuestions
                     job={jobData}
                   />
                   </ErrorBoundary>
-                </div>
-                <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
+                </div> */}
+                {/* <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
                   <ErrorBoundary>
                     <ScheduledInterviews id={jobId} />
                   </ErrorBoundary>
-                </div>
+                </div> */}
               </div>
             </div>
           </TabsContent>
           <TabsContent className="mt-0" value="ATS">
             <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
               <Ats jobData={jobData} key={candidateAdded} />
+            </div>
+          </TabsContent>
+          <TabsContent className="mt-0" value="candidate-evaluation">
+            <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
+              <ErrorBoundary>
+                <JobsEvaluationTable id={jobId} defaultShow={true} />
+              </ErrorBoundary>
+            </div>
+          </TabsContent>
+          <TabsContent className="mt-0" value="job-interviews">
+            <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
+              <ErrorBoundary>
+                <ScheduledInterviews id={jobId} defaultShow={true} />
+              </ErrorBoundary>
+            </div>
+          </TabsContent>
+          <TabsContent className="mt-0" value="job-questions">
+            <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
+              <ErrorBoundary>
+                <JobsQuestions defaultShow={true}
+                  job={jobData}
+                />
+              </ErrorBoundary>
             </div>
           </TabsContent>
         </Tabs>
