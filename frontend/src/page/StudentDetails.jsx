@@ -2,17 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  BadgeCheck,
-  X,
-  Clock,
-  FileSearch,
+
   Mail,
   Phone,
   Copy,
   Calendar,
   SatelliteDishIcon,
   View,
-  LoaderCircle,
 } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -43,6 +39,7 @@ import ErrorBoundary from "@/utils/ErrorBoundary";
 import { copyLink, isInterviewEnded } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import InterviewQsns from "./components/InterviewQsns";
+import CandidateListCard from "./components/CandidateListCard";
 const StudentDetails = ({ }) => {
   const { id: candidateidInUrl } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -77,11 +74,11 @@ const StudentDetails = ({ }) => {
         fetchInterviewDetails(candidate.id)
       } else {
         // If no candidate found, reset selectedCandidate
-        setSelectedCandidate(null);
+        setSelectedCandidate(filteredCandidates?.[0]);
       }
     } else {
       // If no candidateidInUrl, reset selectedCandidate
-      setSelectedCandidate(null);
+      setSelectedCandidate(filteredCandidates?.[0]);
     }
   }, [candidateidInUrl, filteredCandidates]);
 
@@ -141,15 +138,15 @@ const StudentDetails = ({ }) => {
   };
 
   const handleCandidateClick = (candidate) => {
-    // setSelectedCandidate(candidate);
+    setSelectedCandidate(candidate);
     navigate(`/candidate/${candidate.id}`)
   };
 
   return (
     <>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center">
           <AddCandidate>
-          <Button>+ Add Candidate</Button>
+          {/* <Button>+ Add Candidate</Button> */}
         </AddCandidate> 
       </div>
       <div className="flex">
@@ -161,52 +158,9 @@ const StudentDetails = ({ }) => {
                 <CandidateLoader />
               ) : Array.isArray(filteredCandidates) && filteredCandidates.length > 0 ? (
                 filteredCandidates.map((contact) => (
-                  <li
-                    key={contact.id}
-                    className={`flex items-center p-4 rounded-lg shadow-sm hover:scale-105 transition-transform duration-300 ease-in-out ${contact.status === "accepted"
-                      ? "bg-[#E5F2E6]"
-                      : contact.status === "rejected"
-                        ? "bg-[#FFE5E5]"
-                        : contact.status === "pending"
-                          ? "bg-[#FFFFE5]"
-                          : contact.status === "hold"
-                            ? "bg-purple-300"
-                          : "bg-[#E5E5FF]"
-                      }`}
-                    onClick={() => handleCandidateClick(contact)}
-                  >
-                    <div className="relative w-12 h-12 mr-4">
-                      <Avatar className="w-full h-full">
-                        <AvatarImage src={contact.profile_photo} alt={contact.name} />
-                        <AvatarFallback>
-                          {contact.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      {contact.status === "accepted" && (
-                        <BadgeCheck className="absolute -bottom-1 -right-1 text-green-500 w-5 h-5 bg-white rounded-full" />
-                      )}
-                      {contact.status === "rejected" && (
-                        <X className="absolute -bottom-1 -right-1 text-white w-5 h-5 bg-[#FF0000] rounded-full" />
-                      )}
-                      {contact.status === "pending" && (
-                        <Clock className="absolute -bottom-1 -right-1 text-yellow-500 w-5 h-5 bg-white rounded-full" />
-                      )}
-                      {contact.status === "registered" && (
-                        <FileSearch className="absolute -bottom-1 -right-1 text-blue-500 w-5 h-5 bg-white rounded-full" />
-                      )}
-                      {contact.status === "hold" && (
-                        <LoaderCircle className="absolute -bottom-1 -right-1 text-blue-500 w-5 h-5 bg-white rounded-full" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-800 text-sm">
-                        {contact.name}
-                      </h3>
-                      <p className="text-xs text-gray-500 truncate">
-                        {contact.email}
-                      </p>
-                    </div>
-                  </li>
+                  // Render each candidate as a list item
+                  <CandidateListCard key={contact.id} clickhandler={handleCandidateClick} contact={contact} selectedCandidate={selectedCandidate} />
+
                 ))
               ) : (
                 <p className="text-gray-500 text-center">
