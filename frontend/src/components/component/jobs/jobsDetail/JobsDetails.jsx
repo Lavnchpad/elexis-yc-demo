@@ -107,16 +107,17 @@ const JobDetails = () => {
               </TabsTrigger>
               <TabsTrigger
                 className="py-2 px-6 text-base bg-accentColor text-lightColor rounded-none rounded-tl-xl"
-                value="candidate-evaluation"
-              >
-                Candidate Evaluation
-              </TabsTrigger>
-              <TabsTrigger
-                className="py-2 px-6 text-base bg-accentColor text-lightColor rounded-none rounded-tl-xl"
                 value="ATS"
               >
                 Applications
               </TabsTrigger>
+              <TabsTrigger
+                className="py-2 px-6 text-base bg-accentColor text-lightColor rounded-none rounded-tl-xl"
+                value="candidate-evaluation"
+              >
+                Candidate Evaluation
+              </TabsTrigger>
+
           </TabsList>
             <AddCandidate jobData={jobData} onCloseCb={() => setCandidateAdded(prev => !prev)}>
               <Button variant='' className='bg-red-700 shadow-2xl rounded-full m-1'><Plus /> Add Candidate </Button>

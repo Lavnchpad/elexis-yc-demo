@@ -254,10 +254,10 @@ const StudentDetails = ({ }) => {
                         className="w-full"
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a job role">
+                          <SelectValue placeholder="Select an Interview">
                             {selectedInterview ?
                               `${selectedInterview.job.job_name}${selectedJobId ? " (Preselected)" : ""}` :
-                              "Select a job role"
+                              "Select an Interview"
                             }
                           </SelectValue>
                         </SelectTrigger>

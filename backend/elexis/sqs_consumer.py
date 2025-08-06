@@ -1,4 +1,4 @@
-from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementEvaluation, JobMatchingResumeScore
+from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementEvaluation, JobMatchingResumeScore, Job, Candidate
 from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3, put_dict_as_json_to_s3
 from elexis.utils.summary_generation import generate_summary, experience_information_generation
 from elexis.serializers import JobRequirementSerializer
@@ -6,6 +6,7 @@ from elexis.utils.convert_transcript_format import convert
 import boto3
 import json
 import time
+from .services.pinecone_service import pinecone_client
 from dotenv import load_dotenv
 import os
 import traceback
@@ -17,6 +18,33 @@ SQS_QUEUE_URL = os.getenv("SQS_QUEUE_URL")
 AWS_REGION_NAME = os.getenv("AWS_REGION_NAME")
 AWS_SQS_ENDPOINT=os.getenv("AWS_SQS_ENDPOINT")
 AWS_TRANSCRIPT_BUCKET_NAME=os.getenv("AWS_TRANSCRIPT_BUCKET_NAME")
+
+def add_message_to_sqs_queue(type: str , data: object):
+    """
+    Sends a message to the SQS queue with the ID of the score to be updated.
+    """
+    sqs_client = boto3.client(
+        'sqs',
+        endpoint_url=AWS_SQS_ENDPOINT,
+        region_name=AWS_REGION_NAME,
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+    )
+
+    # The message body should be a string, so we serialize the data to JSON
+    message_data = {
+        'type': type,
+        'data': data
+    }
+
+    try:
+        response = sqs_client.send_message(
+            QueueUrl=SQS_QUEUE_URL,
+            MessageBody=json.dumps(message_data)
+        )
+        print(f"Message sent to SQS queue with MessageId: {response['MessageId']}")
+    except Exception as e:
+        print(f"Error sending message to SQS: {e}")
 
 def start_sqs_consumer():
     """
@@ -74,11 +102,14 @@ def process_message(message_body):
         transcript_url = message.get("s3_file_url")
 
         type = message.get("type")
-
-        if type=="proctor":
+        if type=='job_resume_matching_score':
+            updateJobResumeMatchingScore(id= message["data"]["id"])
+            print(f"SQS_Consumer :: process_message:: {type}", message)
+            return
+        elif type=="proctor":
             interview = Interview.objects.get(meeting_room=room_url)
             if not interview :
-                print(f"No matching interview found for meeting_room : {room_url}")
+                print(f"SQS_Consumer :: process_message:: No matching interview found for meeting_room : {room_url}")
                 return
             snapshot = Snapshots.objects.create(
             interview=interview,
@@ -88,7 +119,7 @@ def process_message(message_body):
                 return
                 
                 
-        # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://meeting01.com"}
+        # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://bohot-wickets.com"}
         # {"type":"proctor","video":"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4","room_url":"https://google.com"}
         elif not room_url or not transcript_url:
             print(f"Invalid data in message: meeting_room={room_url}, transcript_url={transcript_url}")
@@ -211,3 +242,26 @@ def process_message(message_body):
         print(f"Invalid message format: {message_body}")
     except Exception as e:
         print(f"Unexpected error processing message: {e}")
+
+
+def updateJobResumeMatchingScore(id: str):
+    try:
+        jobMatchingResumeInstance = JobMatchingResumeScore.objects.get(id=id)
+        jobInstance = Job.objects.get(id=jobMatchingResumeInstance.job_id)
+        candidateinstance = Candidate.objects.get(id = jobMatchingResumeInstance.candidate_id)
+
+        jdEmbeddingId = jobInstance.job_description_embedding_id
+        resumeEmbeddingid = candidateinstance.resume_embedding_id
+
+        if jdEmbeddingId and resumeEmbeddingid:
+            similarityScore = pinecone_client.get_similarity_between_stored_vectors(jdEmbeddingId, resumeEmbeddingid)
+            print("SQS_consumer ::: score calculation ::: Similarity Score", similarityScore)
+            jobMatchingResumeInstance.score = similarityScore if similarityScore else 0
+            jobMatchingResumeInstance.save()
+        else:
+            if not jdEmbeddingId:
+                print('SQS_consumer ::: score calculation  Jd embedding id not found::: id', id)
+            elif not resumeEmbeddingid:
+                print('SQS_consumer ::: SQS_consumer ::: resume embedding id not found ::: id', id)
+    except Exception as e:
+        print(f"SQS_consumer ::: upsertJobResumeMatchingScore::: Async Queue for adding bulk jdResume records::: id: {id}. error: ", e)

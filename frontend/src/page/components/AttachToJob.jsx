@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -47,7 +49,7 @@ export default function AttachToJob({ selectedCandidate }) {
             const payload = selectedJobs?.map(job => ({
                 "job_id": job,
                 "candidate_id": selectedCandidate.id,
-                "score": 0.00,
+                "score": 0.01,
                 "stage": "candidate_onboard",
                 "is_archieved": false
             }))
@@ -68,12 +70,13 @@ export default function AttachToJob({ selectedCandidate }) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger>
-                <Button className="" variant='secondary'>Add to a job pipeline</Button>
+                <Button className="" variant='outline'>Track Application</Button>
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
-                    <DialogTitle>Add to job pipeline</DialogTitle>
+                    <DialogTitle>Move candidates to job pipelines</DialogTitle>
+                    <DialogDescription>Candidates will be linked to the selected jobs and automatically placed in the 'Inbound application' stage for each job</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                     <MultiSelectSearch onSelectionChange={(jobs) => { setselectedJobs(jobs) }} initialSelectedValues={[]} items={notAssociatedJobs} />
@@ -83,9 +86,11 @@ export default function AttachToJob({ selectedCandidate }) {
                         Save
                     </LoadingButton>
 
-                    <Button onClick={() => setOpen(false)} variant='secondary'>Close</Button>
                 </div>
 
+                <DialogFooter className={"text-sm"}>
+                    <p>Candidates are already in the job pipeline for any positions that don't appear in the dropdown menu</p>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )

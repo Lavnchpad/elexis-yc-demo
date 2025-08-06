@@ -32,12 +32,12 @@ from .serializers import (
     JobQuestionsSerializer,
     JobMatchingResumeScoreSerializer
 )
+from elexis.sqs_consumer import add_message_to_sqs_queue
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware, now
 from django.shortcuts import redirect
 import logging
 from .services.pinecone_service import pinecone_client
-from elexis.services.gemini_embedding_service import generate_embedding, split_text_into_chunks
 from django.db.models import F, Sum, ExpressionWrapper, IntegerField
 import os
 from dotenv import load_dotenv      
@@ -811,5 +811,11 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             # Use bulk_create for efficient insertion
             created_objects = JobMatchingResumeScore.objects.bulk_create(instances_to_create)
+            print('cretaed_objects', created_objects)
             response_serializer = self.get_serializer(created_objects, many=True)
+            # add these score calculation to queue and process later
+            for item in response_serializer.data :
+                add_message_to_sqs_queue(type='job_resume_matching_score',data ={
+                    "id": item["id"]
+                })
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
