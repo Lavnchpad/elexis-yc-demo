@@ -43,6 +43,7 @@ import os
 from dotenv import load_dotenv      
 from .mail_templates.interview_scheduled import interview_scheduled_template
 import time
+from django.db import transaction
 load_dotenv()
 CLIENT_URL = os.getenv("CLIENT_URL")
 AWS_STORAGE_BUCKET_NAME= os.getenv("AWS_STORAGE_BUCKET_NAME")
@@ -621,6 +622,34 @@ class JobViewSet(viewsets.ModelViewSet):
         return Response({"candidateEvaluations":response,
                          "criterias":  JobRequirementSerializer(job.requirements, many=True).data
                          })
+    @action(detail=False, methods=['get'])
+    def unassociated_jobs(self, request, pk=None):
+        """
+        Returns jobs that a candidate is not yet associated with.
+        """
+        candidate_id = request.query_params.get('candidate_id')
+        if not candidate_id:
+            return Response({'error': 'Candidate ID is required.'}, status=400)
+
+        # Get the queryset for all jobs
+        queryset = self.get_queryset()
+
+        # Get the list of job IDs the candidate is already associated with
+        associated_job_ids = JobMatchingResumeScore.objects.filter(
+            candidate__id=candidate_id
+        ).values_list('job_id', flat=True).distinct()
+
+        # Filter out jobs that are already associated with the candidate
+        unassociated_jobs = queryset.exclude(id__in=associated_job_ids)
+
+        # Serialize the unassociated jobs and add the 'associated: false' property
+        serializer = self.get_serializer(unassociated_jobs, many=True)
+        
+        # Add the 'associated: false' property to each serialized item
+        for job_data in serializer.data:
+            job_data['associated'] = False
+
+        return Response(serializer.data)
 
 
 class JobQuestionsViewSet(viewsets.ModelViewSet):
@@ -737,3 +766,55 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
     
     def perform_update(self, serializer):
         serializer.save(modified_by=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        # Check if the request data is a list (for bulk create)
+        if isinstance(request.data, list):
+            # Use a transaction to ensure all or none are created
+            with transaction.atomic():
+                serializers = []
+                for item_data in request.data:
+                    serializer = self.get_serializer(data=item_data)
+                    serializer.is_valid(raise_exception=True)
+                    self.perform_create(serializer) # Calls the viewset's perform_create
+                    serializers.append(serializer)
+                return Response([s.data for s in serializers], status=status.HTTP_201_CREATED)
+        else:
+            # Fallback to default single object creation
+            return super().create(request, *args, **kwargs)
+
+    @action(detail=False, methods=['post'], url_path='bulk_create')
+    def bulk_create(self, request, *args, **kwargs):
+        if not isinstance(request.data, list):
+            return Response(
+                {"detail": "Request data must be a list of objects for bulk creation."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate the incoming list of data using the serializer with many=True
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+
+        # Prepare instances for bulk_create
+        instances_to_create = []
+        request_user = request.user
+        organization = request_user.organization if request_user and hasattr(request_user, 'organization') else None
+
+        for item_data in serializer.validated_data:
+            # Create a model instance from validated data
+            instance = JobMatchingResumeScore(**item_data)
+
+            # Manually set fields that perform_create would normally handle
+            instance.created_by = request_user
+            instance.modified_by = request_user
+
+            if not instance.organization_id and organization:
+                instance.organization = organization
+
+            instances_to_create.append(instance)
+
+        with transaction.atomic():
+            # Use bulk_create for efficient insertion
+            created_objects = JobMatchingResumeScore.objects.bulk_create(instances_to_create)
+            response_serializer = self.get_serializer(created_objects, many=True)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)

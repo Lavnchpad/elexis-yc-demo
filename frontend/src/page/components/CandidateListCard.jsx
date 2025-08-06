@@ -5,9 +5,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export default function CandidateListCard({ clickhandler, contact, selectedCandidate }) {
     const isSelected = contact.id === selectedCandidate?.id
     const statusIcon = contact.status === 'accepted' ? selectedIcon : contact.status === 'pending' ? pendingIcon : contact.status === 'rejected' ? rejectedIcon : contact.status === 'registered' ? registeredIcon : contact.status === 'hold' ? holdIcon : null;
-    if (statusIcon === null) {
-        console.log({ status: contact.status })
-    }
     return (
         <li
             className={`flex items-center p-4 rounded-lg shadow-sm transition-transform overflow-hidden duration-300 ease-in-out ${isSelected
