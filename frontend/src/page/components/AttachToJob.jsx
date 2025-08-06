@@ -23,7 +23,7 @@ export default function AttachToJob({ selectedCandidate }) {
     }, [selectedCandidate, open]);
     const jobsForTheCandidate = async () => {
         try {
-            const response = await axios.get('/jobs/unassociated_jobs/', {
+            const response = await axios.get('/jobs/not_associated_jobs/', {
                 params: {
                     candidate_id: selectedCandidate.id,
                 },

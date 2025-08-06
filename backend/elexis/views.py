@@ -623,7 +623,7 @@ class JobViewSet(viewsets.ModelViewSet):
                          "criterias":  JobRequirementSerializer(job.requirements, many=True).data
                          })
     @action(detail=False, methods=['get'])
-    def unassociated_jobs(self, request, pk=None):
+    def not_associated_jobs(self, request, pk=None):
         """
         Returns jobs that a candidate is not yet associated with.
         """
@@ -640,14 +640,9 @@ class JobViewSet(viewsets.ModelViewSet):
         ).values_list('job_id', flat=True).distinct()
 
         # Filter out jobs that are already associated with the candidate
-        unassociated_jobs = queryset.exclude(id__in=associated_job_ids)
+        not_associated_jobs = queryset.exclude(id__in=associated_job_ids)
 
-        # Serialize the unassociated jobs and add the 'associated: false' property
-        serializer = self.get_serializer(unassociated_jobs, many=True)
-        
-        # Add the 'associated: false' property to each serialized item
-        for job_data in serializer.data:
-            job_data['associated'] = False
+        serializer = self.get_serializer(not_associated_jobs, many=True)
 
         return Response(serializer.data)
 
