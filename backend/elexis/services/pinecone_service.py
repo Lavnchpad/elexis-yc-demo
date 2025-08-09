@@ -1,9 +1,9 @@
 import logging
 from django.conf import settings
-import numpy as np
 from pinecone import Pinecone, PodSpec
 from typing import Any # Import Any for type hinting
 import dotenv
+from elexis.services.retry_with_backoff import retry_with_exponential_backoff
 dotenv.load_dotenv()
 
 
@@ -155,7 +155,7 @@ class PineconeClient:
         except Exception as e:
             logger.error(f"Error fetching vectors from Pinecone: {e}", exc_info=True)
             raise
-
+    @retry_with_exponential_backoff(retries=5, initial_delay=2, backoff_factor=2)
     def get_similarity_between_stored_vectors(self, id1: str, id2: str) -> float | None:
             """
             Calculates the similarity between two vectors already stored in the Pinecone index.
@@ -200,66 +200,11 @@ class PineconeClient:
                     return similarity
                 else:
                     logger.warning(f"Vector with ID '{id2}' not found when querying with '{id1}' or filter yielded no match.")
-
-                    return self._calculate_similarity_fallback_numpy(id1, id2)
-
+                    raise ValueError(f"Vector with ID '{id2}' not found when querying with '{id1}' or filter yielded no match.")
 
             except Exception as e:
                 logger.error(f"Error calculating similarity between stored vectors '{id1}' and '{id2}': {e}", exc_info=True)
-                return None
-    def _calculate_similarity_fallback_numpy(self, id1: str, id2: str) -> float | None:
-        """
-        FALLBACK METHOD: Fetches both vectors and calculates cosine similarity using NumPy.
-
-        Args:
-            id1 (str): The ID of the first vector.
-            id2 (str): The ID of the second vector.
-
-        Returns:
-            float | None: The similarity score (cosine similarity), or None if an error occurs
-                          or vectors are not found.
-        """
-        if not id1 or not id2:
-            logger.warning("Both vector IDs must be provided for NumPy similarity calculation.")
-            return None
-
-        try:
-            logger.info(f"Attempting to fetch both vectors '{id1}' and '{id2}' for NumPy similarity calculation.")
-            # Fetch both vectors in a single call to your existing fetch_vectors method
-            fetched_data = self.fetch_vectors(ids=[id1, id2])
-
-            vector1_embedding = fetched_data.get(id1)
-            vector2_embedding = fetched_data.get(id2)
-
-            if not vector1_embedding:
-                logger.warning(f"Vector with ID '{id1}' not found for NumPy similarity calculation.")
-                return None
-            if not vector2_embedding:
-                logger.warning(f"Vector with ID '{id2}' not found for NumPy similarity calculation.")
-                return None
-
-            # Convert to numpy arrays
-            vec1 = np.array(vector1_embedding)
-            vec2 = np.array(vector2_embedding)
-
-            # Calculate cosine similarity
-            # Cosine Similarity = (A . B) / (||A|| * ||B||)
-            dot_product = np.dot(vec1, vec2)
-            norm_vec1 = np.linalg.norm(vec1)
-            norm_vec2 = np.linalg.norm(vec2)
-
-            if norm_vec1 == 0 or norm_vec2 == 0:
-                logger.warning(f"One or both vectors ('{id1}', '{id2}') have zero norm. Similarity undefined.")
-                return 0.0 # Or handle as per your application's logic, e.g., raise error or return None
-
-            similarity = dot_product / (norm_vec1 * norm_vec2)
-
-            logger.info(f"NumPy calculated similarity between '{id1}' and '{id2}': {similarity}")
-            return float(similarity) # Ensure float return type
-
-        except Exception as e:
-            logger.error(f"Error in NumPy fallback similarity calculation for '{id1}' and '{id2}': {e}", exc_info=True)
-            return None
+                raise ValueError("No match found")
 
 # Initialize the Pinecone client (Singleton instance)
 pinecone_client = PineconeClient()
