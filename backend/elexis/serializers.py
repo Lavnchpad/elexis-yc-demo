@@ -303,5 +303,5 @@ class JobMatchingResumeScoreSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = JobMatchingResumeScore
-        fields = ['id', 'job', 'candidate','interviews', 'score','job_id', 'candidate_id', 'created_by', 'modified_by', 'created_date', 'modified_date', 'stage','is_archieved']
+        fields = ['id', 'job', 'candidate','interviews', 'score','job_id', 'candidate_id', 'created_by', 'modified_by', 'created_date', 'modified_date', 'stage','is_archived']
         read_only_fields = ('job', 'candidate')

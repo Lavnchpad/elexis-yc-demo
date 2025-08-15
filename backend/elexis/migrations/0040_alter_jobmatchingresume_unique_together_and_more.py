@@ -50,7 +50,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ['-score'],
-                'unique_together': {('job', 'candidate', 'stage')},
             },
         ),
         migrations.DeleteModel(

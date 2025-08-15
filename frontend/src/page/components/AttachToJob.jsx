@@ -51,7 +51,7 @@ export default function AttachToJob({ selectedCandidate }) {
                 "candidate_id": selectedCandidate.id,
                 "score": 0.01,
                 "stage": "candidate_onboard",
-                "is_archieved": false
+                "is_archived": false
             }))
             await axios.post('/job-ats/bulk_create/',
                 payload

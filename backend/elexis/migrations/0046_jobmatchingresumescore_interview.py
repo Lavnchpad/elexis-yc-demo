@@ -11,9 +11,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='jobmatchingresumescore',
-            name='interview',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='matching_resumes', to='elexis.interview'),
+         migrations.AddField(
+            model_name='interview',
+            name='job_matching_resume_score',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='interviews', to='elexis.jobmatchingresumescore'),
         ),
     ]

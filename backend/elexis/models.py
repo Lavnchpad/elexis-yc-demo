@@ -170,13 +170,11 @@ class JobMatchingResumeScore(BaseModel):
         max_length=50, choices=STAGES, default='candidate_onboard',
         help_text="Current stage of the candidate in the inbound process"
     )
-    is_archieved = models.BooleanField(
+    is_archived = models.BooleanField(
         default=False,
         help_text="If True, this row is not the present state of the candidate in our interview process. He progressed or maybe archived."
     )
     class Meta:
-        # Enforce uniqueness for job and candidate combination
-        unique_together = ('job', 'candidate','stage','is_archieved') 
         ordering = ['-score'] 
 
     def save(self, *args, **kwargs):
@@ -203,7 +201,7 @@ class Interview(BaseModel):
     candidate = models.ForeignKey(
         Candidate, on_delete=models.CASCADE, related_name="interviews"
     )
-    job_matching_resume_score = models.ForeignKey(JobMatchingResumeScore, on_delete=models.DO_NOTHING, related_name="interviews", blank=True, null=True)
+    job_matching_resume_score = models.ForeignKey(JobMatchingResumeScore, on_delete=models.CASCADE, related_name="interviews", blank=True, null=True)
     job = models.ForeignKey(
         Job, on_delete=models.CASCADE, related_name="interviews"
     )

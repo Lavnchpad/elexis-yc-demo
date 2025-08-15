@@ -10,8 +10,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterUniqueTogether(
-            name='jobmatchingresumescore',
-            unique_together={('job', 'candidate', 'stage', 'is_archieved')},
-        ),
+        # migrations.AlterUniqueTogether(
+        #     name='jobmatchingresumescore',
+        #     unique_together={('job', 'candidate', 'stage', 'is_archieved')},
+        # ),
     ]

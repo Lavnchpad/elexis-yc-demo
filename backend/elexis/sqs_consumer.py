@@ -201,7 +201,7 @@ def process_message(message_body):
                 # get the JobResumeMatchingScore row from the interview scheduled stage
                 existingData = JobMatchingResumeScore.objects.filter(candidate=candidate, job=interview.job, stage='scheduled_interview')
                 existingData = existingData.first() if existingData.exists() else None
-                existingData.is_archieved=True
+                existingData.is_archived=True
                 existingData.save()
                 # create a new row in JobResumeMatchingScore table, Completed stage
                 jobResumeScoreinstance = JobMatchingResumeScore.objects.create(

@@ -346,7 +346,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
                         job=interview.job,
                         candidate=interview.candidate,
                         stage__in=['candidate_onboard', 'selected_for_interview','completed_interview']).update(
-                            is_archieved=True
+                            is_archived=True
                         )
                     newJobMatchingResumeScore = JobMatchingResumeScore.objects.create(
                         job=interview.job,
@@ -356,7 +356,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
                         created_by=self.request.user,
                         modified_by=self.request.user,
                         organization=interview.organization,
-                        is_archieved=False,
+                        is_archived=False,
                     )
                     newJobMatchingResumeScore.save()
                     print("New Job Matching Resume Score", newJobMatchingResumeScore)
@@ -744,16 +744,16 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = JobMatchingResumeScore.objects.all()
         jobId = self.request.query_params.get('job_id', '')
-        isArchieved = self.request.query_params.get('is_archieved', 'false').lower() == 'true'
+        isArchived = self.request.query_params.get('is_archived', 'false').lower() == 'true'
         stage = self.request.query_params.get('stage', '')
         if stage:
             queryset = queryset.filter(stage=stage)
         if jobId:
             queryset = queryset.filter(job__id=jobId)
-        if isArchieved:
-            queryset = queryset.filter(is_archieved=True)
+        if isArchived:
+            queryset = queryset.filter(is_archived=True)
         else:
-            queryset = queryset.filter(is_archieved=False)
+            queryset = queryset.filter(is_archived=False)
         return queryset.prefetch_related('interviews').select_related('candidate', 'created_by' , 'modified_by').order_by('-score')
     
     def perform_create(self, serializer):

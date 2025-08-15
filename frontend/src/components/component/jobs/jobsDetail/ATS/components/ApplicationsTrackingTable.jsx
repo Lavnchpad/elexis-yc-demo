@@ -32,7 +32,7 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
     const archieveApplicantHandler = async ({ applicant }) => {
         try {
             await axios.patch(`/job-ats/${applicant.id}/`, {
-                is_archieved: true,
+                is_archived: true,
             });
             await refetchApplications();
             toast.success("Applicant archived successfully");
@@ -82,7 +82,7 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
         setLoading(true);
         try {
             await Promise.allSettled([axios.patch(`/job-ats/${applicant.id}/`, {
-                is_archieved: true,
+                is_archived: true,
             }),
             axios.post('/job-ats/', {
                 job_id: jobData.id,
