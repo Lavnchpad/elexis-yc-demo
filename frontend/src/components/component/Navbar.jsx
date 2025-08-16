@@ -37,9 +37,9 @@ const Navbar = () => {
           <JobsProvider>
             {
               activePath === "jobs" ? (
-                  <h1 className="text-xl font-bold">Job Database</h1>
+                <h1 className="text-xl font-bold">Jobs</h1>
               ) :
-                <h1 className="text-xl font-bold">Candidate Database</h1>
+                <h1 className="text-xl font-bold">Candidates</h1>
             }
             <ManageJobs onJobCreated={fetchJobs}>
               <Button className='bg-red-700 shadow-2xl rounded-full'><Plus /> Create Job</Button>

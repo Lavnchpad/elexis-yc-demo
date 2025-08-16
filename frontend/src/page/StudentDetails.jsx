@@ -155,10 +155,10 @@ const StudentDetails = ({ }) => {
           {/* <Button>+ Add Candidate</Button> */}
         </AddCandidate>
       </div>
-      <div className="flex">
+      <div className="flex h-screen">
         <div className="w-1/4 p-4 bg-gray-100">
           <Filter onSearch={handleSearch} onStatusChange={(status) => setSelectedStatus(status)} />
-          <ScrollArea className="mt-4 max-h-[520px] overflow-y-auto">
+          <ScrollArea className="mt-4 max-h-[95dvh] overflow-y-auto">
             <ul className="space-y-2 cursor-pointer">
               {candidatesLoading ? (
                 <CandidateLoader />
@@ -176,13 +176,13 @@ const StudentDetails = ({ }) => {
             </ul>
           </ScrollArea>
         </div>
-        <div className="w-3/4 p-6 max-h-[90vh] overflow-y-auto">
+        <div className="w-3/4 p-6">
           {!selectedCandidate ? (
             <div>Please select a candidate to view details.</div>
           ) : (interviewDataLoading) ? (
             <StudentDetailsSkeleton />
           ) : (
-            <div>
+                <div className="max-h-full overflow-y-auto">
                   <div className=" p-6 rounded-xl shadow mb-6 flex text-white bg-[#2B2A29] flex-wrap items-center">
                     <div className="flex items-center space-x-6 w-full">
                       <Avatar className="w-24 h-24 rounded-full">
