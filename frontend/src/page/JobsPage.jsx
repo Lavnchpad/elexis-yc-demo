@@ -4,28 +4,16 @@ import DataTable from '@/components/table/DataTable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import axios from '../utils/api';
+import { JobsContext } from '@/components/component/jobs/JobsContext';
 
 const JobsPage = () => {
-  const [data, setData] = useState([]); // State to store fetched job data
-  const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
-
+  const { jobs, fetchJobs, loading } = useContext(JobsContext)
   const [searchTerm, setSearchTerm] = useState(''); // State for search term
   const [selectedLocation, setSelectedLocation] = useState('all'); // State for location filter
 
-  const fetchJobs = async () => {
-    try {
-      setLoading(true); // Show loader
-      const response = await axios.get(`/jobs/`);
-      setData(response.data); // Set fetched data
-    } catch (err) {
-      setError('Failed to load jobs data. Please try again later.');
-    } finally {
-      setLoading(false); // Stop loading
-    }
-  };
 
   const deleteJob = async (jobId, jobCreatedBy) => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
@@ -41,7 +29,6 @@ const JobsPage = () => {
     if (!confirmed) return;
 
     try {
-      setLoading(true); // Show loader during deletion
       await axios.delete(`/jobs/${jobId}/`);
       alert('Job deleted successfully.');
       fetchJobs(); // Refresh the job list
@@ -49,11 +36,10 @@ const JobsPage = () => {
       console.error(error);
       alert('Failed to delete the job. Please try again.');
     } finally {
-      setLoading(false); // Stop loader after deletion
     }
   };
 
-  const filteredData = data.filter((job) => {
+  const filteredData = jobs?.data?.filter((job) => {
     const matchesSearch = job.job_name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLocation =
       selectedLocation === 'all' ||
@@ -109,12 +95,14 @@ const JobsPage = () => {
             </SelectContent>
           </Select>
         </div>
+      {filteredData &&
         <DataTable
           hasClick={false}
           hasPagination={false}
           columns={jobColumns(deleteJob)}
           data={filteredData} // Use filtered data
       />
+      }
     </div>
   );
 };

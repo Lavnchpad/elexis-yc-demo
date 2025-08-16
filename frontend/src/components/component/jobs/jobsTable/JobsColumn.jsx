@@ -21,7 +21,8 @@ export const jobColumns = (deleteJob) => [
   {
     id: "actions",
     cell: ({ row }) => {
-      const jobId = row.original.id
+      const jobId = row?.original?.id
+      const createdBy = row?.original?.recruiter.id
       return (
         <div className="flex gap-2">
           <Button asChild size="sm" className='bg-gray-300 text-black hover:bg-gray-300 hover:scale-95'>
@@ -33,7 +34,7 @@ export const jobColumns = (deleteJob) => [
             variant="destructive"
             size="sm"
             className="bg-red-300 text-black hover:bg-red-300 hover:scale-95"
-            onClick={() => deleteJob(job.id, job.created_by)}
+            onClick={() => deleteJob(jobId, createdBy)}
           >
             Delete
           </Button>

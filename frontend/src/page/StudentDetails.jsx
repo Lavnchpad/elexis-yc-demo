@@ -74,11 +74,12 @@ const StudentDetails = ({ }) => {
         fetchInterviewDetails(candidate.id)
       } else {
         // If no candidate found, reset selectedCandidate
-        setSelectedCandidate(filteredCandidates?.[0]);
+        handleCandidateClick(filteredCandidates?.[0]);
       }
     } else {
       // If no candidateidInUrl, reset selectedCandidate
-      setSelectedCandidate(filteredCandidates?.[0]);
+      handleCandidateClick(filteredCandidates?.[0]);
+
     }
   }, [candidateidInUrl, filteredCandidates]);
 
@@ -140,6 +141,9 @@ const StudentDetails = ({ }) => {
   };
 
   const handleCandidateClick = (candidate) => {
+    if (!candidate) {
+      return
+    }
     setSelectedCandidate(candidate);
     navigate(`/candidate/${candidate.id}`)
   };

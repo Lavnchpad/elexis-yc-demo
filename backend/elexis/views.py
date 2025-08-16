@@ -168,7 +168,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
                                 candidate_id=candidate.id,
                                 resume_full_text=resume_text,
                                 candidate_email=candidate.email,
-                                organization=candidate.organization.org_name
+                                namespace=f"{candidate.organization.org_name}_{candidate.organization.id}"
                                 )
         candidate.resume_embedding_id = resume_embedding_id
         # if job Id is there , that means the candidate is getting created from a job details page , so do calculations like getMatchingScore with job description and store in JobMatchingResumeScore table with default stage
@@ -180,7 +180,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
                 jd_embedding_id = job.job_description_embedding_id
                 if jd_embedding_id and resume_embedding_id:
                     try:
-                        similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id, job.organization.org_name)
+                        similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id, namespace=f"{job.organization.org_name}_{job.organization.id}")
                         print("Similarity Score", similarityScore)
                         JobMatchingResumeScore(
                             job=job,
@@ -317,7 +317,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
                                         candidate_id=candidate.id,
                                         resume_full_text=resume_text,
                                         candidate_email=candidate.email,
-                                        organization=candidate.organization.org_name
+                                        namespace=f"{candidate.organization.org_name}_{candidate.organization.id}"
                                         )
                 candidate.resume_embedding_id = resume_embedding_id
                 candidate.save(update_fields=['resume_embedding_id'])
@@ -341,7 +341,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
                     if not similarityScore:
                         print("Calculating similarity score between job and resume")
                         # If the similarity score is not present, calculate it and save it
-                        similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id, interview.organization.org_name)
+                        similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id, namespace=f"{interview.organization.org_name}_{interview.organization.id}")
     
                         
                     JobMatchingResumeScore.objects.filter(

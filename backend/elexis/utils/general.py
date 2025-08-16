@@ -48,14 +48,14 @@ def upsert_jd_vector(requirements_text: str, job: Job):
                         'company_name': job.organization.org_name
                     }
                 }],
-                namespace=job.organization.org_name
+                namespace= f"{job.organization.org_name}_{job.organization.id}"
             )
             print(f"Indexed job {job.id} aggregate embedding in Pinecone during creation.")
             return job_embedding_id
     except Exception as e:
         logger.error(f"Error generating or storing embedding for job {job.id}: {e}", exc_info=True)
         # Decide how to handle this error: e.g., log, return error response, or allow job creation to proceed without embedding
-def upsert_resume_vector(candiate_name: str, candidate_email: str, resume_full_text : str, candidate_id: str, organization: str): 
+def upsert_resume_vector(candiate_name: str, candidate_email: str, resume_full_text : str, candidate_id: str, namespace: str): 
             
             try:
                 print("resume full text here:", resume_full_text)
@@ -94,7 +94,7 @@ def upsert_resume_vector(candiate_name: str, candidate_email: str, resume_full_t
                 })
 
                 if pinecone_resume_vectors_to_upsert:
-                    pinecone_client.upsert_vectors(pinecone_resume_vectors_to_upsert,namespace=organization)
+                    pinecone_client.upsert_vectors(pinecone_resume_vectors_to_upsert,namespace=namespace)
                     print(f"Upserted {len(pinecone_resume_vectors_to_upsert)} vectors for resume (candidate_id) {candidate_id} to Pinecone.")
                 else:
                     print(f"No vectors to upsert for resume {candidate_id}.")

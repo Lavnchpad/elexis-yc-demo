@@ -138,6 +138,9 @@ class Job(BaseModel):
         default="english",
         help_text="Comma-separated list of allowed interview languages (e.g., 'english,hindi')."
     ) 
+
+    class Meta:
+        ordering = ['-created_date'] 
     def __str__(self):
         return self.job_name
     

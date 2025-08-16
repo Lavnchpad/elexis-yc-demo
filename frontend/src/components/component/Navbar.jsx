@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -11,12 +11,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.png";
 import { Link } from "react-router-dom";
 import { useUser } from './recruiter/UserContext';
-import AddCandidate from "./candidate/AddCandidate";
 import ManageJobs from "./jobs/ManageJobs";
-import { JobsProvider } from "./jobs/JobsContext";
+import { JobsContext, JobsProvider } from "./jobs/JobsContext";
 import { Button } from "../ui/button";
 
 const Navbar = () => {
+  const { fetchJobs } = useContext(JobsContext);
   const navigate = useNavigate(); // Initialize the navigation hook
   const { user } = useUser();
   const location = useLocation();
@@ -41,7 +41,7 @@ const Navbar = () => {
               ) :
                 <h1 className="text-xl font-bold">Candidate Database</h1>
             }
-            <ManageJobs>
+            <ManageJobs onJobCreated={fetchJobs}>
               <Button className='bg-red-700 shadow-2xl rounded-full'><Plus /> Create Job</Button>
             </ManageJobs>
           </JobsProvider>

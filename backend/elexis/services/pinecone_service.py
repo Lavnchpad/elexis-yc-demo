@@ -70,7 +70,7 @@ class PineconeClient:
             logger.error(f"Error initializing Pinecone client: {e}", exc_info=True)
             raise
 
-    def upsert_vectors(self, vectors: list, namespace: str = 'default'):
+    def upsert_vectors(self, vectors: list, namespace: str):
         """
         Upserts (inserts or updates) vectors into the Pinecone index.
 
