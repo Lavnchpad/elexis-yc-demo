@@ -6,13 +6,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import useJobInterviews from '@/page/hooks/useJobInterviews';
-import { ListFilter } from 'lucide-react'
+import { ListFilter, Loader } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
 import CollapsibleSection from "../../resuable/CollapsibleSection";
 
 export default function ScheduledInterviews({ id, defaultShow = false }) {
-    const { interviews } = useJobInterviews({ jobId: id });
+    const { interviews, loading } = useJobInterviews({ jobId: id });
     const [filteredInterviews, setFilteredInterviews] = useState([]);
     const [selectedStatus, setSelectedStatus] = useState("all"); // This should be managed in state if you want to filter interviews by status
     const handleStatusChange = (status) => {
@@ -34,6 +34,13 @@ export default function ScheduledInterviews({ id, defaultShow = false }) {
             setFilteredInterviews(interviews);
         }
     }, [interviews])
+    if (loading) {
+        return (
+            <div className='w-full flex items-center justify-center h-20'>
+                <Loader className='h-28 animate-spin ease-in' />
+            </div>
+        )
+    }
     return (
         <CollapsibleSection title="Scheduled Interviews" defaultShow={defaultShow}>
                     <Table>

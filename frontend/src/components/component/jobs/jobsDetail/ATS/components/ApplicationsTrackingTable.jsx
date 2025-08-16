@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import axios from 'axioss';
 import useInboundApplicationTracking from '../hooks/useInboundApplicationTracking';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/toolTip';
+import { Loader } from 'lucide-react';
 
 
 export default function ApplicationsTrackingTable({ jobData, title, button1Text, applicationtype }) {
@@ -45,7 +46,15 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
     if (!applications) {
         return null
     }
+    if (loading) {
+        return (
+            <div className='w-full flex items-center justify-center h-20'>
+                <Loader className='h-28 animate-spin ease-in' />
+            </div>
+        )
+    }
     return (
+
         <Table className='overflow-x-auto w-full'>
             <TableCaption>Applications added for this job , sorted by their acceptability for this Job</TableCaption>
             <TableHeader>
@@ -71,6 +80,7 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
             <TableFooter>
             </TableFooter>
         </Table>
+
     )
 }
 

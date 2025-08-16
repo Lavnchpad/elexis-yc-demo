@@ -3,12 +3,21 @@ import useJobEvaluation from "../hooks/useJobEvaluation"
 import Tooltip from "./ToolTipCustom"
 import { Link } from "react-router-dom"
 import CollapsibleSection from "@/components/component/resuable/CollapsibleSection"
+import { Loader } from "lucide-react"
 
 
 
 export function JobsEvaluationTable({ id, defaultShow = false }) {
-    const { evaluations: candidateEvaluations, criterias } = useJobEvaluation({ jobId: id })
+    const { evaluations: candidateEvaluations, criterias, loading } = useJobEvaluation({ jobId: id })
     const fullmarks = criterias?.reduce((acc, criteria) => acc + (criteria?.weightage || 0) * 100, 0) || 0;
+
+    if (loading) {
+        return (
+            <div className='w-full flex items-center justify-center h-20'>
+                <Loader className='h-28 animate-spin ease-in' />
+            </div>
+        )
+    }
     return (
 
         <CollapsibleSection title="Candidate Evaluations" defaultShow={defaultShow}>
