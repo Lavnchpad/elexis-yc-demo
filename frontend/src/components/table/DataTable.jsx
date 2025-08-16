@@ -40,14 +40,13 @@ const DataTable = ({
     getCoreRowModel: getCoreRowModel(),
   });
   return (
-    <div>
-      <Table className="data-table">
+    <Table className="">
         {/* Table Header */}
-        <TableHeader className="bg-black rounded-lg">
+      <TableHeader className=" ">
           {table.getHeaderGroups().map((headerGroup, index) => (
-            <TableRow key={headerGroup.id + index}>
+            <TableRow key={headerGroup.id + index} className="bg-black rounded-b-lg text-white hover:bg-black">
               {headerGroup.headers.map((header, i) => (
-                <TableHead key={header.id + i}>
+                <TableHead key={header.id + i} className={i === 0 ? 'rounded-bl-lg text-white' : (i === headerGroup.headers.length - 1 ? 'rounded-br-lg text-white' : 'text-white')}>
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -84,8 +83,7 @@ const DataTable = ({
             </TableRow>
           )}
         </TableBody>
-      </Table>
-    </div>
+    </Table>
   );
 };
 

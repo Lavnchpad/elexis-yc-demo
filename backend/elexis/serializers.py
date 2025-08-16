@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Recruiter, Candidate, Job, Interview, Snapshots , JobRequirement, JobQuestions, InterviewQuestions
+from .models import Recruiter, Candidate, Job, Interview, Snapshots , JobRequirement, JobQuestions, InterviewQuestions, JobMatchingResumeScore
 from django.contrib.auth.password_validation import validate_password
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from dotenv import load_dotenv
@@ -35,6 +35,7 @@ class JobRequirementSerializer(serializers.ModelSerializer):
         fields = ['id','requirement', 'weightage']
 class JobSerializer(serializers.ModelSerializer):
     requirements = JobRequirementSerializer(many=True)
+    recruiter = RecruiterSerializer(read_only=True)
     questions = JobQuestionsSerializer(many=True, required=False, allow_empty=True)
     allowed_interview_languages = serializers.CharField(
         help_text="Comma-separated list of allowed interview languages, default is English if not provided.",
@@ -47,8 +48,8 @@ class JobSerializer(serializers.ModelSerializer):
         read_only_fields = ('recruiter', 'organization')
         fields = [
             'job_name', 'id', 'additional_data', 'location', 'min_ctc', 'max_ctc', 'job_description',
-            'requirements', 'questions', 'recruiter', 'organization', 'allowed_interview_languages',
-            'ask_for_reason_for_leaving_previous_job', 'ask_for_ctc_info'
+            'requirements', 'questions', 'organization','recruiter', 'allowed_interview_languages',
+            'ask_for_reason_for_leaving_previous_job', 'ask_for_ctc_info', 'job_description_embedding_id', 'created_date'
         ]
 
     def to_representation(self, instance):
@@ -279,3 +280,28 @@ class QuestionsRequestSerializer(serializers.Serializer):
     num_resume_questions = serializers.IntegerField(required=False, default=3)
     num_job_role_questions = serializers.IntegerField(required=False, default=3)
     num_job_role_experience_questions = serializers.IntegerField(required=False, default=3)
+class BasicInterViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Interview
+        fields = '__all__'
+class JobMatchingResumeScoreSerializer(serializers.ModelSerializer):
+    candidate = CandidateSerializer(read_only=True)
+    modified_by = RecruiterSerializer(read_only=True)
+    created_by = RecruiterSerializer(read_only=True)
+    interviews = BasicInterViewSerializer(read_only=True, many=True)
+
+    job_id = serializers.PrimaryKeyRelatedField(
+        queryset=Job.objects.all(),
+        source='job',
+        write_only=True
+    )
+    
+    candidate_id = serializers.PrimaryKeyRelatedField(
+        queryset=Candidate.objects.all(),
+        source='candidate',
+        write_only=True
+    )
+    class Meta:
+        model = JobMatchingResumeScore
+        fields = ['id', 'job', 'candidate','interviews', 'score','job_id', 'candidate_id', 'created_by', 'modified_by', 'created_date', 'modified_date', 'stage','is_archived']
+        read_only_fields = ('job', 'candidate')

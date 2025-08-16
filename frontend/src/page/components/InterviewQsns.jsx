@@ -36,7 +36,7 @@ export default function InterviewQsns({ viewOnly = false, initialQuestions, inte
   }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild className='my-2'>
         <Button variant="outline" onClick={() => setOpen(true)}>
           <Settings/>
           Manage Interview Questions

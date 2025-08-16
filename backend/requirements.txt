@@ -25,8 +25,12 @@ httplib2==0.22.0
 idna==3.10
 inflection==0.5.1
 jmespath==1.0.1
+numpy==2.3.2
 packaging==24.2
 pillow==11.0.0
+pinecone==7.3.0
+pinecone-plugin-assistant==1.7.0
+pinecone-plugin-interface==0.0.7
 proto-plus==1.26.0
 protobuf==5.29.3
 psycopg2-binary==2.9.10
@@ -36,6 +40,7 @@ pydantic==2.10.6
 pydantic_core==2.27.2
 PyJWT==2.10.0
 pyparsing==3.2.1
+PyPDF2==3.0.1
 python-dateutil==2.9.0.post0
 python-decouple==3.8
 python-dotenv==1.0.1

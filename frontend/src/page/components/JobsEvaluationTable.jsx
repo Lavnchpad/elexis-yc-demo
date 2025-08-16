@@ -2,28 +2,17 @@ import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, Tabl
 import useJobEvaluation from "../hooks/useJobEvaluation"
 import Tooltip from "./ToolTipCustom"
 import { Link } from "react-router-dom"
-import { useState } from "react"
-import { ChevronDown, ChevronUp } from "lucide-react"
+import CollapsibleSection from "@/components/component/resuable/CollapsibleSection"
 
 
 
-export function JobsEvaluationTable({ id }) {
+export function JobsEvaluationTable({ id, defaultShow = false }) {
     const { evaluations: candidateEvaluations, criterias } = useJobEvaluation({ jobId: id })
-    const [showJobsEvaluationTable, setShowJobsEvaluationTable] = useState(false);
     const fullmarks = criterias?.reduce((acc, criteria) => acc + (criteria?.weightage || 0) * 100, 0) || 0;
     return (
-        <>
-            <div className="flex justify-between items-center">
-                <h1 className="">Candidate Evaluations</h1>
-                {
-                    showJobsEvaluationTable ?
-                        <ChevronUp className='cursor-pointer' onClick={() => setShowJobsEvaluationTable(prev => !prev)} />
-                        :
-                        <ChevronDown className='cursor-pointer' onClick={() => setShowJobsEvaluationTable(prev => !prev)} />
-                }
-            </div>
-            {
-                showJobsEvaluationTable &&
+
+        <CollapsibleSection title="Candidate Evaluations" defaultShow={defaultShow}>
+
                 <Table>
                     <TableCaption>Candidate Evaluation</TableCaption>
                     <TableHeader>
@@ -51,7 +40,7 @@ export function JobsEvaluationTable({ id }) {
                                     })
                                 }
                                 <TableCell className="text-right">{item?.totalScore}</TableCell>
-                                <TableCell className="text-right"><Link className="hover:underline" to={`/candidate/${item.candidateId}?interview_id=${item?.interviewId?.[0] || ""}`}>View Details</Link></TableCell>
+                                <TableCell className="text-right"><Link className="hover:underline" to={`/candidate/${item.candidateId}?interview_id=${item?.interviewId || ""}`}>View Details</Link></TableCell>
 
                             </TableRow>
                         ))}
@@ -59,8 +48,8 @@ export function JobsEvaluationTable({ id }) {
                         <TableFooter>
                         </TableFooter>
                     </Table>
-            }
-        </>
+        </CollapsibleSection>
+
 
     )
 }

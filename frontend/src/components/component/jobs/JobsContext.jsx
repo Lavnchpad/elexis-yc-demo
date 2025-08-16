@@ -18,9 +18,9 @@ export const JobsProvider = ({ children }) => {
       setLoading(false)
     }
   };
-  useEffect(() => {
-    fetchJobs();  // Ensure jobs are fetched on component mount
-  }, []);
+  // useEffect(() => {
+  //   fetchJobs();  // Ensure jobs are fetched on component mount
+  // }, []);
 
   return (
     <JobsContext.Provider value={{ jobs, setJobs, fetchJobs, jobsLoading: loading }}>
