@@ -2,7 +2,6 @@ import dotenv
 import logging
 import google.generativeai as genai
 from google.generativeai import GenerativeModel, configure
-from typing import Self
 import os
 dotenv.load_dotenv()
 configure(api_key=os.environ.get('GEMINI_API_KEY'))
