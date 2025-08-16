@@ -1,6 +1,5 @@
 import functools
 import time
-import logging
 
 def retry_with_exponential_backoff(retries=3, initial_delay=1, backoff_factor=2, exceptions=(Exception,)):
     """
@@ -21,7 +20,7 @@ def retry_with_exponential_backoff(retries=3, initial_delay=1, backoff_factor=2,
                     return func(*args, **kwargs)
                 except exceptions as e:
                     # Log the retry attempt
-                    logging.warning(f"Attempt {i + 1} of {retries} failed for {func.__name__}. Retrying in {delay} seconds. Error: {e}")
+                    print(f"Attempt {i + 1} of {retries} failed for {func.__name__}. Retrying in {delay} seconds. Error: {e}")
                     
                     if i < retries - 1:
                         time.sleep(delay)

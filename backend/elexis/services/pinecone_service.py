@@ -1,6 +1,6 @@
 import logging
 from django.conf import settings
-from pinecone import Pinecone, PodSpec
+from pinecone import Pinecone, ServerlessSpec
 from typing import Any # Import Any for type hinting
 import dotenv
 from elexis.services.retry_with_backoff import retry_with_exponential_backoff
@@ -43,20 +43,11 @@ class PineconeClient:
             # Check if index exists, create if not
             if self.index_name not in self.pinecone.list_indexes().names():
                 logger.info(f"Creating new Pinecone index: {self.index_name}")
-                # For ServerlessSpec, you'll need to specify a cloud and region.
-                # Example for Serverless:
-                # self.pinecone.create_index(
-                #     name=self.index_name,
-                #     dimension=self.dimension,
-                #     metric=self.metric,
-                #     spec=ServerlessSpec(cloud='aws', region='us-west-2') # Adjust cloud/region
-                # )
-                # Example for PodSpec (starter tier is often PodSpec)
                 self.pinecone.create_index(
                     name=self.index_name,
                     dimension=self.dimension,
                     metric=self.metric,
-                    spec=PodSpec(environment=self.environment) # Use environment for PodSpec
+                    spec=ServerlessSpec(cloud=settings.PINECONE_CLOUD,region=settings.PINECONE_REGION)
                 )
                 logger.info(f"Waiting for Pinecone index '{self.index_name}' to be ready...")
                 # Polling for index readiness (Pinecone's client might have a wait_until_ready method)
@@ -79,7 +70,7 @@ class PineconeClient:
             logger.error(f"Error initializing Pinecone client: {e}", exc_info=True)
             raise
 
-    def upsert_vectors(self, vectors: list):
+    def upsert_vectors(self, vectors: list, namespace: str = 'default'):
         """
         Upserts (inserts or updates) vectors into the Pinecone index.
 
@@ -88,7 +79,7 @@ class PineconeClient:
                             e.g., [('vec1', [0.1, ...], {'key': 'value'})]
         """
         try:
-            response = self.index.upsert(vectors=vectors)
+            response = self.index.upsert(vectors=vectors, namespace=namespace)
             logger.info(f"Upserted {response.upserted_count} vectors to Pinecone.")
             return response
         # except GRPCStatusError as e:
@@ -156,7 +147,7 @@ class PineconeClient:
             logger.error(f"Error fetching vectors from Pinecone: {e}", exc_info=True)
             raise
     @retry_with_exponential_backoff(retries=5, initial_delay=2, backoff_factor=2)
-    def get_similarity_between_stored_vectors(self, id1: str, id2: str) -> float | None:
+    def get_similarity_between_stored_vectors(self, id1: str, id2: str, namespace: str) -> float | None:
             """
             Calculates the similarity between two vectors already stored in the Pinecone index.
 
@@ -170,23 +161,24 @@ class PineconeClient:
             """
 
             if not id1 or not id2:
-                logger.warning("Both vector IDs must be provided to calculate similarity.")
+                print("Both vector IDs must be provided to calculate similarity.")
                 return None
 
             try:
-                logger.info(f"Attempting to fetch vector '{id1}' for query to calculate similarity with '{id2}'.")
+                print(f"Attempting to fetch vector '{id1}' for query to calculate similarity with '{id2}'.")
                 # 1. Fetch the embedding of the first vector to use as the query vector
-                fetched_data = self.fetch_vectors(ids=[id1])
-                vector1_embedding = fetched_data.get(id1)
+                fetched_data = self.index.fetch(ids=[id1],namespace=namespace)
+                jdVector = fetched_data.vectors[id1].values
 
-                if not vector1_embedding:
-                    logger.warning(f"Vector with ID '{id1}' not found in Pinecone. Cannot perform query for similarity.")
+                if not jdVector:
+                    print(f"Vector with ID '{id1}' not found in Pinecone in Namespace::: {namespace}. Cannot perform query for similarity.")
                     return None
 
                 # 2. Query Pinecone using the first vector's embedding, and filter specifically for the second vector's ID
                 # We use 'resume_id' in metadata because we explicitly added it during upsert.
                 query_results = self.index.query(
-                    vector=vector1_embedding,
+                    namespace=namespace,
+                    vector=jdVector,
                     top_k=1, # We only need the similarity to one specific other vector (id2)
                     include_metadata=True, # We don't need metadata in the result for this specific task
                     filter={"resume_id": {"$eq": id2}} # Filter by the 'resume_id' field in metadata

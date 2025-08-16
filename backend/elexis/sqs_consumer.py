@@ -254,7 +254,7 @@ def updateJobResumeMatchingScore(id: str):
         resumeEmbeddingid = candidateinstance.resume_embedding_id
 
         if jdEmbeddingId and resumeEmbeddingid:
-            similarityScore = pinecone_client.get_similarity_between_stored_vectors(jdEmbeddingId, resumeEmbeddingid)
+            similarityScore = pinecone_client.get_similarity_between_stored_vectors(jdEmbeddingId, resumeEmbeddingid, jobInstance.organization.org_name)
             print("SQS_consumer ::: score calculation ::: Similarity Score", similarityScore)
             jobMatchingResumeInstance.score = similarityScore if similarityScore else 0
             jobMatchingResumeInstance.save()

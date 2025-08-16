@@ -47,14 +47,15 @@ def upsert_jd_vector(requirements_text: str, job: Job):
                         'job_title': job.job_name,
                         'company_name': job.organization.org_name
                     }
-                }]
+                }],
+                namespace=job.organization.org_name
             )
-            logger.info(f"Indexed job {job.id} aggregate embedding in Pinecone during creation.")
+            print(f"Indexed job {job.id} aggregate embedding in Pinecone during creation.")
             return job_embedding_id
     except Exception as e:
         logger.error(f"Error generating or storing embedding for job {job.id}: {e}", exc_info=True)
         # Decide how to handle this error: e.g., log, return error response, or allow job creation to proceed without embedding
-def upsert_resume_vector(candiate_name: str, candidate_email: str, resume_full_text : str, candidate_id: str): 
+def upsert_resume_vector(candiate_name: str, candidate_email: str, resume_full_text : str, candidate_id: str, organization: str): 
             
             try:
                 print("resume full text here:", resume_full_text)
@@ -93,13 +94,12 @@ def upsert_resume_vector(candiate_name: str, candidate_email: str, resume_full_t
                 })
 
                 if pinecone_resume_vectors_to_upsert:
-                    a = pinecone_client.upsert_vectors(pinecone_resume_vectors_to_upsert)
-                    print('aaaaaaa', a)
-                    logger.info(f"Upserted {len(pinecone_resume_vectors_to_upsert)} vectors for resume (candidate_id) {candidate_id} to Pinecone.")
+                    pinecone_client.upsert_vectors(pinecone_resume_vectors_to_upsert,namespace=organization)
+                    print(f"Upserted {len(pinecone_resume_vectors_to_upsert)} vectors for resume (candidate_id) {candidate_id} to Pinecone.")
                 else:
-                    logger.warning(f"No vectors to upsert for resume {candidate_id}.")
+                    print(f"No vectors to upsert for resume {candidate_id}.")
                 return embedding_id
             except Exception as e:
-                logger.error(f"Error fetching embedding for job {candidate_id}: {e}", exc_info=True)
+                print(f"Error fetching embedding for job {candidate_id}: {e}", exc_info=True)
                 # raise ValidationError(f"Internal server error during embedding retrieval: {e}")
                 # return Response({'error': 'Internal server error during embedding retrieval'}, status=500)
