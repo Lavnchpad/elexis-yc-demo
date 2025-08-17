@@ -103,8 +103,8 @@ def process_message(message_body):
 
         type = message.get("type")
         if type=='job_resume_matching_score':
+            print(f"SQS_Consumer :: process_message:: {type}",  message)
             updateJobResumeMatchingScore(id= message["data"]["id"])
-            print(f"SQS_Consumer :: process_message:: {type}", message)
             return
         elif type=="proctor":
             interview = Interview.objects.get(meeting_room=room_url)

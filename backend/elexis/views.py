@@ -782,42 +782,50 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='bulk_create')
     def bulk_create(self, request, *args, **kwargs):
-        if not isinstance(request.data, list):
+        try:
+            if not isinstance(request.data, list):
+                return Response(
+                    {"detail": "Request data must be a list of objects for bulk creation."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Validate the incoming list of data using the serializer with many=True
+            serializer = self.get_serializer(data=request.data, many=True)
+            serializer.is_valid(raise_exception=True)
+
+            # Prepare instances for bulk_create
+            instances_to_create = []
+            request_user = request.user
+            organization = request_user.organization if request_user and hasattr(request_user, 'organization') else None
+
+            for item_data in serializer.validated_data:
+                # Create a model instance from validated data
+                instance = JobMatchingResumeScore(**item_data)
+
+                # Manually set fields that perform_create would normally handle
+                instance.created_by = request_user
+                instance.modified_by = request_user
+
+                if not instance.organization_id and organization:
+                    instance.organization = organization
+
+                instances_to_create.append(instance)
+
+            with transaction.atomic():
+                # Use bulk_create for efficient insertion
+                created_objects = JobMatchingResumeScore.objects.bulk_create(instances_to_create)
+                print('cretaed_objects', created_objects)
+                response_serializer = self.get_serializer(created_objects, many=True)
+                # add these score calculation to queue and process later
+                def send_sqs_message():
+                    for item in response_serializer.data :
+                        add_message_to_sqs_queue(type='job_resume_matching_score',data ={
+                            "id": item["id"]
+                        })
+                transaction.on_commit(send_sqs_message)
+                return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
             return Response(
-                {"detail": "Request data must be a list of objects for bulk creation."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Validate the incoming list of data using the serializer with many=True
-        serializer = self.get_serializer(data=request.data, many=True)
-        serializer.is_valid(raise_exception=True)
-
-        # Prepare instances for bulk_create
-        instances_to_create = []
-        request_user = request.user
-        organization = request_user.organization if request_user and hasattr(request_user, 'organization') else None
-
-        for item_data in serializer.validated_data:
-            # Create a model instance from validated data
-            instance = JobMatchingResumeScore(**item_data)
-
-            # Manually set fields that perform_create would normally handle
-            instance.created_by = request_user
-            instance.modified_by = request_user
-
-            if not instance.organization_id and organization:
-                instance.organization = organization
-
-            instances_to_create.append(instance)
-
-        with transaction.atomic():
-            # Use bulk_create for efficient insertion
-            created_objects = JobMatchingResumeScore.objects.bulk_create(instances_to_create)
-            print('cretaed_objects', created_objects)
-            response_serializer = self.get_serializer(created_objects, many=True)
-            # add these score calculation to queue and process later
-            for item in response_serializer.data :
-                add_message_to_sqs_queue(type='job_resume_matching_score',data ={
-                    "id": item["id"]
-                })
-            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        {"detail": f"Internal server error: {str(e)}"},
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+    )

@@ -111,6 +111,7 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
             setLoading(false);
         }
     }
+    const calculatedResumeMatchingScore = applicant.score ? `${((parseFloat(applicant.score) + 1) / 2).toFixed(3) * 100}%` : '-'
     return (
         <TableRow key={applicant.id}>
             {showConfirmationDialog && (
@@ -147,7 +148,7 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
                 {applicant.created_date ? new Date(applicant.created_date).toLocaleString() : 'N/A'}
             </TableCell>
             <TableCell className="text-center">
-                {applicant.score}
+                {calculatedResumeMatchingScore}
             </TableCell>
             <TableCell className="text-center flex fle-wrap justify-center gap-2">
                 {/* for scheduled_interview , this button will act like reschedule button */}
