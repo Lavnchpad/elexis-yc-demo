@@ -165,7 +165,7 @@ class PineconeClient:
                 return None
 
             try:
-                print(f"Attempting to fetch vector '{id1}' for query to calculate similarity with '{id2}'.")
+                print(f"Attempting to fetch vector '{id1}' for query to calculate similarity with '{id2}' in namespace:::{namespace}.")
                 # 1. Fetch the embedding of the first vector to use as the query vector
                 fetched_data = self.index.fetch(ids=[id1],namespace=namespace)
                 jdVector = fetched_data.vectors[id1].values
@@ -173,7 +173,6 @@ class PineconeClient:
                 if not jdVector:
                     print(f"Vector with ID '{id1}' not found in Pinecone in Namespace::: {namespace}. Cannot perform query for similarity.")
                     return None
-
                 # 2. Query Pinecone using the first vector's embedding, and filter specifically for the second vector's ID
                 # We use 'resume_id' in metadata because we explicitly added it during upsert.
                 query_results = self.index.query(
@@ -181,7 +180,7 @@ class PineconeClient:
                     vector=jdVector,
                     top_k=1, # We only need the similarity to one specific other vector (id2)
                     include_metadata=True, # We don't need metadata in the result for this specific task
-                    filter={"resume_id": {"$eq": id2}} # Filter by the 'resume_id' field in metadata
+                    filter={"resume_id": {"$in": [id2, id2.split('resume-')[1]]}} # Filter by the 'resume_id' field in metadata
                 )
 
                 # 3. Extract the similarity score from the result

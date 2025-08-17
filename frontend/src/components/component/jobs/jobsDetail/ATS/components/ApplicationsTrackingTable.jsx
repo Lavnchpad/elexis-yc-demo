@@ -111,7 +111,7 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
             setLoading(false);
         }
     }
-    const calculatedResumeMatchingScore = applicant.score ? `${((parseFloat(applicant.score) + 1) / 2).toFixed(3) * 100}%` : '-'
+    const calculatedResumeMatchingScore = applicant.score ? `${(((parseFloat(applicant.score) + 1) / 2) * 100).toFixed()}%` : '-'
     return (
         <TableRow key={applicant.id}>
             {showConfirmationDialog && (
