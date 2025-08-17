@@ -49,7 +49,7 @@ export default function AttachToJob({ selectedCandidate }) {
             const payload = selectedJobs?.map(job => ({
                 "job_id": job,
                 "candidate_id": selectedCandidate.id,
-                "score": 0.29, // as it was the default written in the migration as well
+                "score": null, // as it was the default written in the migration as well
                 "stage": "candidate_onboard",
                 "is_archived": false
             }))

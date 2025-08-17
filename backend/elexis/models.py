@@ -165,6 +165,8 @@ class JobMatchingResumeScore(BaseModel):
     )
     score = models.DecimalField(
         max_digits=10, decimal_places=10,
+        null=True,
+        blank=True,
         default=0.0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         help_text="Score indicating how well the candidate's resume matches the job description"
