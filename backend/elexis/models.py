@@ -175,6 +175,10 @@ class JobMatchingResumeScore(BaseModel):
         max_length=50, choices=STAGES, default='candidate_onboard',
         help_text="Current stage of the candidate in the inbound process"
     )
+    ranking = models.IntegerField(
+        null=True,
+        blank=True
+    )
     is_archived = models.BooleanField(
         default=False,
         help_text="If True, this row is not the present state of the candidate in our interview process. He progressed or maybe archived."

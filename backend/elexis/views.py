@@ -191,6 +191,8 @@ class CandidateViewSet(viewsets.ModelViewSet):
                         ).save()
                     except Exception as e:
                         print("CandidateViewset:: Error in getting similarity score between job and candidate resume", e)
+                else:
+                    print('JDembeddingid and resumeembedding id not found', jd_embedding_id, resume_embedding_id)
             except Job.DoesNotExist:
                 print("Job with ID {} does not exist.".format(job_id))
         serializer.save(resume_embedding_id=resume_embedding_id)
@@ -817,12 +819,21 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
                 print('cretaed_objects', created_objects)
                 response_serializer = self.get_serializer(created_objects, many=True)
                 # add these score calculation to queue and process later
-                def send_sqs_message():
+                def after_commit():
+                    jobIds = set()
                     for item in response_serializer.data :
                         add_message_to_sqs_queue(type='job_resume_matching_score',data ={
                             "id": item["id"]
                         })
-                transaction.on_commit(send_sqs_message)
+                        print('JobId yeh hain bhai', item['job'])
+                        jobIds.add(item['job'])
+                    if jobIds:
+                        print('JobIds', jobIds)
+                        for item in jobIds:
+                            add_message_to_sqs_queue(type='rank-resumes', data ={
+                                    "jobId":str(item)
+                            })
+                transaction.on_commit(after_commit)
                 return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response(

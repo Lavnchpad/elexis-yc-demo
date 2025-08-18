@@ -64,7 +64,7 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
                     <TableHead className="text-center">Phone</TableHead>
                     <TableHead className="text-center">Added By</TableHead>
                     <TableHead className="text-center">Added At</TableHead>
-                    <TableHead className="text-center">Resume Match </TableHead>
+                    <TableHead className="text-center">AI Rankings </TableHead>
                     <TableHead className="text-center">Action</TableHead>
                 </TableRow>
             </TableHeader>
@@ -99,6 +99,7 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
                 candidate_id: applicant.candidate.id,
                 stage: 'selected_for_interview',
                 score: applicant.score,
+                ranking: applicant.ranking
             })]);
 
             await refetch()
@@ -111,7 +112,7 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
             setLoading(false);
         }
     }
-    const calculatedResumeMatchingScore = applicant.score ? `${(((parseFloat(applicant.score) + 1) / 2) * 100).toFixed()}%` : '-'
+    // const calculatedResumeMatchingScore = applicant.score ? `${(((parseFloat(applicant.score) + 1) / 2) * 100).toFixed()}%` : '-'
     return (
         <TableRow key={applicant.id}>
             {showConfirmationDialog && (
@@ -148,7 +149,7 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
                 {applicant.created_date ? new Date(applicant.created_date).toLocaleString() : 'N/A'}
             </TableCell>
             <TableCell className="text-center">
-                {calculatedResumeMatchingScore}
+                {applicant?.ranking}
             </TableCell>
             <TableCell className="text-center flex fle-wrap justify-center gap-2">
                 {/* for scheduled_interview , this button will act like reschedule button */}

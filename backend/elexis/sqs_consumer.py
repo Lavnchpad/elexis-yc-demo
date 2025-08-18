@@ -2,6 +2,7 @@ from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementE
 from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3, put_dict_as_json_to_s3
 from elexis.utils.summary_generation import generate_summary, experience_information_generation
 from elexis.serializers import JobRequirementSerializer
+from django.db import transaction
 from elexis.utils.convert_transcript_format import convert
 import boto3
 import json
@@ -119,6 +120,13 @@ def process_message(message_body):
                 return
                 
                 
+        elif type ==  'rank-resumes':
+            jobId = message['data']['jobId']
+            if not jobId:
+                print(f"SQS Consumer ::: Process message. type: {type} ::: message: {message} error: no JobId found")
+                return
+            print('record',reRankResumes(jobId=jobId))
+            return
         # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://bohot-wickets.com"}
         # {"type":"proctor","video":"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4","room_url":"https://google.com"}
         elif not room_url or not transcript_url:
@@ -265,3 +273,23 @@ def updateJobResumeMatchingScore(id: str):
                 print('SQS_consumer ::: SQS_consumer ::: resume embedding id not found ::: id', id)
     except Exception as e:
         print(f"SQS_consumer ::: upsertJobResumeMatchingScore::: Async Queue for adding bulk jdResume records::: id: {id}. error: ", e)
+
+
+def reRankResumes(jobId: str):
+    try:
+        records = list(
+            JobMatchingResumeScore.objects.filter(job_id=jobId,is_archived=False)
+            .order_by("-score")
+        )
+        if not records:
+            print('reRankResumes ::: No jobResumeMatchingScore records to update for job_Id', jobId)
+            return
+
+        for rank, record in enumerate(records, start=1):
+            record.ranking = rank
+        with transaction.atomic():
+            JobMatchingResumeScore.objects.bulk_update(records, ["ranking"])
+        return records
+    except Exception as e:
+        print('Error ::: SQS consumer -> reRankResumes', e)
+        raise 
