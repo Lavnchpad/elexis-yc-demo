@@ -34,7 +34,7 @@ def generate_embedding(text: str) -> list:
         embedding_result = client.models.embed_content(
             model='models/embedding-001', # Explicitly specify model
             contents=cleaned_text,
-            config=types.EmbedContentConfig(task_type='RETRIEVAL_DOCUMENT'),
+            # config=types.EmbedContentConfig(task_type='RETRIEVAL_DOCUMENT'),
         )
         # print("Embeddings goes here bro", len(embedding_result['embedding']))
         print('result kya hain bhai', len(embedding_result.embeddings[0].values))
