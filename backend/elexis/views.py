@@ -816,16 +816,19 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
             with transaction.atomic():
                 # Use bulk_create for efficient insertion
                 created_objects = JobMatchingResumeScore.objects.bulk_create(instances_to_create)
-                print('cretaed_objects', created_objects)
                 response_serializer = self.get_serializer(created_objects, many=True)
                 # add these score calculation to queue and process later
                 def after_commit():
                     jobIds = set()
                     for item in response_serializer.data :
+                        # calculate score via Vector db
                         add_message_to_sqs_queue(type='job_resume_matching_score',data ={
                             "id": item["id"]
                         })
-                        print('JobId yeh hain bhai', item['job'])
+                        # get AI opinion on matching
+                        add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
+                            "id": item["id"],
+                        })
                         jobIds.add(item['job'])
                     if jobIds:
                         print('JobIds', jobIds)

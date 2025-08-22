@@ -327,3 +327,24 @@ class InterviewQuestions(BaseModel):
     )
     def __str__(self):
         return f"Question for Interview {self.interview.id}: {self.question}"
+
+# class JobMatchingResumeAiEvaluation(BaseModel):
+#     job_matching_resume_score = models.ForeignKey(
+#         JobMatchingResumeScore, on_delete=models.CASCADE, related_name="ai_evaluations"
+#     )
+#     pros = models.TextField(
+#         blank=True, null=True, help_text="Positive aspects of the candidate's resume"
+#     )
+#     cons = models.TextField(
+#         blank=True, null=True, help_text="Negative aspects of the candidate's resume"
+#     )
+#     overall_evaluation = models.TextField(
+#         blank=True, null=True, help_text="Overall evaluation of the candidate's resume"
+#     )
+
+#     score = models.DecimalField(
+#         max_digits=5, decimal_places=2,
+#         null=True, blank=True,
+#         validators=[MinValueValidator(0), MaxValueValidator(100)],
+#         help_text="AI-generated score indicating how well the candidate's resume matches the job description"
+#     )
