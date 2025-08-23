@@ -3,7 +3,6 @@ import React from 'react'
 import ApplicationsTrackingTable from "./components/ApplicationsTrackingTable";
 
 export default function Ats({ jobData }) {
-
     return (
         <Tabs defaultValue="Inbound Applicants">
             <TabsList>

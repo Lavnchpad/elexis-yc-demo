@@ -8,11 +8,13 @@ import axios from 'axioss';
 import useInboundApplicationTracking from '../hooks/useInboundApplicationTracking';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/toolTip';
 import { Loader } from 'lucide-react';
+import { AiEvaluationCard } from '../../../components/AiEvaluationCard';
+import { ListDetailsToggle } from '@/components/component/resuable/ListDetailsToggleButton';
 
 
 export default function ApplicationsTrackingTable({ jobData, title, button1Text, applicationtype }) {
     const { loading, applications, fetchApplications: refetchApplications } = useInboundApplicationTracking({ job_id: jobData.id, type: applicationtype })
-
+    const [listView, setListView] = useState(true); // State to toggle between list and detailed view
     const addInterviewHandler = async ({ isReschedule, payload }) => {
         try {
             if (isReschedule) {
@@ -53,6 +55,50 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
             </div>
         )
     }
+    const isCandidateOnboard = applicationtype === 'candidate_onboard';
+    if (isCandidateOnboard) {
+        return (
+            <>
+                {isCandidateOnboard && <ListDetailsToggle listView={listView} setListView={setListView} />}
+                {!listView ?
+                    <div className='space-y-4'>
+                        {
+                            applications.map((applicant) => (
+                                <AiEvaluationCard candidateData={{ ...applicant.candidate, ...applicant?.ai_evaluations[0] }} key={applicant?.ai_evaluations[0]?.id} />
+                            ))
+                        }
+                    </div>
+                    :
+                    <Table className='overflow-x-auto w-full'>
+                        <TableCaption>Applications added for this job , sorted by their acceptability for this Job</TableCaption>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="text-center">Name</TableHead>
+                                <TableHead className="text-center">Email</TableHead>
+                                <TableHead className="text-center">Phone</TableHead>
+                                <TableHead className="text-center">Added By</TableHead>
+                                <TableHead className="text-center">Added At</TableHead>
+                                <TableHead className="text-center">AI Rankings </TableHead>
+                                <TableHead className="text-center">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {
+                                applications?.map((applicant) => {
+                                    return (
+                                        <ApplicantRow loading={loading} refetch={refetchApplications} applicationtype={applicationtype} archieveApplicantHandler={archieveApplicantHandler} addInterviewHandler={addInterviewHandler} applicant={applicant} button1Text={button1Text} title={title} jobData={jobData} />
+                                    )
+                                })
+                            }
+                        </TableBody>
+                        <TableFooter>
+                        </TableFooter>
+                    </Table>
+                }
+            </>
+
+        )
+    }
     return (
 
         <Table className='overflow-x-auto w-full'>
@@ -64,7 +110,7 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
                     <TableHead className="text-center">Phone</TableHead>
                     <TableHead className="text-center">Added By</TableHead>
                     <TableHead className="text-center">Added At</TableHead>
-                    <TableHead className="text-center">Resume Match </TableHead>
+                    <TableHead className="text-center">AI Rankings </TableHead>
                     <TableHead className="text-center">Action</TableHead>
                 </TableRow>
             </TableHeader>
@@ -99,6 +145,7 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
                 candidate_id: applicant.candidate.id,
                 stage: 'selected_for_interview',
                 score: applicant.score,
+                ranking: applicant.ranking
             })]);
 
             await refetch()
@@ -111,7 +158,7 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
             setLoading(false);
         }
     }
-    const calculatedResumeMatchingScore = applicant.score ? `${(((parseFloat(applicant.score) + 1) / 2) * 100).toFixed()}%` : '-'
+    // const calculatedResumeMatchingScore = applicant.score ? `${(((parseFloat(applicant.score) + 1) / 2) * 100).toFixed()}%` : '-'
     return (
         <TableRow key={applicant.id}>
             {showConfirmationDialog && (
@@ -148,7 +195,7 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
                 {applicant.created_date ? new Date(applicant.created_date).toLocaleString() : 'N/A'}
             </TableCell>
             <TableCell className="text-center">
-                {calculatedResumeMatchingScore}
+                {applicant?.ranking}
             </TableCell>
             <TableCell className="text-center flex fle-wrap justify-center gap-2">
                 {/* for scheduled_interview , this button will act like reschedule button */}

@@ -182,15 +182,32 @@ class CandidateViewSet(viewsets.ModelViewSet):
                     try:
                         similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id, namespace=f"{job.organization.org_name}_{job.organization.id}")
                         print("Similarity Score", similarityScore)
-                        JobMatchingResumeScore(
+                        JobMatchingResumeScoreInstance = JobMatchingResumeScore.objects.create(
                             job=job,
                             candidate=candidate,
                             score=similarityScore if similarityScore else 0,
                             created_by=self.request.user,
                             modified_by=self.request.user
-                        ).save()
+                        )
+                        # rank resume async job
+                        print(f"rank-resumes added to Queue for jon: {job.id}")
+                        add_message_to_sqs_queue(type='rank-resumes', data ={
+                                    "jobId":str(job.id)
+                            })
+                        # calculate scores for all not archived jobs
+                        print(f"job_resume_matching_score added to Queue for JobMatchingResumeScore : {JobMatchingResumeScoreInstance.id}")
+                        add_message_to_sqs_queue(type='job_resume_matching_score',data ={
+                            "id": str(JobMatchingResumeScoreInstance.id),
+                        })
+                        # evaluate resumeagainst a job via AI
+                        print(f"ai_job_resume_evaluation added to Queue for JobMatchingResumeScore: {JobMatchingResumeScoreInstance.id}")
+                        add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
+                            "id": str(JobMatchingResumeScoreInstance.id),
+                        })
                     except Exception as e:
                         print("CandidateViewset:: Error in getting similarity score between job and candidate resume", e)
+                else:
+                    print('JDembeddingid and resumeembedding id not found', jd_embedding_id, resume_embedding_id)
             except Job.DoesNotExist:
                 print("Job with ID {} does not exist.".format(job_id))
         serializer.save(resume_embedding_id=resume_embedding_id)
@@ -756,7 +773,14 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(is_archived=True)
         else:
             queryset = queryset.filter(is_archived=False)
-        return queryset.prefetch_related('interviews').select_related('candidate', 'created_by' , 'modified_by').order_by('-score')
+        queryset = queryset.prefetch_related('interviews').select_related('candidate', 'created_by' , 'modified_by').order_by('-score')
+        if stage == 'candidate_onboard' and self.request.method == 'GET':
+            # If the stage is 'candidate_onboard', we want to prefetch related AI evaluations
+            return queryset.prefetch_related('ai_evaluations')
+        else:
+            return queryset
+
+
     
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user, modified_by=self.request.user, organization=self.request.user.organization)
@@ -814,15 +838,29 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
             with transaction.atomic():
                 # Use bulk_create for efficient insertion
                 created_objects = JobMatchingResumeScore.objects.bulk_create(instances_to_create)
-                print('cretaed_objects', created_objects)
                 response_serializer = self.get_serializer(created_objects, many=True)
                 # add these score calculation to queue and process later
-                def send_sqs_message():
+                def after_commit():
+                    jobIds = set()
                     for item in response_serializer.data :
+                        # calculate score via Vector db
+                        print(f"bulk update: job_resume_matching_score added to Queue for JobMatchingResumeScore : {item['id']}")
                         add_message_to_sqs_queue(type='job_resume_matching_score',data ={
                             "id": item["id"]
                         })
-                transaction.on_commit(send_sqs_message)
+                        # get AI opinion on matching
+                        print(f"bulk update : ai_job_resume_evaluation added to Queue for JobMatchingResumeScore : {item['id']}")
+                        add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
+                            "id": item["id"],
+                        })
+                        jobIds.add(item['job'])
+                    if jobIds:
+                        print('JobIds', jobIds)
+                        for item in jobIds:
+                            add_message_to_sqs_queue(type='rank-resumes', data ={
+                                    "jobId":str(item)
+                            })
+                transaction.on_commit(after_commit)
                 return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response(
