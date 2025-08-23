@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import Recruiter, Candidate, Job, Interview, Snapshots , JobRequirement, JobQuestions, InterviewQuestions, JobMatchingResumeScore
+from .models import( Recruiter, Candidate, Job, 
+    Interview, Snapshots , JobRequirement, JobQuestions,
+    InterviewQuestions, JobMatchingResumeScore,
+    AiJdResumeMatchingResponse , BackgroundAnalysis, RoleFitAnalysis, GapsAndImprovements,
+    HiringSignals,
+    Recommendation,
+    DirectComparison
+)
 from django.contrib.auth.password_validation import validate_password
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from dotenv import load_dotenv
@@ -280,6 +287,77 @@ class QuestionsRequestSerializer(serializers.Serializer):
     num_resume_questions = serializers.IntegerField(required=False, default=3)
     num_job_role_questions = serializers.IntegerField(required=False, default=3)
     num_job_role_experience_questions = serializers.IntegerField(required=False, default=3)
+
+class BackgroundAnalysisSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BackgroundAnalysis
+        fields = "__all__"
+
+class RoleFitAnalysisSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoleFitAnalysis
+        fields = "__all__"
+
+class GapsAndImprovementsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GapsAndImprovements
+        fields = "__all__"
+
+class HiringSignalsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HiringSignals
+        fields = "__all__"
+
+class RecommendationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recommendation
+        fields = "__all__"
+
+class DirectComparisonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DirectComparison
+        fields = "__all__"
+
+
+class AiJdResumeMatchingResponseSerializer(serializers.ModelSerializer):
+    backgroundAnalysis = BackgroundAnalysisSerializer()
+    roleFitAnalysis = RoleFitAnalysisSerializer()
+    gapsAndImprovements = GapsAndImprovementsSerializer()
+    hiringSignals = HiringSignalsSerializer()
+    recommendation = RecommendationSerializer()
+    directComparison = DirectComparisonSerializer()
+
+    class Meta:
+        model = AiJdResumeMatchingResponse
+        fields = "__all__"
+
+    def create(self, validated_data):
+        # pop nested data
+        ba_data = validated_data.pop("backgroundAnalysis")
+        rfa_data = validated_data.pop("roleFitAnalysis")
+        gi_data = validated_data.pop("gapsAndImprovements")
+        hs_data = validated_data.pop("hiringSignals")
+        rec_data = validated_data.pop("recommendation")
+        dc_data = validated_data.pop("directComparison")
+
+        # create nested objects first
+        ba = BackgroundAnalysis.objects.create(**ba_data)
+        rfa = RoleFitAnalysis.objects.create(**rfa_data)
+        gi = GapsAndImprovements.objects.create(**gi_data)
+        hs = HiringSignals.objects.create(**hs_data)
+        rec = Recommendation.objects.create(**rec_data)
+        dc = DirectComparison.objects.create(**dc_data)
+
+        # create main response
+        return AiJdResumeMatchingResponse.objects.create(
+            backgroundAnalysis=ba,
+            roleFitAnalysis=rfa,
+            gapsAndImprovements=gi,
+            hiringSignals=hs,
+            recommendation=rec,
+            directComparison=dc,
+            **validated_data
+        )
 class BasicInterViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Interview
@@ -289,6 +367,7 @@ class JobMatchingResumeScoreSerializer(serializers.ModelSerializer):
     modified_by = RecruiterSerializer(read_only=True)
     created_by = RecruiterSerializer(read_only=True)
     interviews = BasicInterViewSerializer(read_only=True, many=True)
+    ai_evaluations = AiJdResumeMatchingResponseSerializer(read_only=True, many=True)
 
     job_id = serializers.PrimaryKeyRelatedField(
         queryset=Job.objects.all(),
@@ -303,5 +382,14 @@ class JobMatchingResumeScoreSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = JobMatchingResumeScore
-        fields = ['id', 'job', 'candidate','ranking','interviews', 'score','job_id', 'candidate_id', 'created_by', 'modified_by', 'created_date', 'modified_date', 'stage','is_archived']
-        read_only_fields = ('job', 'candidate')
+        fields = ['id', 'job', 'candidate','ranking','interviews','ai_evaluations', 'score','job_id', 'candidate_id', 'created_by', 'modified_by', 'created_date', 'modified_date', 'stage','is_archived']
+        read_only_fields = ('job', 'candidate', 'ai_evaluations')
+
+
+
+
+
+
+
+
+

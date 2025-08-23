@@ -8,11 +8,13 @@ import axios from 'axioss';
 import useInboundApplicationTracking from '../hooks/useInboundApplicationTracking';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/toolTip';
 import { Loader } from 'lucide-react';
+import { AiEvaluationCard } from '../../../components/AiEvaluationCard';
+import { ListDetailsToggle } from '@/components/component/resuable/ListDetailsToggleButton';
 
 
 export default function ApplicationsTrackingTable({ jobData, title, button1Text, applicationtype }) {
     const { loading, applications, fetchApplications: refetchApplications } = useInboundApplicationTracking({ job_id: jobData.id, type: applicationtype })
-
+    const [listView, setListView] = useState(true); // State to toggle between list and detailed view
     const addInterviewHandler = async ({ isReschedule, payload }) => {
         try {
             if (isReschedule) {
@@ -51,6 +53,50 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
             <div className='w-full flex items-center justify-center h-20'>
                 <Loader className='h-28 animate-spin ease-in' />
             </div>
+        )
+    }
+    const isCandidateOnboard = applicationtype === 'candidate_onboard';
+    if (isCandidateOnboard) {
+        return (
+            <>
+                {isCandidateOnboard && <ListDetailsToggle listView={listView} setListView={setListView} />}
+                {!listView ?
+                    <div className='space-y-4'>
+                        {
+                            applications.map((applicant) => (
+                                <AiEvaluationCard candidateData={{ ...applicant.candidate, ...applicant?.ai_evaluations[0] }} key={applicant?.ai_evaluations[0]?.id} />
+                            ))
+                        }
+                    </div>
+                    :
+                    <Table className='overflow-x-auto w-full'>
+                        <TableCaption>Applications added for this job , sorted by their acceptability for this Job</TableCaption>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="text-center">Name</TableHead>
+                                <TableHead className="text-center">Email</TableHead>
+                                <TableHead className="text-center">Phone</TableHead>
+                                <TableHead className="text-center">Added By</TableHead>
+                                <TableHead className="text-center">Added At</TableHead>
+                                <TableHead className="text-center">AI Rankings </TableHead>
+                                <TableHead className="text-center">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {
+                                applications?.map((applicant) => {
+                                    return (
+                                        <ApplicantRow loading={loading} refetch={refetchApplications} applicationtype={applicationtype} archieveApplicantHandler={archieveApplicantHandler} addInterviewHandler={addInterviewHandler} applicant={applicant} button1Text={button1Text} title={title} jobData={jobData} />
+                                    )
+                                })
+                            }
+                        </TableBody>
+                        <TableFooter>
+                        </TableFooter>
+                    </Table>
+                }
+            </>
+
         )
     }
     return (

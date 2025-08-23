@@ -182,13 +182,28 @@ class CandidateViewSet(viewsets.ModelViewSet):
                     try:
                         similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id, namespace=f"{job.organization.org_name}_{job.organization.id}")
                         print("Similarity Score", similarityScore)
-                        JobMatchingResumeScore(
+                        JobMatchingResumeScoreInstance = JobMatchingResumeScore.objects.create(
                             job=job,
                             candidate=candidate,
                             score=similarityScore if similarityScore else 0,
                             created_by=self.request.user,
                             modified_by=self.request.user
-                        ).save()
+                        )
+                        # rank resume async job
+                        print(f"rank-resumes added to Queue for jon: {job.id}")
+                        add_message_to_sqs_queue(type='rank-resumes', data ={
+                                    "jobId":str(job.id)
+                            })
+                        # calculate scores for all not archived jobs
+                        print(f"job_resume_matching_score added to Queue for JobMatchingResumeScore : {JobMatchingResumeScoreInstance.id}")
+                        add_message_to_sqs_queue(type='job_resume_matching_score',data ={
+                            "id": str(JobMatchingResumeScoreInstance.id),
+                        })
+                        # evaluate resumeagainst a job via AI
+                        print(f"ai_job_resume_evaluation added to Queue for JobMatchingResumeScore: {JobMatchingResumeScoreInstance.id}")
+                        add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
+                            "id": str(JobMatchingResumeScoreInstance.id),
+                        })
                     except Exception as e:
                         print("CandidateViewset:: Error in getting similarity score between job and candidate resume", e)
                 else:
@@ -758,7 +773,14 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(is_archived=True)
         else:
             queryset = queryset.filter(is_archived=False)
-        return queryset.prefetch_related('interviews').select_related('candidate', 'created_by' , 'modified_by').order_by('-score')
+        queryset = queryset.prefetch_related('interviews').select_related('candidate', 'created_by' , 'modified_by').order_by('-score')
+        if stage == 'candidate_onboard' and self.request.method == 'GET':
+            # If the stage is 'candidate_onboard', we want to prefetch related AI evaluations
+            return queryset.prefetch_related('ai_evaluations')
+        else:
+            return queryset
+
+
     
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user, modified_by=self.request.user, organization=self.request.user.organization)
@@ -822,10 +844,12 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
                     jobIds = set()
                     for item in response_serializer.data :
                         # calculate score via Vector db
+                        print(f"bulk update: job_resume_matching_score added to Queue for JobMatchingResumeScore : {item['id']}")
                         add_message_to_sqs_queue(type='job_resume_matching_score',data ={
                             "id": item["id"]
                         })
                         # get AI opinion on matching
+                        print(f"bulk update : ai_job_resume_evaluation added to Queue for JobMatchingResumeScore : {item['id']}")
                         add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
                             "id": item["id"],
                         })

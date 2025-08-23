@@ -1,11 +1,16 @@
 import google.genai as genai
 import google.genai.types as types
 import dotenv
+from pydantic import BaseModel
+from typing import TypeVar, Generic
 from typing import Type
+import json
 import os
 dotenv.load_dotenv()
 
+T = TypeVar('T')
 model = 'gemini-2.5-flash'
+
 class QueryGemini:
     """
     Class to handle queries to the Gemini API.
@@ -17,7 +22,7 @@ class QueryGemini:
         """
         self.client = genai.Client(api_key=api_key)
 
-    def query(self, prompt: str, responseDto: Type, logIdentifier: str) -> str:
+    def query(self, prompt: str, logIdentifier: str, responseSchema: T) -> T :
         """
         Send a query to the Gemini API and return the response.
 
@@ -26,17 +31,20 @@ class QueryGemini:
         :param logIdentifier: Identifier for logging purposes.
         :return: The response from the Gemini API.
         """
+        # assert((issubclass(responseSchema , BaseModel))), "responseSchema must be a Pydantic model type"
         # Placeholder for actual implementation
         try:
 
             response = self.client.models.generate_content(
                 model=model, 
                 contents=prompt,
-                # config=types.GenerateContentConfig(
-                #      responseSchema=responseSchema,
-                # ),
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=responseSchema,
+                ),
             )
-            return responseDto(response.model_dump())
+            return responseSchema.model_validate(json.loads(response.text)) 
+            
         except Exception as e:
             print(f"Error in QueryGemini.query: {e}")
             return ""  

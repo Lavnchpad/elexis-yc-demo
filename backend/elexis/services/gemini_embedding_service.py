@@ -37,7 +37,6 @@ def generate_embedding(text: str) -> list:
             # config=types.EmbedContentConfig(task_type='RETRIEVAL_DOCUMENT'),
         )
         # print("Embeddings goes here bro", len(embedding_result['embedding']))
-        print('result kya hain bhai', len(embedding_result.embeddings[0].values))
         embedding = embedding_result.embeddings[0].values
         if not embedding or len(embedding) != 768:
             raise ValueError("Invalid embedding response from Gemini API: Dimension mismatch or empty.")
