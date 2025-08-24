@@ -15,9 +15,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions ,JobMatchingResumeScore, JobRequirementEvaluation, JobQuestions
+from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions ,JobMatchingResumeScore, JobRequirementEvaluation, JobQuestions, SuggestedCandidates
 from elexis.utils.general import getHumanReadableTime
 from .serializers import (
+    SuggestedCandidatesSerializer,
     RecruiterSerializer,
     CandidateSerializer,
     JobSerializer,
@@ -867,3 +868,70 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
         {"detail": f"Internal server error: {str(e)}"},
         status=status.HTTP_500_INTERNAL_SERVER_ERROR
     )
+        
+
+class SuggestedCandidatesViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for suggested candidates based on job matching scores.
+    """
+
+    queryset = SuggestedCandidates.objects.all()
+    serializer_class = SuggestedCandidatesSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        job_id = self.request.query_params.get('job_id', None)
+        if not job_id:
+            # Filter by job_id if provided
+            raise ValueError("job_id query parameter is required.")
+        # Filter queryset based on job_id
+        queryset = SuggestedCandidates.objects.filter(job_id=job_id).prefetch_related('candidate', 'job', 'aiResumeMatchingResponse')
+        return queryset
+    
+
+    def list(self, request, *args, **kwargs):
+        job_id = request.query_params.get('job_id', None)
+        if not job_id:
+            return Response({"error": "job_id query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+        if not data:
+            # run async job which invlves getting top 5 resumes for current Job
+            # generate aiEvaluation for the matching score of those resumes 
+            job = Job.objects.get(id=job_id, organization=self.request.user.organization)
+            jdEmbeddingId = job.job_description_embedding_id
+            print("Job Description Embedding ID", jdEmbeddingId)
+            if not jdEmbeddingId:
+                return Response({"error": "Job description embedding not found."}, status=status.HTTP_404_NOT_FOUND)
+            jdVectors = pinecone_client.fetch_vectors(ids=[job.job_description_embedding_id], namespace= f"{job.organization.org_name}_{job.organization.id}")
+            print("Job Description Vectors", jdVectors)
+            jdVector = jdVectors.get(job.job_description_embedding_id, None)
+
+            if not jdVector:
+                return Response({"error": "Job description embedding not found."}, status=status.HTTP_404_NOT_FOUND)
+            alreadyPresentCandidates = list(JobMatchingResumeScore.objects.filter(job=job).values_list('candidate__resume_embedding_id', flat=True))
+            print("Already Present Candidates", alreadyPresentCandidates)
+            matchingResumes = pinecone_client.query_vectors(vector=jdVector , top_k=5, namespace= f"{job.organization.org_name}_{job.organization.id}", filters={
+                "type":"resume",
+                "resume_id": {"$nin": alreadyPresentCandidates}
+            })
+            print("top_5_vectors", len(matchingResumes))
+            for i in range(len(matchingResumes)):
+                add_message_to_sqs_queue(type='generate_candidate_suggestion', data={
+                    "jobId": job_id,
+                    "candidateId": matchingResumes[i].get('id').split("resume-")[1]
+                })
+            # [{'id': 'resume-ac81b92e-ec75-40d6-a941-dcc2bbc30c8a', 'score': 0.676782429, 'metadata': {'candidate_email': 'ronihere4work@gmail.com', 'candidate_name': 'Java Selenium Roni 19', 'resume_id': 'resume-ac81b92e-ec75-40d6-a941-dcc2bbc30c8a', 'type': 'resume'}}, {'id': 'resume-a54ae476-a728-4641-b5b1-66ed47d607bb', 'score': 0.676782429, 'metadata': {'candidate_email': 'ronihere4work@gmail.com', 'candidate_name': 'Java Selenium Roni 17', 'resume_id': 'resume-a54ae476-a728-4641-b5b1-66ed47d607bb', 'type': 'resume'}}, {'id': 'resume-c4b43538-25cb-4c0d-b5fd-67fb9560bbb0', 'score': 0.676782429, 'metadata': {'candidate_email': 'ronihere4work@gmail.com', 'candidate_name': 'Java Selenium Roni 18', 'resume_id': 'resume-c4b43538-25cb-4c0d-b5fd-67fb9560bbb0', 'type': 'resume'}}, {'id': 'resume-9669b808-3e4e-4c22-84a8-8795468463c7', 'score': 0.676782429, 'metadata': {'candidate_email': 'ronihere4work@gmail.com', 'candidate_name': 'Java Selenium Roni 21', 'resume_id': 'resume-9669b808-3e4e-4c22-84a8-8795468463c7', 'type': 'resume'}}, {'id': 'resume-aa491636-080f-4c99-91c9-d91c5cbe474c', 'score': 0.676782429, 'metadata': {'candidate_email': 'ronihere4work@gmail.com', 'candidate_name': 'Java Selenium Roni 25', 'resume_id': 'resume-aa491636-080f-4c99-91c9-d91c5cbe474c', 'type': 'resume'}}]
+            # add_message_to_sqs_queue(type='suggested_candidates', data={
+            #     "jobId": job_id,
+            #     "top5Vectors": top_5_vectors,
+            # })
+
+            return Response(
+                {"message": "No suggested candidates found. Running background job to fetch suggestions."},
+                status=status.HTTP_200_OK
+            )
+        return Response(serializer.data)
+    

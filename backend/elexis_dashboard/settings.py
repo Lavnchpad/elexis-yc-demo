@@ -261,4 +261,4 @@ PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
 PINECONE_REGION = os.environ.get('PINECONE_REGION','us-east-1')
 PINECONE_CLOUD= os.environ.get('PINECONE_CLOUD','aws')
 PINECONE_ENVIRONMENT = os.environ.get('PINECONE_ENVIRONMENT') # e.g., 'gcp-starter' or 'us-west1-gcp'
-PINECONE_INDEX_NAME = os.environ.get('PINECONE_INDEX_NAME', 'resume-job-embeddings-index')
+PINECONE_INDEX_NAME = os.environ.get('PINECONE_INDEX_NAME', 'talk-to-resume')  # Default index name if not set
