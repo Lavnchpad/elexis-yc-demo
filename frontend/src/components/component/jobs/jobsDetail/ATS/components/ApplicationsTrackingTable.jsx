@@ -64,7 +64,19 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
                     <div className='space-y-4'>
                         {
                             applications.map((applicant) => (
-                                <AiEvaluationCard candidateData={{ ...applicant.candidate, ...applicant?.ai_evaluations[0] }} key={applicant?.ai_evaluations[0]?.id} />
+                                <AiEvaluationCard successHandler={async (applicant) => {
+                                    await Promise.allSettled([axios.patch(`/job-ats/${applicant.id}/`, {
+                                        is_archived: true,
+                                    }),
+                                    axios.post('/job-ats/', {
+                                        job_id: jobData.id,
+                                        candidate_id: applicant.candidate.id,
+                                        stage: 'selected_for_interview',
+                                        score: applicant.score,
+                                        ranking: applicant.ranking
+                                    })]);
+                                    refetchApplications()
+                                }} archieveApplicantHandler={archieveApplicantHandler} applicant={applicant} candidateData={{ ...applicant.candidate, ...applicant?.ai_evaluations[0] }} key={applicant?.ai_evaluations[0]?.id} />
                             ))
                         }
                     </div>
@@ -86,7 +98,7 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
                             {
                                 applications?.map((applicant) => {
                                     return (
-                                        <ApplicantRow loading={loading} refetch={refetchApplications} applicationtype={applicationtype} archieveApplicantHandler={archieveApplicantHandler} addInterviewHandler={addInterviewHandler} applicant={applicant} button1Text={button1Text} title={title} jobData={jobData} />
+                                        <ApplicantRow key={applicant.id} loading={loading} refetch={refetchApplications} applicationtype={applicationtype} archieveApplicantHandler={archieveApplicantHandler} addInterviewHandler={addInterviewHandler} applicant={applicant} button1Text={button1Text} title={title} jobData={jobData} />
                                     )
                                 })
                             }
@@ -110,7 +122,7 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
                     <TableHead className="text-center">Phone</TableHead>
                     <TableHead className="text-center">Added By</TableHead>
                     <TableHead className="text-center">Added At</TableHead>
-                    <TableHead className="text-center">AI Rankings </TableHead>
+                    {/* <TableHead className="text-center">AI Rankings </TableHead> */}
                     <TableHead className="text-center">Action</TableHead>
                 </TableRow>
             </TableHeader>
@@ -194,9 +206,9 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
             <TableCell className="text-center">
                 {applicant.created_date ? new Date(applicant.created_date).toLocaleString() : 'N/A'}
             </TableCell>
-            <TableCell className="text-center">
+            {/* <TableCell className="text-center">
                 {applicant?.ranking}
-            </TableCell>
+            </TableCell> */}
             <TableCell className="text-center flex fle-wrap justify-center gap-2">
                 {/* for scheduled_interview , this button will act like reschedule button */}
                 {/* for completed intreview , this button will act like archieve the completed row and schedule one */}
