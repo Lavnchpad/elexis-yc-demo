@@ -761,7 +761,7 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = JobMatchingResumeScore.objects.all()
+        queryset = JobMatchingResumeScore.objects.filter(job__organization = self.request.user.organization)
         jobId = self.request.query_params.get('job_id', '')
         isArchived = self.request.query_params.get('is_archived', 'false').lower() == 'true'
         stage = self.request.query_params.get('stage', '')
