@@ -76,6 +76,7 @@ class ECSAIBotTaskService:
     """
     cluster_arn = settings.BOT_CLUSTER_ARN
     task_definition_arn = settings.BOT_TASK_DEFINITION_ARN
+    ecs_scheduler_role_arn = settings.ECS_SCHEDULER_ROLE_ARN
     def __init__(self):
         self.ecs_client = boto3.client(
             'ecs',
@@ -144,6 +145,7 @@ class ECSAIBotTaskService:
             cluster=cluster
         )
         return response
+
     
     def schedule_task(self, interview_context: ECSInterviewTaskContext, schedule_time: datetime.datetime):
         """
