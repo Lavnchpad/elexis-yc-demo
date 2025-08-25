@@ -15,7 +15,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions ,JobMatchingResumeScore, JobRequirementEvaluation, JobQuestions, SuggestedCandidates
+from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions ,JobMatchingResumeScore, JobRequirementEvaluation, JobQuestions, SuggestedCandidates, AiJdResumeMatchingResponse
 from elexis.utils.general import getHumanReadableTime
 from .serializers import (
     SuggestedCandidatesSerializer,
@@ -813,7 +813,6 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
                     {"detail": "Request data must be a list of objects for bulk creation."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
             # Validate the incoming list of data using the serializer with many=True
             serializer = self.get_serializer(data=request.data, many=True)
             serializer.is_valid(raise_exception=True)
@@ -843,20 +842,33 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
                 # add these score calculation to queue and process later
                 def after_commit():
                     jobIds = set()
-                    for item in response_serializer.data :
+                    for index, item in enumerate(response_serializer.data):
                         # calculate score via Vector db
                         print(f"bulk update: job_resume_matching_score added to Queue for JobMatchingResumeScore : {item['id']}")
                         add_message_to_sqs_queue(type='job_resume_matching_score',data ={
                             "id": item["id"]
                         })
+
+
                         # get AI opinion on matching
-                        print(f"bulk update : ai_job_resume_evaluation added to Queue for JobMatchingResumeScore : {item['id']}")
-                        add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
-                            "id": item["id"],
+                        # if AiEvaluationId is present , we will not put a message in queue to generate it , we will just add the JobResumeMatchingScoreId to that AiEvaluation
+                        AiJdResumeMatchingResponseId = request.data[index].get('aiJdResumeMatchingEvaluationId', None)
+                        AiJdResumeMatchingResponseInstance = AiJdResumeMatchingResponse.objects.get(id=AiJdResumeMatchingResponseId) if AiJdResumeMatchingResponseId else None
+                        if AiJdResumeMatchingResponseInstance:
+                            job_resume_score_instance = JobMatchingResumeScore.objects.get(id=item["id"])
+                            AiJdResumeMatchingResponseInstance.job_matching_resume_score = job_resume_score_instance
+                            AiJdResumeMatchingResponseInstance.save(update_fields=['job_matching_resume_score'])
+                            print(f"bulk update method: aiJdResumeMatchingEvaluationId {AiJdResumeMatchingResponseId} updated with JobMatchingResumeScore : {item['id']}")
+                        else:
+                            print(f"bulk update : ai_job_resume_evaluation added to Queue for JobMatchingResumeScore : {item['id']}")
+                            add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
+                                "id": item["id"],
                         })
+                            
+
+
                         jobIds.add(item['job'])
                     if jobIds:
-                        print('JobIds', jobIds)
                         for item in jobIds:
                             add_message_to_sqs_queue(type='rank-resumes', data ={
                                     "jobId":str(item)

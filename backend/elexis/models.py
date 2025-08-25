@@ -387,20 +387,17 @@ class AiJdResumeMatchingResponse(BaseModel):
         DirectComparison, on_delete=models.CASCADE, related_name="ai_evaluations"
     )
 
-    def __str__(self):
-        return f"{self.job_matching_resume_score.job.job_name} - {self.job_matching_resume_score.candidate.name}"
-
 
 class SuggestedCandidates(BaseModel):
     STAGES = [
-        ('archive', 'Archive'),
+        ('archived', 'Archived'),
         ('default', 'Default'),
     ]
-    candidate = models.OneToOneField(
+    candidate = models.ForeignKey(
         Candidate, on_delete=models.CASCADE, related_name="suggested_candidates"
     )
 
-    job = models.OneToOneField(
+    job = models.ForeignKey(
         Job, on_delete=models.CASCADE, related_name="suggested_candidates"
     )
 

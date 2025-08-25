@@ -23,7 +23,7 @@ router.register(r'interviews', InterviewViewSet)
 router.register(r'interview-questions', InterviewQuestionsViewSet)
 router.register(r'job-questions', JobQuestionsViewSet)
 router.register(r'job-ats', JobMatchingResumeScoreViewSet)
-router.register(r'suggested-canidates',SuggestedCandidatesViewSet )
+router.register(r'suggested-candidates',SuggestedCandidatesViewSet )
 
 
 urlpatterns = [

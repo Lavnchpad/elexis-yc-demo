@@ -28,7 +28,7 @@ MEDIA_URL = '/media/'
 SECRET_KEY = os.getenv('SECRET_KEY','django-insecure-_-yyl-z=dxq(p4h_jjd9*kml2t0r9r)^8=#7_lm=i*m^&m-0%$')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True if os.getenv('DEBUG', 'False') == 'True' else False
 
 ALLOWED_HOSTS = ['*']
 
@@ -255,7 +255,6 @@ BOT_CLUSTER_ARN = os.getenv("BOT_CLUSTER_ARN", "arn:aws:ecs:us-west-1:9054183507
 
 DAILY_API_PATH = os.getenv("DAILY_API_PATH", "api.daily.co/v1")
 DAILY_API_KEY = os.getenv("DAILY_API_KEY")
-
 
 PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
 PINECONE_REGION = os.environ.get('PINECONE_REGION','us-east-1')
