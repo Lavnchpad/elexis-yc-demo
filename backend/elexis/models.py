@@ -327,3 +327,63 @@ class InterviewQuestions(BaseModel):
     )
     def __str__(self):
         return f"Question for Interview {self.interview.id}: {self.question}"
+
+class BackgroundAnalysis(BaseModel):
+    industryContext = models.TextField(null=True, blank=True)
+    companyBackground = models.TextField(null=True, blank=True)
+    relevance = models.TextField(null=True, blank=True)
+
+class RoleFitAnalysis(BaseModel):
+    jobTitleMatch = models.TextField( null=True, blank=True)
+    industryAlignment = models.TextField(null=True, blank=True)
+    experienceLevel = models.TextField( null=True, blank=True)
+    keySkills = models.JSONField(default=list, blank=True)  # or a separate Skill model if you want joins
+
+class GapsAndImprovements(BaseModel):
+    missingSkills = models.JSONField(default=list, blank=True)
+    suggestedImprovements = models.JSONField(default=list, blank=True)
+
+class HiringSignals(BaseModel):
+    resumeQuality = models.TextField( null=True, blank=True)
+    careerTrajectory = models.TextField( null=True, blank=True)
+    prestigeFactors = models.TextField( null=True, blank=True)
+    transitionEase = models.TextField(null=True, blank=True)
+
+
+class Recommendation(BaseModel):
+    overallRecommendation = models.CharField( null=True, blank=True)
+    nextSteps = models.JSONField(default=list, blank=True)
+
+class DirectComparison(BaseModel):
+    relevantSections = models.JSONField(default=list, blank=True)
+    missingRequirements = models.JSONField(default=list, blank=True)
+
+
+class AiJdResumeMatchingResponse(BaseModel):
+    job_matching_resume_score = models.ForeignKey(
+         JobMatchingResumeScore, on_delete=models.CASCADE, related_name="ai_evaluations"
+     )
+    roleFitScore = models.FloatField(default=0)
+
+    backgroundAnalysis = models.OneToOneField(
+        BackgroundAnalysis, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+    roleFitAnalysis = models.OneToOneField(
+        RoleFitAnalysis, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+    gapsAndImprovements = models.OneToOneField(
+        GapsAndImprovements, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+    hiringSignals = models.OneToOneField(
+        HiringSignals, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+    recommendation = models.OneToOneField(
+        Recommendation, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+    directComparison = models.OneToOneField(
+        DirectComparison, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+
+    def __str__(self):
+        return f"{self.job_matching_resume_score.id}"
+

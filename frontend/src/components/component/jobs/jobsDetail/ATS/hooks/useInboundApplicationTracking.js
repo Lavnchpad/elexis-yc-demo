@@ -20,7 +20,19 @@ export default function useInboundApplicationTracking({ job_id, type }) {
                     stage: type,
                 }
             });
-            setApplications(response.data || []);
+            const data = response.data || [];
+            if (type === 'candidate_onboard') {
+                data?.sort((a, b) =>
+                    b?.ai_evaluations[0]?.roleFitScore - a?.ai_evaluations[0]?.roleFitScore
+                );
+            } else {
+                data?.sort((a, b) => {
+                    const aDate = new Date(a?.created_date);
+                    const bDate = new Date(b?.created_date);
+                    return bDate - aDate; // Sort by created_at in descending order
+                });
+            }
+            setApplications(data || []);
         } catch (error) {
             console.error('Error fetching inbound applications:', error);
         } finally {

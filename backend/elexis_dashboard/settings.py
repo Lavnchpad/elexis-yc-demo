@@ -28,7 +28,7 @@ MEDIA_URL = '/media/'
 SECRET_KEY = os.getenv('SECRET_KEY','django-insecure-_-yyl-z=dxq(p4h_jjd9*kml2t0r9r)^8=#7_lm=i*m^&m-0%$')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'storages',
 ]
 MIDDLEWARE = [
+    'django.middleware.gzip.GZipMiddleware',
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',

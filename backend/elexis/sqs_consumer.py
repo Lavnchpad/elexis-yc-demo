@@ -1,13 +1,16 @@
 from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementEvaluation, JobMatchingResumeScore, Job, Candidate
 from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3, put_dict_as_json_to_s3
-from elexis.utils.summary_generation import generate_summary, experience_information_generation
-from elexis.serializers import JobRequirementSerializer
+from elexis.utils.summary_generation import generate_summary, experience_information_generation, extract_text_from_pdf
+from elexis.serializers import JobRequirementSerializer, AiJdResumeMatchingResponseSerializer
 from django.db import transaction
 from elexis.utils.convert_transcript_format import convert
+from elexis.dto.Ai_JobResume_Matching_Evaluation_Dto import AiJdResumeMatchingResponse
 import boto3
 import json
 import time
 from .services.pinecone_service import pinecone_client
+from elexis.services.QueryGemini import GeminiClient
+from elexis.prompts.jobMatchingResume import getJobResumeMatchingPrompt
 from dotenv import load_dotenv
 import os
 import traceback
@@ -77,7 +80,6 @@ def start_sqs_consumer():
             for message in messages:
                 message_body = message['Body']
                 receipt_handle = message['ReceiptHandle']
-
                 process_message(message_body)
 
                 # Delete the message from the queue after processing
@@ -121,11 +123,20 @@ def process_message(message_body):
                 
                 
         elif type ==  'rank-resumes':
+            print('Ranking resumes, SQS consumer.py')
             jobId = message['data']['jobId']
             if not jobId:
                 print(f"SQS Consumer ::: Process message. type: {type} ::: message: {message} error: no JobId found")
                 return
             print('record',reRankResumes(jobId=jobId))
+            return
+        elif type == 'ai_job_resume_evaluation':
+            print(f" ai_job_resume_evaluation SQS_Consumer :: process_message:: ",  message)
+            jobResumeMatchingScoreId = message["data"]["id"]
+            if not jobResumeMatchingScoreId:
+                print(f"SQS Consumer ::: Process message. type: {type} ::: message: {message} error: no JobResumeMatchingScoreId found")
+                return
+            evaluateJobResumeMatchingByAi(jobResumeMatchingScoreId, type=type)
             return
         # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://bohot-wickets.com"}
         # {"type":"proctor","video":"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4","room_url":"https://google.com"}
@@ -293,3 +304,42 @@ def reRankResumes(jobId: str):
     except Exception as e:
         print('Error ::: SQS consumer -> reRankResumes', e)
         raise 
+
+
+def evaluateJobResumeMatchingByAi(jobResumeMatchingScoreId: str, type: str):
+    try:
+        jobResumeMatchingScore = JobMatchingResumeScore.objects.get(id=jobResumeMatchingScoreId)
+        if not jobResumeMatchingScore:
+            print(f"SQS Consumer, Async Job :{type} JobResumeMatchingScore with ID {jobResumeMatchingScoreId} not found.")
+            return
+        job = jobResumeMatchingScore.job
+        candidate = jobResumeMatchingScore.candidate
+        if not job or not candidate:
+            print(f"Job or Candidate not found for JobResumeMatchingScore ID: {jobResumeMatchingScoreId}")
+            return
+        # Prepare the context for AI evaluation
+        resumeContext = extract_text_from_pdf(candidate.resume.url) if candidate.resume else ""
+        jobContext = job.job_description if job.job_description else ""
+        prompt = getJobResumeMatchingPrompt(aditionalContext='', jobContext=jobContext, resumeContext=resumeContext)
+        aiEvaluationResponseDict =GeminiClient.query(
+            prompt=prompt,
+            responseSchema= AiJdResumeMatchingResponse,
+            logIdentifier=f"SQS Consumer, Async Job :{type} JobResumeMatchingByAI ID: {jobResumeMatchingScoreId}, "
+        )
+    
+        # If aiEvaluationResponse is a string (JSON)
+        serializer_data =aiEvaluationResponseDict.model_dump()
+        serializer = AiJdResumeMatchingResponseSerializer(data={
+            "job_matching_resume_score": jobResumeMatchingScore.id,
+            **serializer_data})
+        if serializer.is_valid():
+            serializer.save()
+            print(f"Ai Evaluation for JobResumeMatchingScoreRecord : {jobResumeMatchingScore.id}  Saved successfully")
+        else:
+            print(f"Error in Ai Evaluation for JobResumeMatchingScoreRecord :{jobResumeMatchingScore.id}, error: {serializer.errors}", )
+        
+        return 
+    except Exception as e:
+        print(f"SQS Consumer, Async Job :{type} Error evaluating JobResumeMatchingByAI: {e}")
+        traceback.print_exc()
+        return ''
