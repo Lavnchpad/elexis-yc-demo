@@ -170,7 +170,7 @@ def generate_summary(transcript_data, requirements): # requirements stands for J
 def experience_information_generation(signed_url):
     response = requests.get(signed_url)
     if response.status_code != 200:
-        logger.error("Failed to download file from signed URL")
+        print("experience_information_generation::: Failed to download file from signed URL")
         return None
 
     pdf_blob = BlobDict(data=response.content, mime_type="application/pdf")
@@ -203,7 +203,7 @@ def resume_summary_generator(signed_url):
         return None
     response = requests.get(signed_url)
     if response.status_code != 200:
-        logger.error("Failed to download file from signed URL", signed_url)
+        print("resume_summary_generator:::  Failed to download file from signed URL", signed_url)
         return None
 
     pdf_blob = BlobDict(data=response.content, mime_type="application/pdf")
@@ -246,7 +246,7 @@ def extract_text_from_pdf(signed_url: str) -> str:
         return ""
     response = requests.get(signed_url)
     if response.status_code != 200:
-        print("Failed to download file from signed URL", signed_url)
+        print("extract_text_from_pdf ::: Failed to download file from signed URL", signed_url)
         return None
 
     pdf_blob = BlobDict(data=response.content, mime_type="application/pdf")

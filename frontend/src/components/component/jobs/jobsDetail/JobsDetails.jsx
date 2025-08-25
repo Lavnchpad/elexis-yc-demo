@@ -5,7 +5,6 @@ import axios from "../../../../utils/api";
 import { CircleArrowLeft, Edit, Plus } from "lucide-react";
 import { JobsEvaluationTable } from "@/page/components/JobsEvaluationTable";
 import ErrorBoundary from "@/utils/ErrorBoundary";
-import JobsQuestions from "./JobsQuestions";
 import Tooltip from "@/page/components/ToolTipCustom";
 import EditJobForm from "./EditJobForm";
 import ScheduledInterviews from "./ScheduledInterview";
@@ -13,6 +12,7 @@ import CollapsibleSection from "../../resuable/CollapsibleSection";
 import Ats from "./ATS/Ats";
 import AddCandidate from "../../candidate/AddCandidate";
 import { Button } from "@/components/ui/button";
+import SuggestedCandidates from "./SuggestedCandidates";
 
 const JobDetails = () => {
   const navigate = useNavigate();
@@ -117,6 +117,12 @@ const JobDetails = () => {
               >
                 Candidate Evaluation
               </TabsTrigger>
+              <TabsTrigger
+                className="py-2 px-6 text-base bg-accentColor text-lightColor rounded-none rounded-tl-xl"
+                value="suggested-candidates"
+              >
+                Suggested Candidates
+              </TabsTrigger>
 
           </TabsList>
             <AddCandidate jobData={jobData} onCloseCb={() => setCandidateAdded(prev => !prev)}>
@@ -149,23 +155,7 @@ const JobDetails = () => {
                     </p>
                   </CollapsibleSection>
                 </div>
-                {/* <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
-                  <ErrorBoundary>
-                    <JobsEvaluationTable id={jobId} />
-                  </ErrorBoundary>
-                </div> */}
-                {/* <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
-                  <ErrorBoundary>
-                  <JobsQuestions
-                    job={jobData}
-                  />
-                  </ErrorBoundary>
-                </div> */}
-                {/* <div className="shadow-lg col-span-8 px-4 py-4 flex flex-col gap-y-4 rounded-md border">
-                  <ErrorBoundary>
-                    <ScheduledInterviews id={jobId} />
-                  </ErrorBoundary>
-                </div> */}
+
               </div>
             </div>
           </TabsContent>
@@ -188,10 +178,10 @@ const JobDetails = () => {
               </ErrorBoundary>
             </div>
           </TabsContent>
-          <TabsContent className="mt-0" value="job-questions">
+          <TabsContent className="mt-0" value="suggested-candidates">
             <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
               <ErrorBoundary>
-                <JobsQuestions defaultShow={true}
+                <SuggestedCandidates defaultShow={true}
                   job={jobData}
                 />
               </ErrorBoundary>

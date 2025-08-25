@@ -361,8 +361,11 @@ class DirectComparison(BaseModel):
 
 class AiJdResumeMatchingResponse(BaseModel):
     job_matching_resume_score = models.ForeignKey(
-         JobMatchingResumeScore, on_delete=models.CASCADE, related_name="ai_evaluations"
+         JobMatchingResumeScore, on_delete=models.CASCADE, related_name="ai_evaluations" , null=True, blank=True
      )
+    suggested_resumes = models.OneToOneField(
+        Candidate, on_delete=models.CASCADE, related_name="ai_evaluations", blank=True, null=True
+    )
     roleFitScore = models.FloatField(default=0)
 
     backgroundAnalysis = models.OneToOneField(
@@ -384,6 +387,29 @@ class AiJdResumeMatchingResponse(BaseModel):
         DirectComparison, on_delete=models.CASCADE, related_name="ai_evaluations"
     )
 
-    def __str__(self):
-        return f"{self.job_matching_resume_score.id}"
 
+class SuggestedCandidates(BaseModel):
+    STAGES = [
+        ('archived', 'Archived'),
+        ('default', 'Default'),
+    ]
+    candidate = models.ForeignKey(
+        Candidate, on_delete=models.CASCADE, related_name="suggested_candidates"
+    )
+
+    job = models.ForeignKey(
+        Job, on_delete=models.CASCADE, related_name="suggested_candidates"
+    )
+
+    aiResumeMatchingResponse = models.OneToOneField(
+        AiJdResumeMatchingResponse, on_delete=models.CASCADE, related_name="suggested_candidates", null=True, blank=True
+    )
+
+    stage = models.CharField(
+        max_length=50, choices=STAGES, default='default',
+        help_text="Current stage of the candidate in the Suggestion process"
+    )
+
+    def __str__(self):
+        return f"{self.job.job_name} - {self.candidate.name} - {self.aiResumeMatchingResponse.roleFitScore if self.aiResumeMatchingResponse else 'No AI Response'}"
+    
