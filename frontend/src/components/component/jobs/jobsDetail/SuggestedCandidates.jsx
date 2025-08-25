@@ -2,6 +2,7 @@ import axios from 'axioss';
 import React, { useEffect, useState } from 'react'
 import { AiEvaluationCard } from '../components/AiEvaluationCard';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 export default function SuggestedCandidates({ job }) {
     const [topCandidates, setTopCandidates] = useState([]);
@@ -30,9 +31,11 @@ export default function SuggestedCandidates({ job }) {
     return (
         <div>
             <h2 className='text-muted-foreground font-bold text-xl'>
-                Top Suggested Candidates for this Role
+                Top Candidates
             </h2>
+
             {
+                topCandidates?.length > 0 ? 
                 topCandidates.map((applicant) => (
                     <AiEvaluationCard successHandler={applicant.stage === 'archived' ? null : async (applicant) => {
                         //create a new JobResumeMatchingScore entry for this job 
@@ -64,6 +67,8 @@ export default function SuggestedCandidates({ job }) {
                         // refetchApplications()
                     }} archieveApplicantHandler={null} applicant={applicant} candidateData={{ ...applicant.candidate, ...applicant?.aiResumeMatchingResponse }} key={applicant?.id} />
                 ))
+                    :
+                    <p className='text-muted-foreground flex gap-2'> <Loader2 className='animate-spin' />Please comeback in sometime , we are preparing the top candidates for you.</p>
             }
         </div>
     )
