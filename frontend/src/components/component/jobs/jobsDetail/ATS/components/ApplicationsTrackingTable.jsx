@@ -90,7 +90,7 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
                                 <TableHead className="text-center">Phone</TableHead>
                                 <TableHead className="text-center">Added By</TableHead>
                                 <TableHead className="text-center">Added At</TableHead>
-                                <TableHead className="text-center">AI Rankings </TableHead>
+                                {/* <TableHead className="text-center">AI Rankings </TableHead> */}
                                 <TableHead className="text-center">Action</TableHead>
                             </TableRow>
                         </TableHeader>
