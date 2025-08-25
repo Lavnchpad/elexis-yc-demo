@@ -15,6 +15,7 @@ import {
     Briefcase,
 } from "lucide-react";
 import CollapsibleSection from "../../resuable/CollapsibleSection";
+import { Button } from "@/components/ui/button";
 
 
 
@@ -34,7 +35,7 @@ const getRecommendationStatus = (recommendation) => {
     return { variant: "warning", icon: AlertTriangle };
 };
 
-export const AiEvaluationCard = ({ candidateData }) => {
+export const AiEvaluationCard = ({ candidateData, archieveApplicantHandler, successHandler, applicant }) => {
     const { roleFitScore, recommendation, name, phone_number, email, backgroundAnalysis, roleFitAnalysis, gapsAndImprovements, hiringSignals, directComparison } = candidateData;
     const scoreColor = getScoreColor(roleFitScore);
     const recommendationStatus = getRecommendationStatus(recommendation?.overallRecommendation);
@@ -72,6 +73,7 @@ export const AiEvaluationCard = ({ candidateData }) => {
                             </div>
                         </div>
                     </div>
+                    <div className="flex flex-col gap-4">
                     <div className="text-right space-y-2">
                         <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">Role Fit Score</span>
@@ -81,8 +83,18 @@ export const AiEvaluationCard = ({ candidateData }) => {
                         </div>
                         <Progress
                             value={roleFitScore}
-                            className="w-24 h-2"
-                        />
+                                className="w-24 h-2"
+                            />
+                    </div>
+
+                        <div className="flex gap-2">
+                            <Button size="sm" className='bg-gray-300 text-black hover:bg-gray-300 hover:scale-95' onClick={() => {
+                                successHandler(applicant)
+                            }}>ShortList</Button>
+                            <Button variant="secondary" size="sm" className='bg-red-400 text-black hover:bg-red-300 hover:scale-95' onClick={() => archieveApplicantHandler({ applicant })}>
+                                Archive
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </CardHeader>
@@ -99,19 +111,29 @@ export const AiEvaluationCard = ({ candidateData }) => {
                     <p className="text-sm text-muted-foreground mb-3">
                         {recommendation?.overallRecommendation}
                     </p>
-                    {recommendation?.nextSteps.length > 0 && (
-                        <div className="space-y-1">
-                            <p className="text-xs font-medium text-foreground">Next Steps:</p>
-                            <ul className="text-xs text-muted-foreground space-y-1">
-                                {recommendation?.nextSteps.map((step, index) => (
-                                    <li key={index} className="flex items-start gap-2">
-                                        <span className="text-primary">•</span>
-                                        {step}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
+
+                    <div>
+                        <h4 className="font-medium text-sm mb-2 text-foreground">Relevant Sections</h4>
+                        <ul className="text-sm text-muted-foreground space-y-2">
+                            {directComparison?.relevantSections.map((section, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                    <CheckCircle className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                                    {section}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-medium text-sm mb-2 text-foreground">Missing Requirements</h4>
+                        <ul className="text-sm text-muted-foreground space-y-2">
+                            {directComparison?.missingRequirements.map((requirement, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                    <XCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                                    {requirement}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
 
                 {/* Detailed Analysis */}
@@ -166,17 +188,6 @@ export const AiEvaluationCard = ({ candidateData }) => {
                                         ))}
                                     </div>
                                 </div>
-                            </AccordionContent>
-                        </AccordionItem>
-
-                        <AccordionItem value="gaps" className="border rounded-lg px-4">
-                            <AccordionTrigger className="hover:no-underline">
-                                <div className="flex items-center gap-2">
-                                    <AlertTriangle className="h-4 w-4 text-warning" />
-                                    <span className="font-medium">Gaps & Improvements</span>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="space-y-3 pb-4">
                                 <div>
                                     <h4 className="font-medium text-sm mb-2 text-foreground">Missing Skills</h4>
                                     <div className="flex flex-wrap gap-2">
@@ -186,17 +197,6 @@ export const AiEvaluationCard = ({ candidateData }) => {
                                             </Badge>
                                         ))}
                                     </div>
-                                </div>
-                                <div>
-                                    <h4 className="font-medium text-sm mb-2 text-foreground">Suggested Improvements</h4>
-                                    <ul className="text-sm text-muted-foreground space-y-2">
-                                        {gapsAndImprovements?.suggestedImprovements.map((improvement, index) => (
-                                            <li key={index} className="flex items-start gap-2">
-                                                <span className="text-primary">•</span>
-                                                {improvement}
-                                            </li>
-                                        ))}
-                                    </ul>
                                 </div>
                             </AccordionContent>
                         </AccordionItem>
@@ -228,38 +228,6 @@ export const AiEvaluationCard = ({ candidateData }) => {
                             </AccordionContent>
                         </AccordionItem>
 
-                        <AccordionItem value="comparison" className="border rounded-lg px-4">
-                            <AccordionTrigger className="hover:no-underline">
-                                <div className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-primary" />
-                                    <span className="font-medium">Direct Comparison</span>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="space-y-3 pb-4">
-                                <div>
-                                    <h4 className="font-medium text-sm mb-2 text-foreground">Relevant Sections</h4>
-                                    <ul className="text-sm text-muted-foreground space-y-2">
-                                        {directComparison?.relevantSections.map((section, index) => (
-                                            <li key={index} className="flex items-start gap-2">
-                                                <CheckCircle className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-                                                {section}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h4 className="font-medium text-sm mb-2 text-foreground">Missing Requirements</h4>
-                                    <ul className="text-sm text-muted-foreground space-y-2">
-                                        {directComparison?.missingRequirements.map((requirement, index) => (
-                                            <li key={index} className="flex items-start gap-2">
-                                                <XCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-                                                {requirement}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
                     </Accordion>
                 </CollapsibleSection>
 
