@@ -13,6 +13,7 @@ import Ats from "./ATS/Ats";
 import AddCandidate from "../../candidate/AddCandidate";
 import { Button } from "@/components/ui/button";
 import SuggestedCandidates from "./SuggestedCandidates";
+import JobsQuestions from "./JobsQuestions";
 
 const JobDetails = () => {
   const navigate = useNavigate();
@@ -164,6 +165,13 @@ const JobDetails = () => {
               <Ats jobData={jobData} key={candidateAdded} />
             </div>
           </TabsContent>
+           <TabsContent className="mt-0" value="job-questions">
+            <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
+              <ErrorBoundary>
+                <JobsQuestions defaultShow={true} job={jobData}/>
+              </ErrorBoundary>
+            </div>
+           </TabsContent>
           <TabsContent className="mt-0" value="candidate-evaluation">
             <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
               <ErrorBoundary>
