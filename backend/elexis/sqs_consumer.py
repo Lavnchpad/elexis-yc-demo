@@ -1,4 +1,4 @@
-from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementEvaluation, JobMatchingResumeScore, Job, Candidate
+from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementEvaluation, JobMatchingResumeScore, Job, Candidate, SuggestedCandidates
 from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3, put_dict_as_json_to_s3
 from elexis.utils.summary_generation import generate_summary, experience_information_generation, extract_text_from_pdf
 from elexis.serializers import JobRequirementSerializer, AiJdResumeMatchingResponseSerializer
@@ -137,6 +137,15 @@ def process_message(message_body):
                 print(f"SQS Consumer ::: Process message. type: {type} ::: message: {message} error: no JobResumeMatchingScoreId found")
                 return
             evaluateJobResumeMatchingByAi(jobResumeMatchingScoreId, type=type)
+            return
+        elif type == "generate_candidate_suggestion":
+            print(f"generate_candidate_suggestion SQS_Consumer :: process_message:: ",  message)
+            jobId = message["data"]["jobId"]
+            candidateId = message["data"]["candidateId"]
+            if not jobId or not candidateId:
+                print(f"SQS Consumer ::: Process message. type: {type} ::: message: {message} error: no JobId or candidateId in message")
+                return
+            generate_candidate_suggestions(jobId, candidateId)
             return
         # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://bohot-wickets.com"}
         # {"type":"proctor","video":"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4","room_url":"https://google.com"}
@@ -320,7 +329,7 @@ def evaluateJobResumeMatchingByAi(jobResumeMatchingScoreId: str, type: str):
         # Prepare the context for AI evaluation
         resumeContext = extract_text_from_pdf(candidate.resume.url) if candidate.resume else ""
         jobContext = job.job_description if job.job_description else ""
-        prompt = getJobResumeMatchingPrompt(aditionalContext='', jobContext=jobContext, resumeContext=resumeContext)
+        prompt = getJobResumeMatchingPrompt(aditionalContext=job.job_name, jobContext=jobContext, resumeContext=resumeContext)
         aiEvaluationResponseDict =GeminiClient.query(
             prompt=prompt,
             responseSchema= AiJdResumeMatchingResponse,
@@ -341,5 +350,46 @@ def evaluateJobResumeMatchingByAi(jobResumeMatchingScoreId: str, type: str):
         return 
     except Exception as e:
         print(f"SQS Consumer, Async Job :{type} Error evaluating JobResumeMatchingByAI: {e}")
+        traceback.print_exc()
+        return ''
+
+def generate_candidate_suggestions(jobId: str , candidateId: str):
+    try:
+        job = Job.objects.get(id=jobId)
+        candidate = Candidate.objects.get(id=candidateId)
+
+        if not job or not candidate:
+            print(f"Job or Candidate not found for Job ID: {jobId} or Candidate ID: {candidateId}")
+            return
+
+        # Prepare the context for AI evaluation
+        resumeContext = extract_text_from_pdf(candidate.resume.url) if candidate.resume else ""
+        jobContext = job.job_description if job.job_description else ""
+        prompt = getJobResumeMatchingPrompt(aditionalContext=job.job_name, jobContext=jobContext, resumeContext=resumeContext)
+
+        aiEvaluationResponseDict = GeminiClient.query(
+            prompt=prompt,
+            responseSchema= AiJdResumeMatchingResponse,
+            logIdentifier=f"SQS Consumer, Async Job :generate_candidate_suggestions Job ID: {jobId}, Candidate ID: {candidateId}, "
+        )
+
+
+        serializer_data = aiEvaluationResponseDict.model_dump()
+        serializer = AiJdResumeMatchingResponseSerializer(data={
+            "job_matching_resume_score": None,  # No score associated with this suggestion
+            **serializer_data})
+        
+        if serializer.is_valid():
+            instance = serializer.save()
+            SuggestedCandidates.objects.create(
+                job=job,
+                candidate=candidate,
+                aiResumeMatchingResponse= instance
+            )
+            print(f"Candidate suggestions for Job ID: {jobId} and Candidate ID: {candidateId} saved successfully.")
+        else:
+            print(f"Error in saving candidate suggestions for Job ID: {jobId} and Candidate ID: {candidateId}, error: {serializer.errors}")
+    except Exception as e:
+        print(f"SQS Consumer, Async Job :generate_candidate_suggestions Error generating candidate suggestions: {e}")
         traceback.print_exc()
         return ''

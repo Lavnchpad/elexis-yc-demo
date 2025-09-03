@@ -12,6 +12,7 @@ from .views import (
     InterviewQuestionsViewSet,
     JobQuestionsViewSet,
     JobMatchingResumeScoreViewSet,
+    SuggestedCandidatesViewSet,
 )
 
 router = DefaultRouter()
@@ -22,6 +23,7 @@ router.register(r'interviews', InterviewViewSet)
 router.register(r'interview-questions', InterviewQuestionsViewSet)
 router.register(r'job-questions', JobQuestionsViewSet)
 router.register(r'job-ats', JobMatchingResumeScoreViewSet)
+router.register(r'suggested-candidates',SuggestedCandidatesViewSet )
 
 
 urlpatterns = [

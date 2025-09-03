@@ -88,12 +88,17 @@ export const AiEvaluationCard = ({ candidateData, archieveApplicantHandler, succ
                     </div>
 
                         <div className="flex gap-2">
-                            <Button size="sm" className='bg-gray-300 text-black hover:bg-gray-300 hover:scale-95' onClick={() => {
+                            {successHandler ? <Button size="sm" className='bg-gray-300 text-black hover:bg-gray-300 hover:scale-95' onClick={() => {
                                 successHandler(applicant)
                             }}>ShortList</Button>
-                            <Button variant="secondary" size="sm" className='bg-red-400 text-black hover:bg-red-300 hover:scale-95' onClick={() => archieveApplicantHandler({ applicant })}>
+                                :
+                                <Badge variant="secondary"
+                                    className="bg-green-500 text-white dark:bg-blue-600">Added to the pipeline</Badge>
+                            }
+                            {archieveApplicantHandler && <Button variant="secondary" size="sm" className='bg-red-400 text-black hover:bg-red-300 hover:scale-95' onClick={() => archieveApplicantHandler({ applicant })}>
                                 Archive
                             </Button>
+                            }
                         </div>
                     </div>
                 </div>
