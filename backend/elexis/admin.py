@@ -1,6 +1,11 @@
 # core/admin.py
 from django.contrib import admin
-from .models import Recruiter, Candidate, Job, Organization, Interview, Snapshots, JobRequirement, JobRequirementEvaluation, MaintaineceWindow, JobQuestions , InterviewQuestions
+from .models import ( Recruiter, Candidate, Job, Organization,JobMatchingResumeScore, 
+    Interview, Snapshots, JobRequirement, 
+    JobRequirementEvaluation, MaintaineceWindow, JobQuestions , InterviewQuestions
+    , AiJdResumeMatchingResponse, BackgroundAnalysis, RoleFitAnalysis,
+    GapsAndImprovements, HiringSignals, Recommendation, DirectComparison, SuggestedCandidates
+    )
 from django import forms
 from django.contrib.auth.admin import UserAdmin
 
@@ -61,3 +66,12 @@ admin.site.register(JobRequirementEvaluation,ShowAllFieldsAdmin)
 admin.site.register(MaintaineceWindow, ShowAllFieldsAdmin)
 admin.site.register(JobQuestions, ShowAllFieldsAdmin)
 admin.site.register(InterviewQuestions, ShowAllFieldsAdmin)
+admin.site.register(JobMatchingResumeScore, ShowAllFieldsAdmin)
+admin.site.register(AiJdResumeMatchingResponse , ShowAllFieldsAdmin)
+admin.site.register(BackgroundAnalysis, ShowAllFieldsAdmin)
+admin.site.register(RoleFitAnalysis, ShowAllFieldsAdmin)
+admin.site.register(GapsAndImprovements, ShowAllFieldsAdmin)
+admin.site.register(HiringSignals, ShowAllFieldsAdmin)
+admin.site.register(Recommendation, ShowAllFieldsAdmin)
+admin.site.register(DirectComparison, ShowAllFieldsAdmin)
+admin.site.register(SuggestedCandidates, ShowAllFieldsAdmin)

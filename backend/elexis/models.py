@@ -101,7 +101,10 @@ class Candidate(BaseModel):
     profile_photo = models.ImageField(upload_to="profile_photos", blank=True, null=True)
     applied_for = models.CharField(max_length=100, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-
+    resume_embedding_id = models.CharField(
+        max_length=255, blank=True, null=True,
+        help_text="ID of the resume embedding in the vector database."
+    )
     def __str__(self):
         return self.name
 class Job(BaseModel):
@@ -113,6 +116,10 @@ class Job(BaseModel):
     )
     job_name = models.CharField(max_length=255)
     job_description = models.TextField()
+    job_description_embedding_id = models.CharField(
+        max_length=255, blank=True, null=True,
+        help_text="ID of the job description embedding in the vector database."
+    )
     additional_data = models.TextField(blank=True)
     location = models.CharField(max_length=255, blank=True)
     min_ctc = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
@@ -130,11 +137,64 @@ class Job(BaseModel):
         max_length=255, # Increased max_length to safely store multiple languages
         default="english",
         help_text="Comma-separated list of allowed interview languages (e.g., 'english,hindi')."
-    )
+    ) 
+
+    class Meta:
+        ordering = ['-created_date'] 
     def __str__(self):
         return self.job_name
     
+class JobMatchingResumeScore(BaseModel):
+    """
+    Candiates who are associated with a job, their progress(in the interview stages) is visible here with resume matching score
+    """
+    STAGES = [
+        ('candidate_onboard', 'Onboard'),
+        ('selected_for_interview', 'Selected for Interview'),
+        ('scheduled_interview', 'Interview Scheduled'),
+        ('completed_interview', 'Interview Completed'),
+    ]
+    job = models.ForeignKey(
+        Job, on_delete=models.CASCADE, related_name="matching_resumes",blank=False, null=False
+    )
+    candidate = models.ForeignKey(
+        Candidate, on_delete=models.CASCADE, related_name="matching_resumes",blank=False, null=False
+    )
+    organization = models.ForeignKey(
+        Organization, related_name="matching_resumes", on_delete=models.CASCADE, blank=False, null=False
+    )
+    score = models.DecimalField(
+        max_digits=10, decimal_places=10,
+        null=True,
+        blank=True,
+        default=0.0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Score indicating how well the candidate's resume matches the job description"
+    )
+    stage = models.CharField(
+        max_length=50, choices=STAGES, default='candidate_onboard',
+        help_text="Current stage of the candidate in the inbound process"
+    )
+    ranking = models.IntegerField(
+        null=True,
+        blank=True
+    )
+    is_archived = models.BooleanField(
+        default=False,
+        help_text="If True, this row is not the present state of the candidate in our interview process. He progressed or maybe archived."
+    )
+    class Meta:
+        ordering = ['-score'] 
 
+    def save(self, *args, **kwargs):
+        # Only set the organization if it hasn't been explicitly set
+        # and the job is already set.
+        if not self.organization_id and self.job:
+            self.organization = self.job.organization
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Resume Match: {self.candidate.name} for {self.job.job_name} - Score: {self.score} - Stage: {self.stage}"
 class Interview(BaseModel):
     STATUS_CHOICES = [
         ('accepted', 'Accepted'),
@@ -150,6 +210,7 @@ class Interview(BaseModel):
     candidate = models.ForeignKey(
         Candidate, on_delete=models.CASCADE, related_name="interviews"
     )
+    job_matching_resume_score = models.ForeignKey(JobMatchingResumeScore, on_delete=models.CASCADE, related_name="interviews", blank=True, null=True)
     job = models.ForeignKey(
         Job, on_delete=models.CASCADE, related_name="interviews"
     )
@@ -179,7 +240,7 @@ class Interview(BaseModel):
     reason_for_leaving_previous_job = models.TextField(
         blank=True, null=True, help_text="Reason for leaving the previous job")
     def __str__(self):
-        return f"Interview for {self.candidate.name} - {self.job.job_name} - {self.date} - {self.time}"
+        return f"{self.organization.org_name} :: Interview for {self.candidate.name} - {self.job.job_name} - {self.date} - {self.time}"
 
 class Snapshots(BaseModel):
     interview = models.ForeignKey(
@@ -266,3 +327,89 @@ class InterviewQuestions(BaseModel):
     )
     def __str__(self):
         return f"Question for Interview {self.interview.id}: {self.question}"
+
+class BackgroundAnalysis(BaseModel):
+    industryContext = models.TextField(null=True, blank=True)
+    companyBackground = models.TextField(null=True, blank=True)
+    relevance = models.TextField(null=True, blank=True)
+
+class RoleFitAnalysis(BaseModel):
+    jobTitleMatch = models.TextField( null=True, blank=True)
+    industryAlignment = models.TextField(null=True, blank=True)
+    experienceLevel = models.TextField( null=True, blank=True)
+    keySkills = models.JSONField(default=list, blank=True)  # or a separate Skill model if you want joins
+
+class GapsAndImprovements(BaseModel):
+    missingSkills = models.JSONField(default=list, blank=True)
+    suggestedImprovements = models.JSONField(default=list, blank=True)
+
+class HiringSignals(BaseModel):
+    resumeQuality = models.TextField( null=True, blank=True)
+    careerTrajectory = models.TextField( null=True, blank=True)
+    prestigeFactors = models.TextField( null=True, blank=True)
+    transitionEase = models.TextField(null=True, blank=True)
+
+
+class Recommendation(BaseModel):
+    overallRecommendation = models.CharField( null=True, blank=True)
+    nextSteps = models.JSONField(default=list, blank=True)
+
+class DirectComparison(BaseModel):
+    relevantSections = models.JSONField(default=list, blank=True)
+    missingRequirements = models.JSONField(default=list, blank=True)
+
+
+class AiJdResumeMatchingResponse(BaseModel):
+    job_matching_resume_score = models.ForeignKey(
+         JobMatchingResumeScore, on_delete=models.CASCADE, related_name="ai_evaluations" , null=True, blank=True
+     )
+    suggested_resumes = models.OneToOneField(
+        Candidate, on_delete=models.CASCADE, related_name="ai_evaluations", blank=True, null=True
+    )
+    roleFitScore = models.FloatField(default=0)
+
+    backgroundAnalysis = models.OneToOneField(
+        BackgroundAnalysis, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+    roleFitAnalysis = models.OneToOneField(
+        RoleFitAnalysis, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+    gapsAndImprovements = models.OneToOneField(
+        GapsAndImprovements, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+    hiringSignals = models.OneToOneField(
+        HiringSignals, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+    recommendation = models.OneToOneField(
+        Recommendation, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+    directComparison = models.OneToOneField(
+        DirectComparison, on_delete=models.CASCADE, related_name="ai_evaluations"
+    )
+
+
+class SuggestedCandidates(BaseModel):
+    STAGES = [
+        ('archived', 'Archived'),
+        ('default', 'Default'),
+    ]
+    candidate = models.ForeignKey(
+        Candidate, on_delete=models.CASCADE, related_name="suggested_candidates"
+    )
+
+    job = models.ForeignKey(
+        Job, on_delete=models.CASCADE, related_name="suggested_candidates"
+    )
+
+    aiResumeMatchingResponse = models.OneToOneField(
+        AiJdResumeMatchingResponse, on_delete=models.CASCADE, related_name="suggested_candidates", null=True, blank=True
+    )
+
+    stage = models.CharField(
+        max_length=50, choices=STAGES, default='default',
+        help_text="Current stage of the candidate in the Suggestion process"
+    )
+
+    def __str__(self):
+        return f"{self.job.job_name} - {self.candidate.name} - {self.aiResumeMatchingResponse.roleFitScore if self.aiResumeMatchingResponse else 'No AI Response'}"
+    

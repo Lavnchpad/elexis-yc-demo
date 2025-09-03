@@ -1,23 +1,34 @@
 import { useEffect, useState } from 'react'
 import axios from '../../utils/api'
+import { toast } from 'sonner';
 
 export default function useJobEvaluation({ jobId }) {
   const [evaluations, setEvaluations] = useState({});
+  const [loading, setLoading] = useState(false)
   const [criterias, setCriterias] = useState([]);
   useEffect(() => {
     if (!jobId) {
       return;
     }
     (async () => {
-      const data = await fetchJobEvaluations(jobId);
-      setEvaluations(data?.candidateEvaluations);
-      setCriterias(data?.criterias);
+      try {
+        setLoading(true)
+        const data = await fetchJobEvaluations(jobId);
+        setEvaluations(data?.candidateEvaluations);
+        setCriterias(data?.criterias);
+      } catch (error) {
+        toast.error('Something went wromg')
+        console.log('useJobEvaluation ::: error', error)
+      } finally {
+        setLoading(false)
+      }
     })()
   }, [jobId])
 
   return {
     evaluations,
-    criterias
+    criterias,
+    loading
   }
 }
 

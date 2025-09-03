@@ -4,11 +4,10 @@ import QuestionnaireEditor from '../components/AddQuestions';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import axios from 'axioss';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import CollapsibleSection from '../../resuable/CollapsibleSection';
 
-export default function JobsQuestions({ job }) {
+export default function JobsQuestions({ job, defaultShow }) {
     const [questions, setQuestions] = useState(job?.questions || []);
-    const [showQuestions, setShowQuestions] = useState(false);
     const saveJobQuestions = async () => {
         try {
             if (!questions || questions.length === 0) {
@@ -28,25 +27,9 @@ export default function JobsQuestions({ job }) {
         }
     }
     return (
-        <div className=''>
-            <div className='flex justify-between'>
-
-            <h1 className=''>Questions</h1>
-                {
-                    showQuestions ?
-                        <ChevronUp className='cursor-pointer' onClick={() => setShowQuestions(prev => !prev)} />
-                        :
-                        <ChevronDown className='cursor-pointer' onClick={() => setShowQuestions(prev => !prev)} />
-                }
-            </div>
-            {
-                showQuestions &&
-                <>
+        <CollapsibleSection title="Questions" defaultShow={defaultShow}>
             <QuestionnaireEditor questions={questions} setQuestions={setQuestions} getJdAndRole={() => ({ role: job.job_name, jd: job.job_description })} jobView={true} />
             <Button onClick={saveJobQuestions}>Save</Button>
-                </>
-            }
-        </div>
-
+        </CollapsibleSection>
     )
 }

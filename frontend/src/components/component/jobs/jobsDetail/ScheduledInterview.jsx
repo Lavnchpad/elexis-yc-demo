@@ -6,14 +6,14 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import useJobInterviews from '@/page/hooks/useJobInterviews';
-import { ChevronDown, ChevronUp, ListFilter } from 'lucide-react'
+import { ListFilter, Loader } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
+import CollapsibleSection from "../../resuable/CollapsibleSection";
 
-export default function ScheduledInterviews({ id }) {
-    const { interviews } = useJobInterviews({ jobId: id });
+export default function ScheduledInterviews({ id, defaultShow = false }) {
+    const { interviews, loading } = useJobInterviews({ jobId: id });
     const [filteredInterviews, setFilteredInterviews] = useState([]);
-    const [showInterviews, setShowInterviews] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState("all"); // This should be managed in state if you want to filter interviews by status
     const handleStatusChange = (status) => {
         if (selectedStatus === status) {
@@ -34,21 +34,15 @@ export default function ScheduledInterviews({ id }) {
             setFilteredInterviews(interviews);
         }
     }, [interviews])
-    return (
-        <div className=''>
-            <div className='flex justify-between'>
-
-                <h1 className=''>Interviews</h1>
-                {
-                    showInterviews ?
-                        <ChevronUp className='cursor-pointer' onClick={() => setShowInterviews(prev => !prev)} />
-                        :
-                        <ChevronDown className='cursor-pointer' onClick={() => setShowInterviews(prev => !prev)} />
-                }
+    if (loading) {
+        return (
+            <div className='w-full flex items-center justify-center h-20'>
+                <Loader className='h-28 animate-spin ease-in' />
             </div>
-            {
-                showInterviews &&
-                <>
+        )
+    }
+    return (
+        <CollapsibleSection title="Scheduled Interviews" defaultShow={defaultShow}>
                     <Table>
                         <TableCaption>Interviews for this job</TableCaption>
                         <TableHeader>
@@ -143,8 +137,6 @@ export default function ScheduledInterviews({ id }) {
                         <TableFooter>
                         </TableFooter>
                     </Table>
-                </>
-            }
-        </div >
+        </CollapsibleSection>
     )
 }

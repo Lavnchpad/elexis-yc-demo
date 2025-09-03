@@ -1,8 +1,16 @@
 import React from "react";
 import { Button } from "@/components/ui/button"; // Assuming Button is a pre-built component
-import ScheduleDrive from "@/components/component/drive/ScheduleDrive";
+// import ScheduleDrive from "@/components/component/drive/ScheduleDrive";
 import axios from "../utils/api";
 import { toast } from "sonner";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/toolTip';
+import AttachToJob from "@/page/components/AttachToJob";
+
 
 
 const StatusButton = ({ interviewData, selectedCandidate, selectedInterview, setSelectedInterview }) => {
@@ -39,10 +47,13 @@ const StatusButton = ({ interviewData, selectedCandidate, selectedInterview, set
 
     }
   }
+  const isInterviewStatusOnHold = selectedInterview?.status === InterviewStatus.HOLD
+  const isInterviewSatusAccepted = selectedInterview?.status === InterviewStatus.ACCEPTED
+  const isInterviewStatusRejected = selectedInterview?.status === InterviewStatus.REJECTED
   return (
     <div className="ml-auto flex space-x-4">
       {/* Conditionally render buttons based on the status */}
-      {selectedInterview?.status === InterviewStatus.ACCEPTED && (
+      {/* {selectedInterview?.status === InterviewStatus.ACCEPTED && (
         <>
           <Button className="px-6 py-3" disabled>
             Accepted
@@ -62,25 +73,70 @@ const StatusButton = ({ interviewData, selectedCandidate, selectedInterview, set
             On Hold
           </Button>
         </>
-      )}
+      )} */}
       {selectedInterview?.status === InterviewStatus.ENDED && (
         <>
-      {selectedInterview?.status !== InterviewStatus.ACCEPTED && <Button className="px-6 py-3 bg-green-600" onClick={() => changeInterviewStatus(InterviewStatus.ACCEPTED)} type='button'>Accept</Button>}
+          <Popover>
+            <PopoverTrigger>
+              <Button asChild variant="outline" className="">
+                <p>
+                  Actions
+                </p>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent>
+              <div className="space-x-4">
+                <Tooltip>
+
+                  <TooltipTrigger asChild>
+                    <Button variant='link' disabled={isInterviewSatusAccepted}>Accept</Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p >Accept the candidate for the selected interview?</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+
+                  <TooltipTrigger asChild>
+                    <Button variant='link' disabled={isInterviewStatusRejected}>Reject</Button>
+
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p >Reject the candidate for the selected interview?</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+
+                  <TooltipTrigger asChild>
+                    <Button variant='link' disabled={isInterviewStatusOnHold}>Hold</Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p >Keep the results on hold!</p>
+                  </TooltipContent>
+                </Tooltip>
+
+
+              </div>
+            </PopoverContent>
+          </Popover>
+          {/* {selectedInterview?.status !== InterviewStatus.ACCEPTED && <Button className="px-6 py-3 bg-green-600" onClick={() => changeInterviewStatus(InterviewStatus.ACCEPTED)} type='button'>Accept</Button>}
       {selectedInterview?.status !== InterviewStatus.REJECTED && <Button className="px-6 py-3 bg-red-500" onClick={() => changeInterviewStatus(InterviewStatus.REJECTED)} type='button'>Reject</Button>}
-      {selectedInterview?.status !== InterviewStatus.HOLD && <Button className="px-6 py-3 bg-yellow-600" onClick={() => changeInterviewStatus(InterviewStatus.HOLD)} type='button'>Hold</Button>}
+      {selectedInterview?.status !== InterviewStatus.HOLD && <Button className="px-6 py-3 bg-yellow-600" onClick={() => changeInterviewStatus(InterviewStatus.HOLD)} type='button'>Hold</Button>} */}
         </>
       )}
       <div>
 
       </div>
-      <ScheduleDrive selectedCandidate={selectedCandidate} scheduleInterview={true}>
+      <AttachToJob selectedCandidate={selectedCandidate} />
+      {/* <ScheduleDrive selectedCandidate={selectedCandidate} scheduleInterview={true}>
         <Button className="px-6 py-3">Schedule</Button>
-      </ScheduleDrive>
-      {hasScheduledInterview && (
+      </ScheduleDrive> */}
+      {/* {hasScheduledInterview && (
         <ScheduleDrive value={true} selectedCandidate={selectedCandidate} scheduleInterview={false}>
           <Button className="px-6 py-3">Reschedule</Button>
         </ScheduleDrive>
-      )}
+      )} */}
     </div>
   );
 };

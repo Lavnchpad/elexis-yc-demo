@@ -28,7 +28,7 @@ MEDIA_URL = '/media/'
 SECRET_KEY = os.getenv('SECRET_KEY','django-insecure-_-yyl-z=dxq(p4h_jjd9*kml2t0r9r)^8=#7_lm=i*m^&m-0%$')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True if os.getenv('DEBUG', 'False') == 'True' else False
 
 ALLOWED_HOSTS = ['*']
 
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'storages',
 ]
 MIDDLEWARE = [
+    'django.middleware.gzip.GZipMiddleware',
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -112,16 +113,16 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('DB_NAME'),
-#         'USER': os.getenv("DB_USER"),
-#         'PASSWORD': os.getenv("DB_PASSWORD"),
-#         'HOST': os.getenv('DB_HOST'),  # Use 'localhost' or '127.0.0.1'
-#         'PORT': os.getenv('DB_PORT'),
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv('DB_HOST'),  # Use 'localhost' or '127.0.0.1'
+        'PORT': os.getenv('DB_PORT'),
+    }
+}
 
 
 # Password validation
@@ -212,19 +213,19 @@ SIMPLE_JWT = {
 
 
 
-# # Enable S3 storage backend via django-storages
-# 
-# STORAGES = {
-#     "default": {
-#         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-#         "OPTIONS": {
-#         },
-#     },
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
-#         # "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-#     },
-# }
+# Enable S3 storage backend via django-storages
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        # "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 # LocalStack S3 config
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -255,9 +256,8 @@ ECS_SCHEDULER_ROLE_ARN = os.getenv("ECS_SCHEDULER_ROLE_ARN", "arn:aws:iam::90541
 DAILY_API_PATH = os.getenv("DAILY_API_PATH", "api.daily.co/v1")
 DAILY_API_KEY = os.getenv("DAILY_API_KEY")
 
-
 PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
 PINECONE_REGION = os.environ.get('PINECONE_REGION','us-east-1')
 PINECONE_CLOUD= os.environ.get('PINECONE_CLOUD','aws')
 PINECONE_ENVIRONMENT = os.environ.get('PINECONE_ENVIRONMENT') # e.g., 'gcp-starter' or 'us-west1-gcp'
-PINECONE_INDEX_NAME = os.environ.get('PINECONE_INDEX_NAME', 'resume-job-embeddings-index')
+PINECONE_INDEX_NAME = os.environ.get('PINECONE_INDEX_NAME', 'talk-to-resume')  # Default index name if not set

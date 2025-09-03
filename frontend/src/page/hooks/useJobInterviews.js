@@ -5,9 +5,10 @@ import { toast } from 'sonner';
 
 export default function useJobInterviews({ jobId }) {
     const [interviews, setInterviews] = useState([]);
-    // const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
     // const [error, setError] = useState(null);
     useEffect(() => {
+        setLoading(true)
         const fetchJobInterviews = async () => {
             try {
                 const response = await JobsService.getInterviewsOfJob({ jobId });
@@ -17,6 +18,9 @@ export default function useJobInterviews({ jobId }) {
                 toast.error("Failed to load interviews.");
                 throw error;
             }
+            finally {
+                setLoading(false)
+            }
         };
 
         if (jobId) {
@@ -25,6 +29,7 @@ export default function useJobInterviews({ jobId }) {
     }
         , [jobId]);
     return {
-        interviews
+        interviews,
+        loading
     }
 }

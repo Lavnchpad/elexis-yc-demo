@@ -34,7 +34,7 @@ const Sidebar = ({ setSelectedCandidate,onNaviagte }) => {
       <Filter onSearch={handleSearch} />
 
       {/* Contact List */}
-      <ScrollArea className="mt-4 h-[520px] overflow-y-auto">
+      <ScrollArea className="mt-4 max-h-full overflow-y-auto">
         <ul className="space-y-2 cursor-pointer">
         {loading
             ? <CandidateLoader/>
