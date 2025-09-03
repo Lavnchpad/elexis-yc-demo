@@ -90,6 +90,14 @@ class ECSAIBotTaskService:
             aws_access_key_id= settings.AWS_ACCESS_KEY_ID,
             region_name=settings.BOT_AWS_REGION
         )
+        self.application_scaling_client = boto3.client(
+            'application-autoscaling',
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            aws_access_key_id= settings.AWS_ACCESS_KEY_ID,
+            region_name=settings.BOT_AWS_REGION
+        )
+
+        self.application_resource_id = f"service/amaxa-elexis-amaxa-elexis-bot-task/amaxa-elexis-amaxa-app"
 
     def _ecs_interview_task_context_to_overrides(self, context: ECSInterviewTaskContext):
         """
@@ -214,3 +222,21 @@ class ECSAIBotTaskService:
         except Exception as e:
             print(f"Error creating schedule: {e}")
             raise
+
+    def schedule_scaling(self, start_time: datetime.datetime, capacity: int):
+        schedule_expression = f"at({start_time.strftime('%Y-%m-%dT%H:%M:%S')})"
+        print(f"Attempting Schedule Scaling {start_time} - {capacity}")
+        response = self.application_scaling_client.put_scheduled_action(
+            ServiceNamespace='ecs',
+            ScheduledActionName=f'scale-up-{start_time.strftime("%Y-%m-%dT%H-%M")}',
+            ResourceId=self.application_resource_id,
+            ScalableDimension='ecs:service:DesiredCount',
+            Schedule=schedule_expression,
+            ScalableTargetAction={
+                'MinCapacity': capacity,
+                'MaxCapacity': capacity
+            },
+            Timezone='Asia/Kolkata' # This is the key change! 🇮🇳
+        )
+        print("got response", response)
+        return response

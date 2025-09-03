@@ -413,3 +413,12 @@ class SuggestedCandidates(BaseModel):
     def __str__(self):
         return f"{self.job.job_name} - {self.candidate.name} - {self.aiResumeMatchingResponse.roleFitScore if self.aiResumeMatchingResponse else 'No AI Response'}"
     
+class ECSApplicationAutoScalingSchedule(BaseModel):
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    scheduled_action_name = models.TextField()
+    min_capacity = models.IntegerField()
+    max_capacity = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.scheduled_action_name}-({self.min_capacity}-{self.max_capacity})"
