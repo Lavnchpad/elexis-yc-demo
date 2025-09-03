@@ -9,8 +9,9 @@ import {
   Calendar,
   SatelliteDishIcon,
   View,
+  Printer,
 } from "lucide-react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // import ScheduleDrive from "@/components/component/drive/ScheduleDrive";
@@ -304,6 +305,17 @@ const StudentDetails = ({ }) => {
                         <View className="w-4 h-4" />
                         View Resume
                   </Button>
+                  {selectedInterview&&
+                  <Link to={`/interviews/${selectedInterview?.id}/print-preview`}>
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                    >
+                          <Printer className="w-4 h-4" />
+                          Print
+                    </Button>
+                  </Link>}
+                  
                     </div>
                     {/* send mail & view resume ends */}
                     <div>

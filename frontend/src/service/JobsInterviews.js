@@ -109,4 +109,13 @@ export class JobsService {
             throw error;
         }
     }
+
+    static async getInterviewByInterviewId(interviewId) {
+        try {
+            const response = await axios.get(`/interviews/${interviewId}/`);
+            return new InterviewsOfRelatedJobResponseDTO(response.data);
+        } catch (error) {
+            throw error;
+        }
+    }
 }
