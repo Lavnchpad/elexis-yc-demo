@@ -213,8 +213,8 @@ SIMPLE_JWT = {
 
 
 
-# # Enable S3 storage backend via django-storages
-# 
+# Enable S3 storage backend via django-storages
+
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
@@ -251,7 +251,7 @@ BOT_HOSTNAME = os.getenv("BOT_HOSTNAME", "https://app.elexis.ai")
 BOT_AWS_REGION = os.getenv("BOT_AWS_REGION", "us-west-1")
 BOT_TASK_DEFINITION_ARN = os.getenv("TASK_DEFINITION_ARN", "arn:aws:ecs:us-west-1:905418350733:task-definition/amaxa-elexis-amaxa-bot-task")
 BOT_CLUSTER_ARN = os.getenv("BOT_CLUSTER_ARN", "arn:aws:ecs:us-west-1:905418350733:cluster/amaxa-elexis-amaxa-elexis-bot-task")
-
+ECS_SCHEDULER_ROLE_ARN = os.getenv("ECS_SCHEDULER_ROLE_ARN", "arn:aws:iam::905418350733:role/amaxa-elexis-amaxa-scheduler-20250730211132976100000001")
 
 DAILY_API_PATH = os.getenv("DAILY_API_PATH", "api.daily.co/v1")
 DAILY_API_KEY = os.getenv("DAILY_API_KEY")

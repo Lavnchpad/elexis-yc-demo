@@ -15,7 +15,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions ,JobMatchingResumeScore, JobRequirementEvaluation, JobQuestions, SuggestedCandidates, AiJdResumeMatchingResponse
+from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions ,JobMatchingResumeScore, JobRequirementEvaluation, JobQuestions, SuggestedCandidates, AiJdResumeMatchingResponse, ECSApplicationAutoScalingSchedule
 from elexis.utils.general import getHumanReadableTime
 from .serializers import (
     SuggestedCandidatesSerializer,
@@ -323,6 +323,33 @@ class InterviewViewSet(viewsets.ModelViewSet):
             interview.link = f"{CLIENT_URL}/interviews/{interview.id}/start/"
             self._update_status_fields(interview)
             interview.save()
+
+            ecs_interview_service = ECSAIBotTaskService()
+            interview_date_time = make_aware(datetime.combine(interview.date, interview.time))
+            scaling_window_deltas = [
+                [interview_date_time - timedelta(hours=0, minutes=30), interview_date_time] # Pre Interview
+                [interview_date_time , interview_date_time + timedelta(minutes=30)] # Interview first half
+                [interview_date_time + timedelta(minutes=30), interview_date_time + timedelta(hours=1)] # Interview second half
+                [interview_date_time + timedelta(hours=1), interview_date_time + timedelta(hours=1, minutes=30)] # Post Interview half
+            ]
+            shutdown_scaling_window = [interview_date_time + timedelta(hours=1, minutes=30), interview_date_time + timedelta(hours=2)] # Shutdown
+            for scaling_window_delta in scaling_window_deltas:
+                scaling_window = ECSApplicationAutoScalingSchedule.objects.filter(start_time=scaling_window_delta[0], end_time=scaling_window_delta[1]).first()
+                if scaling_window is None:
+                    scaling_window = ECSApplicationAutoScalingSchedule.objects.create(max_capacity=0, min_capacity=0,start_time=scaling_window_delta[0], end_time=scaling_window_delta[1],
+                                                                     name=f'scale-up-{scaling_window_delta[0].strftime("%Y-%m-%dT%H-%M")}')
+                scaling_window.max_capacity +=1
+                scaling_window.min_capacity +=1
+                scaling_window.save()
+                ecs_interview_service.schedule_scaling(scaling_window.start_time, scaling_window.min_capacity )
+            scaling_window = ECSApplicationAutoScalingSchedule.objects.filter(start_time=shutdown_scaling_window[0], end_time=shutdown_scaling_window[1]).first()
+            if scaling_window is None:
+                scaling_window = ECSApplicationAutoScalingSchedule.objects.create(max_capacity=0, min_capacity=0,start_time=shutdown_scaling_window[0], end_time=shutdown_scaling_window[1],
+                                                                    name=f'scale-up-{shutdown_scaling_window[0].strftime("%Y-%m-%dT%H-%M")}')
+            scaling_window.save()
+            ecs_interview_service.schedule_scaling(scaling_window.start_time, scaling_window.min_capacity )
+            
+
             subject, message = interview_scheduled_template(interview.scheduled_by.organization.org_name, interview.candidate.name, interview.job.job_name, interview.link, f"{interview.date} at {interview.time}", interview.scheduled_by.email)
     # Doing this here as this is the only place where a candidate gets associated with a Job
             resume_embedding_id = interview.candidate.resume_embedding_id
@@ -399,6 +426,30 @@ class InterviewViewSet(viewsets.ModelViewSet):
              raise ValueError("Candidate data is required to schedule an interview.")
         def perform_update(self, serializer):
             interview = serializer.save(modified_by = self.request.user)
+            ecs_interview_service = ECSAIBotTaskService()
+            interview_date_time = make_aware(datetime.combine(interview.date, interview.time))
+            scaling_window_deltas = [
+                [interview_date_time - timedelta(hours=0, minutes=30), interview_date_time] # Pre Interview
+                [interview_date_time , interview_date_time + timedelta(minutes=30)] # Interview first half
+                [interview_date_time + timedelta(minutes=30), interview_date_time + timedelta(hours=1)] # Interview second half
+                [interview_date_time + timedelta(hours=1), interview_date_time + timedelta(hours=1, minutes=30)] # Post Interview half
+            ]
+            shutdown_scaling_window = [interview_date_time + timedelta(hours=1, minutes=30), interview_date_time + timedelta(hours=2)] # Shutdown
+            for scaling_window_delta in scaling_window_deltas:
+                scaling_window = ECSApplicationAutoScalingSchedule.objects.filter(start_time=scaling_window_delta[0], end_time=scaling_window_delta[1]).first()
+                if scaling_window is None:
+                    scaling_window = ECSApplicationAutoScalingSchedule.objects.create(max_capacity=0, min_capacity=0,start_time=scaling_window_delta[0], end_time=scaling_window_delta[1],
+                                                                     name=f'scale-up-{scaling_window_delta[0].strftime("%Y-%m-%dT%H-%M")}')
+                scaling_window.max_capacity +=1
+                scaling_window.min_capacity +=1
+                scaling_window.save()
+                ecs_interview_service.schedule_scaling(scaling_window.start_time, scaling_window.min_capacity )
+            scaling_window = ECSApplicationAutoScalingSchedule.objects.filter(start_time=shutdown_scaling_window[0], end_time=shutdown_scaling_window[1]).first()
+            if scaling_window is None:
+                scaling_window = ECSApplicationAutoScalingSchedule.objects.create(max_capacity=0, min_capacity=0,start_time=shutdown_scaling_window[0], end_time=shutdown_scaling_window[1],
+                                                                    name=f'scale-up-{shutdown_scaling_window[0].strftime("%Y-%m-%dT%H-%M")}')
+            scaling_window.save()
+            ecs_interview_service.schedule_scaling(scaling_window.start_time, scaling_window.min_capacity )
             self._update_status_fields(interview)
             interview.save()
 
