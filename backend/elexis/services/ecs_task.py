@@ -1,4 +1,5 @@
 import boto3
+import botocore
 from django.conf import settings
 from django.utils import timezone
 import enum
@@ -231,10 +232,24 @@ class ECSAIBotTaskService:
             raise
 
     def schedule_scaling(self, start_time: datetime.datetime, capacity: int):
-        # Scales the EC2 instances directly
+        # Scales the EC2 instances 
+        action_name = f'scale-up-{start_time.strftime("%Y-%m-%dT%H-%M")}'
+        print(f'scale-up-{start_time.strftime("%Y-%m-%dT%H-%M")}', start_time)
+        print(f"Attempting to delete existing scheduled action '{action_name}'...")
+        try:
+            self.asg_client.delete_scheduled_action(
+                AutoScalingGroupName=self.asg_name,
+                ScheduledActionName=action_name
+            )
+            print(f"Successfully deleted existing action '{action_name}'.")
+        except botocore.exceptions.ClientError as error:
+            # Check if the error is due to the action not being found
+            print(error)
+            if error.response['Error']['Code'] == 'ResourceNotFound':
+                print(f"Scheduled action '{action_name}' not found. Continuing to create.")
         response = self.asg_client.put_scheduled_update_group_action(
             AutoScalingGroupName=self.asg_name,
-            ScheduledActionName=f'scale-up-{start_time.strftime("%Y-%m-%dT%H-%M")}',
+            ScheduledActionName=action_name,
             StartTime=start_time,
             MinSize=capacity,
             MaxSize=capacity,
