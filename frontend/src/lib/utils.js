@@ -44,12 +44,12 @@ export function getRoundedFutureTime() {
   const now = new Date();
   const minutes = now.getMinutes();
   const futureTime = new Date(now.getTime());
-
   if (minutes < 30) {
-    futureTime.setMinutes(30);
+    futureTime.setMinutes(0)
+    futureTime.setHours(futureTime.getHours() + 1);;
   } else {
     futureTime.setHours(futureTime.getHours() + 1);
-    futureTime.setMinutes(0);
+    futureTime.setMinutes(30);
   }
 
   // Ensure the seconds and milliseconds are set to 0 for consistency
