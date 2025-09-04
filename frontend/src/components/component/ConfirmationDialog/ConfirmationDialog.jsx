@@ -48,7 +48,17 @@ const scheduleSchema = z
             message: "Either jobId or interview is required",
             path: ["jobId"], // You can also point to 'interview' or use both
         }
-    );
+    ).refine(
+    (data) => {
+      const selectedDateTime = new Date(`${data.date}T${data.time}:00`);
+      const minValidDateTime = new Date(Date.now() + 30 * 60 * 1000);
+      return selectedDateTime > minValidDateTime;
+    },
+    {
+      message: "The scheduled time must be at least 30 minutes in the future.",
+      path: ["time"],
+    }
+  );;
 export function ScheduleInterviewFromJobsPage({ job, applicantdetails, isOpen, confirmationHandler, onOpenChange, isReschedule = false }) {
     const [loading, setLoading] = useState(false);
     const defaultTime = applicantdetails?.interviews?.[0]?.time?.split(":").slice(0, 2).join(":") || getRoundedFutureTime();
