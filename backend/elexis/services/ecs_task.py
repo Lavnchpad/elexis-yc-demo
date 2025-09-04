@@ -97,6 +97,13 @@ class ECSAIBotTaskService:
             region_name=settings.BOT_AWS_REGION
         )
 
+        self.asg_name = "amaxa-elexis-amaxa-ecs-asg-bot-task20250620150546023500000001"
+        self.asg_client = boto3.client(
+            'autoscaling',
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            aws_access_key_id= settings.AWS_ACCESS_KEY_ID,
+            region_name=settings.BOT_AWS_REGION
+        )
         self.application_resource_id = f"service/amaxa-elexis-amaxa-elexis-bot-task/amaxa-elexis-amaxa-app"
 
     def _ecs_interview_task_context_to_overrides(self, context: ECSInterviewTaskContext):
@@ -224,6 +231,21 @@ class ECSAIBotTaskService:
             raise
 
     def schedule_scaling(self, start_time: datetime.datetime, capacity: int):
+        # Scales the EC2 instances directly
+        response = self.asg_client.put_scheduled_update_group_action(
+            AutoScalingGroupName=self.asg_name,
+            ScheduledActionName=f'scale-up-{start_time.strftime("%Y-%m-%dT%H-%M")}',
+            StartTime=start_time,
+            MinSize=capacity,
+            MaxSize=capacity,
+            DesiredCapacity=capacity,
+            TimeZone='Asia/Kolkata'
+        )
+        print("got response", response)
+        return response
+    
+    def schedule_service_scaling(self, start_time: datetime.datetime, capacity: int):
+        # Scales tasks at service level
         schedule_expression = f"at({start_time.strftime('%Y-%m-%dT%H:%M:%S')})"
         print(f"Attempting Schedule Scaling {start_time} - {capacity}")
         response = self.application_scaling_client.put_scheduled_action(
