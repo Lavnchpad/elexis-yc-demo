@@ -34,7 +34,7 @@ export function JobsEvaluationTable({ id, defaultShow = false }) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {Object.values(candidateEvaluations)?.map((item) => (
+                    {Object.values(candidateEvaluations)?.sort((a, b) => b?.totalScore - a?.totalScore)?.map((item) => (
                             <TableRow key={item?.candidateId}>
                                 <TableCell className="font-medium">{item?.candidateName}</TableCell>
                                 {
