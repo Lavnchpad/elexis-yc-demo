@@ -28,7 +28,7 @@ MEDIA_URL = '/media/'
 SECRET_KEY = os.getenv('SECRET_KEY','django-insecure-_-yyl-z=dxq(p4h_jjd9*kml2t0r9r)^8=#7_lm=i*m^&m-0%$')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True if os.getenv('DEBUG', 'False') == 'True' else False
 
 ALLOWED_HOSTS = ['*']
 
@@ -213,8 +213,8 @@ SIMPLE_JWT = {
 
 
 
-# # Enable S3 storage backend via django-storages
-# 
+# Enable S3 storage backend via django-storages
+
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
@@ -251,14 +251,13 @@ BOT_HOSTNAME = os.getenv("BOT_HOSTNAME", "https://app.elexis.ai")
 BOT_AWS_REGION = os.getenv("BOT_AWS_REGION", "us-west-1")
 BOT_TASK_DEFINITION_ARN = os.getenv("TASK_DEFINITION_ARN", "arn:aws:ecs:us-west-1:905418350733:task-definition/amaxa-elexis-amaxa-bot-task")
 BOT_CLUSTER_ARN = os.getenv("BOT_CLUSTER_ARN", "arn:aws:ecs:us-west-1:905418350733:cluster/amaxa-elexis-amaxa-elexis-bot-task")
-
+ECS_SCHEDULER_ROLE_ARN = os.getenv("ECS_SCHEDULER_ROLE_ARN", "arn:aws:iam::905418350733:role/amaxa-elexis-amaxa-scheduler-20250730211132976100000001")
 
 DAILY_API_PATH = os.getenv("DAILY_API_PATH", "api.daily.co/v1")
 DAILY_API_KEY = os.getenv("DAILY_API_KEY")
-
 
 PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
 PINECONE_REGION = os.environ.get('PINECONE_REGION','us-east-1')
 PINECONE_CLOUD= os.environ.get('PINECONE_CLOUD','aws')
 PINECONE_ENVIRONMENT = os.environ.get('PINECONE_ENVIRONMENT') # e.g., 'gcp-starter' or 'us-west1-gcp'
-PINECONE_INDEX_NAME = os.environ.get('PINECONE_INDEX_NAME', 'resume-job-embeddings-index')
+PINECONE_INDEX_NAME = os.environ.get('PINECONE_INDEX_NAME', 'talk-to-resume')  # Default index name if not set

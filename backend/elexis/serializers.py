@@ -5,7 +5,8 @@ from .models import( Recruiter, Candidate, Job,
     AiJdResumeMatchingResponse , BackgroundAnalysis, RoleFitAnalysis, GapsAndImprovements,
     HiringSignals,
     Recommendation,
-    DirectComparison
+    DirectComparison,
+    SuggestedCandidates
 )
 from django.contrib.auth.password_validation import validate_password
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
@@ -389,7 +390,15 @@ class JobMatchingResumeScoreSerializer(serializers.ModelSerializer):
 
 
 
+class SuggestedCandidatesSerializer(serializers.ModelSerializer):
+    job = JobSerializer(read_only=True)
+    candidate = CandidateSerializer(read_only=True)
+    aiResumeMatchingResponse = AiJdResumeMatchingResponseSerializer(read_only=True)
 
+    class Meta:
+        model = SuggestedCandidates
+        fields = '__all__'
+        read_only_fields = ('job', 'candidate',)
 
 
 

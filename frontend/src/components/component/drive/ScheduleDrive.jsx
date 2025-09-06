@@ -38,10 +38,22 @@ const scheduleSchema = z
     interview: z.string().optional(),
   })
   .refine(
-    (data) => data.jobId || data.interview,
+    (data) => { 
+      return data.jobId || data.interview
+    },
     {
       message: "Either jobId or interview is required",
       path: ["jobId"], // You can also point to 'interview' or use both
+    }
+  ).refine(
+    (data) => {
+      const selectedDateTime = new Date(`${data.date}T${data.time}:00`);
+      const minValidDateTime = new Date(Date.now() + 30 * 60 * 1000);
+      return selectedDateTime > minValidDateTime;
+    },
+    {
+      message: "The scheduled time must be at least 30 minutes in the future.",
+      path: ["time"],
     }
   );
 // scheduleInterview : true/ false , This component is used for scheduling and rescheduling as well , so handled with this prop
@@ -66,7 +78,6 @@ const ScheduleDrive = ({ children, value, selectedCandidate, scheduleInterview =
 
   const onSubmit = async (data) => {
     setLoading(true);
-
     const payload = {
       date: data.date,
       time: data.time,

@@ -89,7 +89,7 @@ class PineconeClient:
             logger.error(f"Error upserting vectors to Pinecone: {e}", exc_info=True)
             raise
 
-    def query_vectors(self, vector: list, top_k: int = 5, filters: dict = None):
+    def query_vectors(self, vector: list, top_k: int = 5, filters: dict = None, namespace=str):
         """
         Queries the Pinecone index for similar vectors.
 
@@ -104,6 +104,7 @@ class PineconeClient:
         """
         try:
             response = self.index.query(
+                namespace=namespace,
                 vector=vector,
                 top_k=top_k,
                 include_metadata=True,
@@ -125,7 +126,7 @@ class PineconeClient:
             logger.error(f"Error querying Pinecone: {e}", exc_info=True)
             raise
 
-    def fetch_vectors(self, ids: list):
+    def fetch_vectors(self, ids: list, namespace: str):
         """
         Fetches vectors by their IDs from the Pinecone index.
 
@@ -136,7 +137,7 @@ class PineconeClient:
             dict: A dictionary of fetched vectors, keyed by ID.
         """
         try:
-            response = self.index.fetch(ids=ids)
+            response = self.index.fetch(ids=ids,namespace=namespace)  # Use None for default namespace
             # response.vectors is a dict of {id: vector_object}
             fetched_data = {
                 vec_id: vec.values for vec_id, vec in response.vectors.items()

@@ -1,7 +1,10 @@
 import boto3
+import botocore
 from django.conf import settings
+from django.utils import timezone
 import enum
 import json
+import datetime
 
 class ECSLaunchType:
     """
@@ -74,6 +77,7 @@ class ECSAIBotTaskService:
     """
     cluster_arn = settings.BOT_CLUSTER_ARN
     task_definition_arn = settings.BOT_TASK_DEFINITION_ARN
+    ecs_scheduler_role_arn = settings.ECS_SCHEDULER_ROLE_ARN
     def __init__(self):
         self.ecs_client = boto3.client(
             'ecs',
@@ -81,6 +85,27 @@ class ECSAIBotTaskService:
             aws_access_key_id= settings.AWS_ACCESS_KEY_ID,
             region_name=settings.BOT_AWS_REGION
         )
+        self.scheduler_client = boto3.client(
+            'scheduler',
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            aws_access_key_id= settings.AWS_ACCESS_KEY_ID,
+            region_name=settings.BOT_AWS_REGION
+        )
+        self.application_scaling_client = boto3.client(
+            'application-autoscaling',
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            aws_access_key_id= settings.AWS_ACCESS_KEY_ID,
+            region_name=settings.BOT_AWS_REGION
+        )
+
+        self.asg_name = "amaxa-elexis-amaxa-ecs-asg-bot-task20250620150546023500000001"
+        self.asg_client = boto3.client(
+            'autoscaling',
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            aws_access_key_id= settings.AWS_ACCESS_KEY_ID,
+            region_name=settings.BOT_AWS_REGION
+        )
+        self.application_resource_id = f"service/amaxa-elexis-amaxa-elexis-bot-task/amaxa-elexis-amaxa-app"
 
     def _ecs_interview_task_context_to_overrides(self, context: ECSInterviewTaskContext):
         """
@@ -135,4 +160,120 @@ class ECSAIBotTaskService:
             task=task_arn,
             cluster=cluster
         )
+        return response
+
+    
+    def schedule_task(self, interview_context: ECSInterviewTaskContext, schedule_time: datetime.datetime):
+        """
+        Schedule an ECS task to run at a specific UTC time using EventBridge Scheduler.
+        """
+        schedule_name = f"{self.project_name}-interview-{interview_context.interview_id}-{schedule_time.strftime('%Y%m%d%H%M%S')}"
+        aware_local_time = schedule_time
+        if not timezone.is_aware(schedule_time):
+            aware_local_time = timezone.make_aware(schedule_time)
+        schedule_time_utc = timezone.localtime(aware_local_time, timezone=timezone.utc)
+        # EventBridge Scheduler 'at' expression expects YYYY-MM-DDTHH:MM:SS format
+        schedule_expression = f"at({schedule_time_utc.strftime('%Y-%m-%dT%H:%M:%S')})"
+
+        # Convert overrides to the JSON string expected by EventBridge Scheduler target input
+        ecs_task_parameters = {
+            "TaskDefinitionArn": self.task_definition_arn,
+            "LaunchType": ECSLaunchType.EC2, # Or FARGATE
+            "NetworkConfiguration": {
+                "awsvpcConfiguration": {
+                    "subnets": self.subnet_ids,
+                    "securityGroups": self.security_group_ids,
+                    "assignPublicIp": "ENABLED" if self.assign_public_ip else "DISABLED"
+                }
+            },
+            "Overrides": self._ecs_interview_task_context_to_overrides(interview_context)
+        }
+        
+        # EventBridge Scheduler expects the ECS parameters to be embedded in an 'Input' field
+        # and this Input must be a JSON string.
+        # It's important to craft this exactly as the EventBridge Scheduler API expects.
+        target_input = {
+            "ContainerOverrides": ecs_task_parameters["Overrides"]["containerOverrides"],
+            "ExecutionRoleArn": ecs_task_parameters["Overrides"].get("executionRoleArn"),
+            "TaskRoleArn": ecs_task_parameters["Overrides"].get("taskRoleArn")
+        }
+        
+        # Remove None values from target_input to avoid issues with JSON serialization
+        target_input_clean = {k: v for k, v in target_input.items() if v is not None}
+
+
+        try:
+            response = self.scheduler_client.create_schedule(
+                Name=schedule_name,
+                ScheduleExpression=schedule_expression,
+                ScheduleExpressionTimezone="UTC", # Always use UTC for 'at' expressions, or specific TZ for others
+                FlexibleTimeWindow={'Mode': 'OFF'}, # For precise scheduling
+                Target={
+                    'Arn': self.cluster_arn,
+                    'RoleArn': self.scheduler_role_arn, # EventBridge Scheduler's role to call ECS
+                    'EcsParameters': {
+                        'TaskDefinitionArn': ecs_task_parameters["TaskDefinitionArn"],
+                        'LaunchType': ecs_task_parameters["LaunchType"],
+                        'NetworkConfiguration': ecs_task_parameters["NetworkConfiguration"],
+                        # The 'Overrides' structure in EcsParameters is different from run_task
+                        # It should directly contain containerOverrides, executionRoleArn, etc.
+                        'ContainerOverrides': ecs_task_parameters["Overrides"]["containerOverrides"],
+                        'ExecutionRoleArn': ecs_task_parameters["Overrides"].get("executionRoleArn"),
+                        'TaskRoleArn': ecs_task_parameters["Overrides"].get("taskRoleArn")
+                    }
+                },
+                ActionAfterCompletion='DELETE', # Automatically delete schedule after it runs successfully
+                Description=f"Scheduled interview bot for {interview_context.candidate_name} (ID: {interview_context.interview_id})"
+            )
+            print(f"Successfully created schedule: {response['ScheduleArn']}")
+            return response['ScheduleArn']
+        except Exception as e:
+            print(f"Error creating schedule: {e}")
+            raise
+
+    def schedule_scaling(self, start_time: datetime.datetime, capacity: int):
+        # Scales the EC2 instances 
+        action_name = f'scale-up-{start_time.strftime("%Y-%m-%dT%H-%M")}'
+        print(f'scale-up-{start_time.strftime("%Y-%m-%dT%H-%M")}', start_time)
+        print(f"Attempting to delete existing scheduled action '{action_name}'...")
+        try:
+            self.asg_client.delete_scheduled_action(
+                AutoScalingGroupName=self.asg_name,
+                ScheduledActionName=action_name
+            )
+            print(f"Successfully deleted existing action '{action_name}'.")
+        except botocore.exceptions.ClientError as error:
+            # Check if the error is due to the action not being found
+            print(error)
+            if error.response['Error']['Code'] == 'ResourceNotFound':
+                print(f"Scheduled action '{action_name}' not found. Continuing to create.")
+        response = self.asg_client.put_scheduled_update_group_action(
+            AutoScalingGroupName=self.asg_name,
+            ScheduledActionName=action_name,
+            StartTime=start_time,
+            MinSize=capacity,
+            MaxSize=capacity,
+            DesiredCapacity=capacity,
+            TimeZone='Asia/Kolkata'
+        )
+        print("got response", response)
+        return response
+    
+    def schedule_service_scaling(self, start_time: datetime.datetime, capacity: int):
+        # Scales tasks at service level
+        schedule_expression = f"at({start_time.strftime('%Y-%m-%dT%H:%M:%S')})"
+        print(f"Attempting Schedule Scaling {start_time} - {capacity}")
+        response = self.application_scaling_client.put_scheduled_action(
+            ServiceNamespace='ecs',
+            ScheduledActionName=f'scale-up-{start_time.strftime("%Y-%m-%dT%H-%M")}',
+            ResourceId=self.application_resource_id,
+            ScalableDimension='ecs:service:DesiredCount',
+            Schedule=schedule_expression,
+            ScalableTargetAction={
+                'MinCapacity': capacity,
+                'MaxCapacity': capacity
+            },
+            Timezone='Asia/Kolkata' # This is the key change! 🇮🇳
+        )
+        print("got response", response)
         return response

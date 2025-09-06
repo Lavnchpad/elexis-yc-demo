@@ -4,7 +4,7 @@ from .models import ( Recruiter, Candidate, Job, Organization,JobMatchingResumeS
     Interview, Snapshots, JobRequirement, 
     JobRequirementEvaluation, MaintaineceWindow, JobQuestions , InterviewQuestions
     , AiJdResumeMatchingResponse, BackgroundAnalysis, RoleFitAnalysis,
-    GapsAndImprovements, HiringSignals, Recommendation, DirectComparison
+    GapsAndImprovements, HiringSignals, Recommendation, DirectComparison, SuggestedCandidates, ECSApplicationAutoScalingSchedule
     )
 from django import forms
 from django.contrib.auth.admin import UserAdmin
@@ -74,3 +74,5 @@ admin.site.register(GapsAndImprovements, ShowAllFieldsAdmin)
 admin.site.register(HiringSignals, ShowAllFieldsAdmin)
 admin.site.register(Recommendation, ShowAllFieldsAdmin)
 admin.site.register(DirectComparison, ShowAllFieldsAdmin)
+admin.site.register(SuggestedCandidates, ShowAllFieldsAdmin)
+admin.site.register(ECSApplicationAutoScalingSchedule, ShowAllFieldsAdmin)

@@ -100,6 +100,6 @@ def upsert_resume_vector(candiate_name: str, candidate_email: str, resume_full_t
                     print(f"No vectors to upsert for resume {candidate_id}.")
                 return embedding_id
             except Exception as e:
-                print(f"Error fetching embedding for job {candidate_id}: {e}", exc_info=True)
+                print(f"Error fetching embedding for job {candidate_id}: {e}")
                 # raise ValidationError(f"Internal server error during embedding retrieval: {e}")
                 # return Response({'error': 'Internal server error during embedding retrieval'}, status=500)

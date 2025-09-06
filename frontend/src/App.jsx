@@ -18,6 +18,7 @@ import Analytics from './page/Analytics';
 import MyTeamDetails from './components/component/profile/MyTeamDetails';
 import InterviewFilter from './page/InterviewFilter';
 import {Maintenance} from './page/Maintenance';
+import { InterviewPrintPreview } from './page/interview/InterviewPrintPreview';
 const App = () => {
   return (
     <BrowserRouter>
@@ -53,6 +54,7 @@ const App = () => {
             <Route path="/job/:jobId" element={<ProtectedRoute><JobDetails /></ProtectedRoute>} />
             <Route path="/interviewFilter" element={<ProtectedRoute><InterviewFilter /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+            <Route path="/interviews/:interviewId/print-preview" element={<ProtectedRoute><InterviewPrintPreview/></ProtectedRoute>} />
           </Route>
 
           {/* Start Interview Route */}
