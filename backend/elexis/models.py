@@ -105,6 +105,8 @@ class Candidate(BaseModel):
         max_length=255, blank=True, null=True,
         help_text="ID of the resume embedding in the vector database."
     )
+    class Meta:
+        ordering = ['-created_date'] 
     def __str__(self):
         return self.name
 class Job(BaseModel):
@@ -240,7 +242,7 @@ class Interview(BaseModel):
     reason_for_leaving_previous_job = models.TextField(
         blank=True, null=True, help_text="Reason for leaving the previous job")
     def __str__(self):
-        return f"{self.organization.org_name} :: Interview for {self.candidate.name} - {self.job.job_name} - {self.date} - {self.time}"
+        return f"{self.organization.org_name} :: - {self.status} Interview for {self.candidate.name} - {self.job.job_name} - {self.date} - {self.time} "
 
 class Snapshots(BaseModel):
     interview = models.ForeignKey(
