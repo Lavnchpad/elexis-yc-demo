@@ -65,16 +65,7 @@ export default function ApplicationsTrackingTable({ jobData, title, button1Text,
                         {
                             applications.map((applicant) => (
                                 <AiEvaluationCard successHandler={async (applicant) => {
-                                    await Promise.allSettled([axios.patch(`/job-ats/${applicant.id}/`, {
-                                        is_archived: true,
-                                    }),
-                                    axios.post('/job-ats/', {
-                                        job_id: jobData.id,
-                                        candidate_id: applicant.candidate.id,
-                                        stage: 'selected_for_interview',
-                                        score: applicant.score,
-                                        ranking: applicant.ranking
-                                    })]);
+                                    await axios.post(`/job-ats/${applicant.id}/short-list/`)
                                     refetchApplications()
                                 }} archieveApplicantHandler={archieveApplicantHandler} applicant={applicant} candidateData={{ ...applicant.candidate, ...applicant?.ai_evaluations[0] }} key={applicant?.ai_evaluations[0]?.id} />
                             ))
@@ -149,17 +140,7 @@ const ApplicantRow = ({ archieveApplicantHandler, refetch, applicationtype, addI
     const confirmationHandler = async () => {
         setLoading(true);
         try {
-            await Promise.allSettled([axios.patch(`/job-ats/${applicant.id}/`, {
-                is_archived: true,
-            }),
-            axios.post('/job-ats/', {
-                job_id: jobData.id,
-                candidate_id: applicant.candidate.id,
-                stage: 'selected_for_interview',
-                score: applicant.score,
-                ranking: applicant.ranking
-            })]);
-
+            await axios.post(`/job-ats/${applicant.id}/short-list/`)
             await refetch()
             setShowConfirmationDialog(false);
             toast.success("Applicant shortlisted successfully");

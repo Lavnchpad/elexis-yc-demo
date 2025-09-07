@@ -5,6 +5,7 @@ from elexis.services.ecs_task import ECSAIBotTaskService, ECSInterviewLanguages,
 from elexis.services.daily import DailyMeetingService
 from elexis.services.questions_generator import generate_questions, GeneratedQuestionsDto
 from elexis.utils.summary_generation import resume_summary_generator , extract_text_from_pdf
+from rest_framework.exceptions import ValidationError
 # from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from django.core.mail import send_mail
 from collections import defaultdict
@@ -842,6 +843,40 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
             # Fallback to default single object creation
             return super().create(request, *args, **kwargs)
 
+    # this will handle , moving a candidate from onBoard stage to selected for interview( archiving the old record and create a new one in next stage)
+    @action(detail=True, methods=['post'], url_path='short-list')
+    def shortList(self, request, *args, **kwargs):
+        try:
+            # check if its in onboard stage
+            # make it archieve 
+            # create a new record in selected for interview stage
+            instance = self.get_object()
+            if instance.stage != 'candidate_onboard':
+                raise ValidationError("This record is not in candidate_onboard stage!")
+            with transaction.atomic():
+                instance.is_archived = True
+                instance.save(update_fields=['is_archived'])
+                new_instance = JobMatchingResumeScore.objects.create(
+                    job=instance.job,
+                    candidate=instance.candidate,
+                    score=instance.score,
+                    stage='selected_for_interview',
+                    created_by=request.user,
+                    modified_by=request.user,
+                    organization=request.user.organization,
+                    is_archived=False,
+                )
+                new_instance.save()
+                serializer = self.get_serializer(new_instance)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)    
+
+        except Exception as e:
+            return Response(
+        {"detail": f"Internal server error: {str(e)}"},
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+        
+    # this will handle bulk create of JobMatchingResumeScore objects, basically assoaciated candidates in a Job pipeline
     @action(detail=False, methods=['post'], url_path='bulk_create')
     def bulk_create(self, request, *args, **kwargs):
         try:
