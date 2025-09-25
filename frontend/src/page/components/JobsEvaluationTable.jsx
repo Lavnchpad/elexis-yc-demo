@@ -34,15 +34,18 @@ export function JobsEvaluationTable({ id, defaultShow = false }) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {Object.values(candidateEvaluations)?.map((item) => (
+                    {Object.values(candidateEvaluations)?.map((item) => (
                             <TableRow key={item?.candidateId}>
                                 <TableCell className="font-medium">{item?.candidateName}</TableCell>
                                 {
                                     criterias?.map((criteria) => {
+                                        const selectedEvaluation = item?.evaluations.find(item => criteria.id === item.criteriaId)
+                                        const rating = selectedEvaluation?.rating
+                                        const message = selectedEvaluation?.remarks
                                         return (
                                             <TableCell key={criteria.id} className="text-center">
-                                                <Tooltip message={item?.evaluations?.[criteria?.id]?.["remarks"]} position="top" className="text-xs w-96 bg-white shadow-lg">
-                                                    {item?.evaluations?.[criteria?.id]?.["weightedScore"]}
+                                                <Tooltip message={message} position="top" className="text-xs w-96 bg-white shadow-lg">
+                                                    {rating}
                                                 </Tooltip>
                                             </TableCell>
                                         )

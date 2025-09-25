@@ -5,8 +5,10 @@ from elexis.services.ecs_task import ECSAIBotTaskService, ECSInterviewLanguages,
 from elexis.services.daily import DailyMeetingService
 from elexis.services.questions_generator import generate_questions, GeneratedQuestionsDto
 from elexis.utils.summary_generation import resume_summary_generator , extract_text_from_pdf
+from rest_framework.exceptions import ValidationError
 # from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from django.core.mail import send_mail
+from collections import defaultdict
 from django.conf import settings
 from django.shortcuts import redirect
 from rest_framework import viewsets, status
@@ -39,7 +41,7 @@ from django.utils.timezone import make_aware, now
 from django.shortcuts import redirect
 import logging
 from .services.pinecone_service import pinecone_client
-from django.db.models import F, Sum, ExpressionWrapper, IntegerField
+from django.db.models import F, Sum, ExpressionWrapper, IntegerField, Window
 import os
 from dotenv import load_dotenv      
 from .mail_templates.interview_scheduled import interview_scheduled_template
@@ -636,63 +638,48 @@ class JobViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def ranked_candidates(self, request, pk=None):
         job = self.get_object()
+        interviews = Interview.objects.filter(job=job, transcript__isnull=False)
         evaluations = JobRequirementEvaluation.objects.filter(
-            job_requirement__job=job
-            ).annotate(
-                requirement_name=F('job_requirement__requirement'),
-                requirement_id=F('job_requirement__id'),
-                interviewId=F('interview_id'),
-                interviewDate=F('interview__date'),
-                weightage=F('job_requirement__weightage'),
-                candidates_id=F('candidate__id'),
-                candidates_name=F('candidate__name'),
-                weighted_score=ExpressionWrapper(
-                    F('rating') * F('job_requirement__weightage'),
-                    output_field=IntegerField()
-                )
-            ).values(
-                'candidates_id',
-                'interviewId',
-                'candidates_name',
-                'interviewDate',
-                'requirement_name',
-                'requirement_id',
-                'weightage',
-                'rating',
-                'weighted_score',
-                'remarks',
-            ).order_by(
-                "-weighted_score"
+        interview__in=interviews
+        ).annotate(
+            criteriaName=F('job_requirement__requirement'),
+            criteriaId=F('job_requirement__id'),
+            interviewId=F('interview_id'),
+            candidateName=F('candidate__name'),
+            candidateId=F('candidate__id'),
+            weightage=F('job_requirement__weightage'),
+            totalScore=Window(
+                expression=Sum("rating"),
+                partition_by=[F("interview__id")]
             )
-        response = {}
-        for evaluation in evaluations:
-            candidateId = str(evaluation["candidates_id"])
-            requirementName = str(evaluation["requirement_id"])
-            interviewId=str(evaluation["interviewId"]),
-            requirementevaluation = {
-                "remarks":evaluation["remarks"],
-                "weightage": evaluation["weightage"],
-                "weightedScore":evaluation["weighted_score"],
-                "rating":evaluation["rating"],
-                "requirementName": evaluation["requirement_name"],
-                }
-            interviewId = str(interviewId[0]) if isinstance(interviewId, tuple) else str(interviewId)
-            if interviewId in response:
-                response[interviewId]["evaluations"][requirementName]= requirementevaluation
-                response[interviewId]["totalScore"] = response[interviewId]["totalScore"] + requirementevaluation['weightedScore']
-            else:
-                response[interviewId]={"evaluations":{requirementName : requirementevaluation},
-                "totalScore": requirementevaluation['weightedScore'],
-                "candidateName": evaluation["candidates_name"],
-                "candidateId": candidateId,
-                "interviewId":interviewId
-                }
+        ).values(
+            "id",
+            "candidateId",
+            "candidateName",
+            "interviewId",
+            "criteriaName",
+            "criteriaId",
+            "rating",
+            "remarks",
+            "weightage",
+            "totalScore"
+        ).order_by('-totalScore')
+        grouped = defaultdict(lambda: {"evaluations": [], "totalScore": 0,"candidateId": None,
+    "candidateName": None,})
 
-            
-        # print("Response of ranked candidates:::", response)
-        return Response({"candidateEvaluations":response,
+        for e in evaluations:
+            interview_id = str(e["interviewId"])
+            grouped[interview_id]["candidateId"] = e.get("candidateId")
+            grouped[interview_id]["candidateName"] = e.get("candidateName")
+            grouped[interview_id]["evaluations"].append(e)
+            grouped[interview_id]["totalScore"] += e.get("rating", 0)
+
+        # Convert defaultdict to normal dict
+        result = list(grouped.values())
+
+        return Response({"candidateEvaluations":result,
                          "criterias":  JobRequirementSerializer(job.requirements, many=True).data
-                         })
+        })
     @action(detail=False, methods=['get'])
     def not_associated_jobs(self, request, pk=None):
         """
@@ -856,6 +843,40 @@ class JobMatchingResumeScoreViewSet(viewsets.ModelViewSet):
             # Fallback to default single object creation
             return super().create(request, *args, **kwargs)
 
+    # this will handle , moving a candidate from onBoard stage to selected for interview( archiving the old record and create a new one in next stage)
+    @action(detail=True, methods=['post'], url_path='short-list')
+    def shortList(self, request, *args, **kwargs):
+        try:
+            # check if its in onboard stage
+            # make it archieve 
+            # create a new record in selected for interview stage
+            instance = self.get_object()
+            if instance.stage != 'candidate_onboard':
+                raise ValidationError("This record is not in candidate_onboard stage!")
+            with transaction.atomic():
+                instance.is_archived = True
+                instance.save(update_fields=['is_archived'])
+                new_instance = JobMatchingResumeScore.objects.create(
+                    job=instance.job,
+                    candidate=instance.candidate,
+                    score=instance.score,
+                    stage='selected_for_interview',
+                    created_by=request.user,
+                    modified_by=request.user,
+                    organization=request.user.organization,
+                    is_archived=False,
+                )
+                new_instance.save()
+                serializer = self.get_serializer(new_instance)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)    
+
+        except Exception as e:
+            return Response(
+        {"detail": f"Internal server error: {str(e)}"},
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+        
+    # this will handle bulk create of JobMatchingResumeScore objects, basically assoaciated candidates in a Job pipeline
     @action(detail=False, methods=['post'], url_path='bulk_create')
     def bulk_create(self, request, *args, **kwargs):
         try:

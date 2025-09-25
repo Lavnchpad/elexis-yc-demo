@@ -232,6 +232,7 @@ class ECSAIBotTaskService:
             raise
 
     def schedule_scaling(self, start_time: datetime.datetime, capacity: int):
+        start_time = timezone.make_aware(start_time)
         # Scales the EC2 instances 
         action_name = f'scale-up-{start_time.strftime("%Y-%m-%dT%H-%M")}'
         print(f'scale-up-{start_time.strftime("%Y-%m-%dT%H-%M")}', start_time)
