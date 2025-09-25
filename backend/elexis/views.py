@@ -431,6 +431,7 @@ class InterviewViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 print("Error", e)
                 traceback.print_exc()
+                raise Exception()
 
         def perform_update(self, serializer):
             interview = serializer.save(modified_by = self.request.user)
