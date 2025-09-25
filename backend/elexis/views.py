@@ -1,3 +1,4 @@
+import traceback
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from elexis.utils.general import upsert_jd_vector, upsert_resume_vector
@@ -302,130 +303,135 @@ class InterviewViewSet(viewsets.ModelViewSet):
           return queryset
         
         def perform_create(self,serializer):
-         candidate = serializer.validated_data.get('candidate')  # Fetch the candidate data
-         if candidate:
-        # Set the organization based on the candidate's organization
-            organization = candidate.organization
-            interview = serializer.save(scheduled_by=self.request.user,organization=organization, created_by = self.request.user,
-                modified_by = self.request.user)
-            #  save copy of the job questions to the Interview questions table
-            job_Questions = JobQuestions.objects.filter(job=interview.job)
-            new_interview_questions_instances = []
-            for question in job_Questions:
-                new_interview_questions_instances.append(
-                        InterviewQuestions(
-                            interview=interview, 
-                            question=question.question, 
-                            sort_order=question.sort_order
-                        )
-            )
-            if new_interview_questions_instances:
-                InterviewQuestions.objects.bulk_create(new_interview_questions_instances)
-
-            interview.link = f"{CLIENT_URL}/interviews/{interview.id}/start/"
-            self._update_status_fields(interview)
-            interview.save()
-
-            ecs_interview_service = ECSAIBotTaskService()
-            interview_date_time = make_aware(datetime.combine(interview.date, interview.time))
-            scaling_window_deltas = [
-                [interview_date_time - timedelta(hours=0, minutes=30), interview_date_time], # Pre Interview
-                [interview_date_time , interview_date_time + timedelta(minutes=30)], # Interview first half
-                [interview_date_time + timedelta(minutes=30), interview_date_time + timedelta(hours=1)], # Interview second half
-                [interview_date_time + timedelta(hours=1), interview_date_time + timedelta(hours=1, minutes=30)] # Post Interview half
-            ]
-            shutdown_scaling_window = [interview_date_time + timedelta(hours=1, minutes=30), interview_date_time + timedelta(hours=2)] # Shutdown
-            for scaling_window_delta in scaling_window_deltas:
-                scaling_window = ECSApplicationAutoScalingSchedule.objects.filter(start_time=scaling_window_delta[0], end_time=scaling_window_delta[1]).first()
-                if scaling_window is None:
-                    scaling_window = ECSApplicationAutoScalingSchedule.objects.create(max_capacity=0, min_capacity=0,start_time=scaling_window_delta[0], end_time=scaling_window_delta[1],
-                                                                     scheduled_action_name=f'scale-up-{scaling_window_delta[0].strftime("%Y-%m-%dT%H-%M")}')
-                scaling_window.max_capacity +=1
-                scaling_window.min_capacity +=1
-                scaling_window.save()
-                ecs_interview_service.schedule_scaling(scaling_window.start_time, scaling_window.min_capacity )
-            scaling_window = ECSApplicationAutoScalingSchedule.objects.filter(start_time=shutdown_scaling_window[0], end_time=shutdown_scaling_window[1]).first()
-            if scaling_window is None:
-                scaling_window = ECSApplicationAutoScalingSchedule.objects.create(max_capacity=0, min_capacity=0,start_time=shutdown_scaling_window[0], end_time=shutdown_scaling_window[1],
-                                                                    scheduled_action_name=f'scale-up-{shutdown_scaling_window[0].strftime("%Y-%m-%dT%H-%M")}')
-            scaling_window.save()
-            ecs_interview_service.schedule_scaling(scaling_window.start_time, scaling_window.min_capacity )
-            
-
-            subject, message = interview_scheduled_template(interview.scheduled_by.organization.org_name, interview.candidate.name, interview.job.job_name, interview.link, f"{interview.date} at {interview.time}", interview.scheduled_by.email)
-    # Doing this here as this is the only place where a candidate gets associated with a Job
-            resume_embedding_id = interview.candidate.resume_embedding_id
-            jd_embedding_id = interview.job.job_description_embedding_id
-
-            # TODO : check if the cosine similarity for this candidate's resume and jd is already present in DB , if not , get the cosine similarity and add it to the DB 
-            if not resume_embedding_id:
-                resume_text = extract_text_from_pdf(candidate.resume.url) if candidate.resume else ""
-                resume_embedding_id = upsert_resume_vector(candiate_name=candidate.name,
-                                        candidate_id=candidate.id,
-                                        resume_full_text=resume_text,
-                                        candidate_email=candidate.email,
-                                        namespace=f"{candidate.organization.org_name}_{candidate.organization.id}"
-                                        )
-                candidate.resume_embedding_id = resume_embedding_id
-                candidate.save(update_fields=['resume_embedding_id'])
-            if not jd_embedding_id:
-                jd_embedding_id = upsert_jd_vector(requirements_text=" ".join([req.requirement for req in interview.job.requirements.all()]), job=interview.job)
-                interview.job.job_description_embedding_id = jd_embedding_id
-                interview.job.save(update_fields=['job_description_embedding_id'])
-                
-            # If the candidate is associated with a job, calculate the similarity score between the resume and job description
-            # and save it in the JobMatchingResumeScore table
-            if resume_embedding_id and  jd_embedding_id:
-                try:
-                    #TODO if already score is present no work , else...
-                    print("Resume Embedding ID", resume_embedding_id)
-                    print("Job Description Embedding ID", jd_embedding_id)
-                    similarityScoreObject = JobMatchingResumeScore.objects.filter(
-                        job=interview.job,
-                        candidate=interview.candidate,
-                        stage='candidate_onboard').first()
-                    similarityScore = similarityScoreObject.score if similarityScoreObject else None
-                    if not similarityScore:
-                        print("Calculating similarity score between job and resume")
-                        # If the similarity score is not present, calculate it and save it
-                        similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id, namespace=f"{interview.organization.org_name}_{interview.organization.id}")
-    
-                        
-                    JobMatchingResumeScore.objects.filter(
-                        job=interview.job,
-                        candidate=interview.candidate,
-                        stage__in=['candidate_onboard', 'selected_for_interview','completed_interview']).update(
-                            is_archived=True
-                        )
-                    newJobMatchingResumeScore = JobMatchingResumeScore.objects.create(
-                        job=interview.job,
-                        candidate=interview.candidate,
-                        score=similarityScore,
-                        stage='scheduled_interview',
-                        created_by=self.request.user,
-                        modified_by=self.request.user,
-                        organization=interview.organization,
-                        is_archived=False,
-                    )
-                    newJobMatchingResumeScore.save()
-                    print("New Job Matching Resume Score", newJobMatchingResumeScore)
-                    interview.job_matching_resume_score = newJobMatchingResumeScore
-                    interview.save(update_fields=['job_matching_resume_score'])
-                    # Save the new JobMatchingResumeScore instance
-                # in which stage you want to store this? if it is action taken from jobs oage , and what if interview scheduled from candidates page
-                    pass
-                except Exception as e:
-                    print("Error hain bhai", e)
             try:
-                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email, interview.scheduled_by.email])
+                candidate = serializer.validated_data.get('candidate')  # Fetch the candidate data
+                if candidate:
+                # Set the organization based on the candidate's organization
+                    organization = candidate.organization
+                    interview = serializer.save(scheduled_by=self.request.user,organization=organization, created_by = self.request.user,
+                        modified_by = self.request.user)
+                    #  save copy of the job questions to the Interview questions table
+                    job_Questions = JobQuestions.objects.filter(job=interview.job)
+                    new_interview_questions_instances = []
+                    for question in job_Questions:
+                        new_interview_questions_instances.append(
+                                InterviewQuestions(
+                                    interview=interview, 
+                                    question=question.question, 
+                                    sort_order=question.sort_order
+                                )
+                    )
+                    if new_interview_questions_instances:
+                        InterviewQuestions.objects.bulk_create(new_interview_questions_instances)
+
+                    interview.link = f"{CLIENT_URL}/interviews/{interview.id}/start/"
+                    self._update_status_fields(interview)
+                    interview.save()
+
+                    ecs_interview_service = ECSAIBotTaskService()
+                    interview_date_time = make_aware(datetime.combine(interview.date, interview.time))
+                    scaling_window_deltas = [
+                        [interview_date_time - timedelta(hours=0, minutes=30), interview_date_time], # Pre Interview
+                        [interview_date_time , interview_date_time + timedelta(minutes=30)], # Interview first half
+                        [interview_date_time + timedelta(minutes=30), interview_date_time + timedelta(hours=1)], # Interview second half
+                        [interview_date_time + timedelta(hours=1), interview_date_time + timedelta(hours=1, minutes=30)] # Post Interview half
+                    ]
+                    shutdown_scaling_window = [interview_date_time + timedelta(hours=1, minutes=30), interview_date_time + timedelta(hours=2)] # Shutdown
+                    for scaling_window_delta in scaling_window_deltas:
+                        scaling_window = ECSApplicationAutoScalingSchedule.objects.filter(start_time=scaling_window_delta[0], end_time=scaling_window_delta[1]).first()
+                        if scaling_window is None:
+                            scaling_window = ECSApplicationAutoScalingSchedule.objects.create(max_capacity=0, min_capacity=0,start_time=scaling_window_delta[0], end_time=scaling_window_delta[1],
+                                                                            scheduled_action_name=f'scale-up-{scaling_window_delta[0].strftime("%Y-%m-%dT%H-%M")}')
+                        scaling_window.max_capacity +=1
+                        scaling_window.min_capacity +=1
+                        scaling_window.save()
+                        ecs_interview_service.schedule_scaling(scaling_window.start_time, scaling_window.min_capacity )
+                    scaling_window = ECSApplicationAutoScalingSchedule.objects.filter(start_time=shutdown_scaling_window[0], end_time=shutdown_scaling_window[1]).first()
+                    if scaling_window is None:
+                        scaling_window = ECSApplicationAutoScalingSchedule.objects.create(max_capacity=0, min_capacity=0,start_time=shutdown_scaling_window[0], end_time=shutdown_scaling_window[1],
+                                                                            scheduled_action_name=f'scale-up-{shutdown_scaling_window[0].strftime("%Y-%m-%dT%H-%M")}')
+                    scaling_window.save()
+                    ecs_interview_service.schedule_scaling(scaling_window.start_time, scaling_window.min_capacity )
+                    
+
+                    subject, message = interview_scheduled_template(interview.scheduled_by.organization.org_name, interview.candidate.name, interview.job.job_name, interview.link, f"{interview.date} at {interview.time}", interview.scheduled_by.email)
+            # Doing this here as this is the only place where a candidate gets associated with a Job
+                    resume_embedding_id = interview.candidate.resume_embedding_id
+                    jd_embedding_id = interview.job.job_description_embedding_id
+
+                    # TODO : check if the cosine similarity for this candidate's resume and jd is already present in DB , if not , get the cosine similarity and add it to the DB 
+                    if not resume_embedding_id:
+                        resume_text = extract_text_from_pdf(candidate.resume.url) if candidate.resume else ""
+                        resume_embedding_id = upsert_resume_vector(candiate_name=candidate.name,
+                                                candidate_id=candidate.id,
+                                                resume_full_text=resume_text,
+                                                candidate_email=candidate.email,
+                                                namespace=f"{candidate.organization.org_name}_{candidate.organization.id}"
+                                                )
+                        candidate.resume_embedding_id = resume_embedding_id
+                        candidate.save(update_fields=['resume_embedding_id'])
+                    if not jd_embedding_id:
+                        jd_embedding_id = upsert_jd_vector(requirements_text=" ".join([req.requirement for req in interview.job.requirements.all()]), job=interview.job)
+                        interview.job.job_description_embedding_id = jd_embedding_id
+                        interview.job.save(update_fields=['job_description_embedding_id'])
+                        
+                    # If the candidate is associated with a job, calculate the similarity score between the resume and job description
+                    # and save it in the JobMatchingResumeScore table
+                    if resume_embedding_id and  jd_embedding_id:
+                        try:
+                            #TODO if already score is present no work , else...
+                            print("Resume Embedding ID", resume_embedding_id)
+                            print("Job Description Embedding ID", jd_embedding_id)
+                            similarityScoreObject = JobMatchingResumeScore.objects.filter(
+                                job=interview.job,
+                                candidate=interview.candidate,
+                                stage='candidate_onboard').first()
+                            similarityScore = similarityScoreObject.score if similarityScoreObject else None
+                            if not similarityScore:
+                                print("Calculating similarity score between job and resume")
+                                # If the similarity score is not present, calculate it and save it
+                                similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id, namespace=f"{interview.organization.org_name}_{interview.organization.id}")
+            
+                                
+                            JobMatchingResumeScore.objects.filter(
+                                job=interview.job,
+                                candidate=interview.candidate,
+                                stage__in=['candidate_onboard', 'selected_for_interview','completed_interview']).update(
+                                    is_archived=True
+                                )
+                            newJobMatchingResumeScore = JobMatchingResumeScore.objects.create(
+                                job=interview.job,
+                                candidate=interview.candidate,
+                                score=similarityScore,
+                                stage='scheduled_interview',
+                                created_by=self.request.user,
+                                modified_by=self.request.user,
+                                organization=interview.organization,
+                                is_archived=False,
+                            )
+                            newJobMatchingResumeScore.save()
+                            print("New Job Matching Resume Score", newJobMatchingResumeScore)
+                            interview.job_matching_resume_score = newJobMatchingResumeScore
+                            interview.save(update_fields=['job_matching_resume_score'])
+                            # Save the new JobMatchingResumeScore instance
+                        # in which stage you want to store this? if it is action taken from jobs oage , and what if interview scheduled from candidates page
+                            pass
+                        except Exception as e:
+                            print("Error hain bhai", e)
+                    try:
+                        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [interview.candidate.email, interview.scheduled_by.email])
+                    except Exception as e:
+                        print("Email can't be sent", e)
+                    return Response(
+                        {"message": "Interview scheduled and email sent.", "link": interview.link},
+                        status=status.HTTP_201_CREATED,
+                    )
+                else :
+                    raise ValueError("Candidate data is required to schedule an interview.")
             except Exception as e:
-                print("Email can't be sent", e)
-            return Response(
-                {"message": "Interview scheduled and email sent.", "link": interview.link},
-                status=status.HTTP_201_CREATED,
-            )
-         else :
-             raise ValueError("Candidate data is required to schedule an interview.")
+                print("Error", e)
+                traceback.print_exc()
+
         def perform_update(self, serializer):
             interview = serializer.save(modified_by = self.request.user)
             ecs_interview_service = ECSAIBotTaskService()
