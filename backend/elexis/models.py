@@ -170,7 +170,7 @@ class JobMatchingResumeScore(BaseModel):
         null=True,
         blank=True,
         default=0.0,
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        validators=[MinValueValidator(-100), MaxValueValidator(100)],
         help_text="Score indicating how well the candidate's resume matches the job description"
     )
     stage = models.CharField(
