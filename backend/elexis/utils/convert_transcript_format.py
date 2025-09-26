@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI"))  # Replace with your actual API key
 
-model = genai.GenerativeModel('gemini-1.5-flash-8b')
+model = genai.GenerativeModel('gemini-2.0-flash')
 
 def is_valid_qa_output(data: Union[str, list]) -> bool:
     """
