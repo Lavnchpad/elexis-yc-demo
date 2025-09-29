@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 dotenv.load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI"))  # Replace with your actual API key
-
-model = genai.GenerativeModel('gemini-2.0-flash')
+model_name = 'gemini-2.0-flash'
+model = genai.GenerativeModel(model_name)
 
 def is_valid_qa_output(data: Union[str, list]) -> bool:
     """
@@ -67,6 +67,7 @@ Please regenerate the response correctly.
 
     attempt = 0
     while attempt < max_retries:
+        print(f"Using model - {model_name}")
         response = model.generate_content(base_prompt if attempt == 0 else feedback_prompt + base_prompt)
 
         try:
