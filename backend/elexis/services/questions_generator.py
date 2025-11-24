@@ -150,7 +150,7 @@ def generate_questions(role: str, job_description: str, resume_summary: str) -> 
     
     prompt = builder.build()
 
-    model = genai.GenerativeModel("gemini-2.5-flash-preview-05-20",
+    model = genai.GenerativeModel("gemini-2.5-flash",
                                   generation_config={"response_mime_type": "application/json"})
     
     chat = model.start_chat(history=[])
