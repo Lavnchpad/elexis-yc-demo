@@ -34,7 +34,7 @@ import Summary from "@/components/component/tabs/Summary";
 import StudentDetailsSkeleton from "@/components/component/Loader/StudentDetailsLoader";
 import Experience from "@/components/component/candidate/skills-experience/Experience";
 import Skills from "@/components/component/candidate/skills-experience/Skills";
-import AddCandidate from "@/components/component/candidate/AddCandidate";
+import AddCandidate from "@/components/component/candidate/AddCandidateEnhanced";
 import ErrorBoundary from "@/utils/ErrorBoundary";
 // import { toast } from "sonner";
 import { copyLink, isInterviewEnded } from "@/lib/utils";

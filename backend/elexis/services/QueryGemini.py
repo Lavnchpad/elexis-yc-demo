@@ -9,7 +9,7 @@ import os
 dotenv.load_dotenv()
 
 T = TypeVar('T')
-model = 'gemini-2.5-flash'
+model = 'gemini-2.0-flash'
 
 class QueryGemini:
     """
@@ -48,5 +48,5 @@ class QueryGemini:
         except Exception as e:
             print(f"Error in QueryGemini.query: {e}")
             return ""  
-GeminiClient = QueryGemini(api_key=os.environ.get('GEMINI'))
+GeminiClient = QueryGemini(api_key=os.environ.get('GEMINI_API_KEY'))
     

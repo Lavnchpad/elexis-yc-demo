@@ -27,9 +27,13 @@ const CandidatesProvider = ({ children }) => {
       try {
         setloading(true);
         const candidatesResponse = await fetchCandidates();
-        setCandidates(candidatesResponse);
+        // Ensure we always set an array, even if API returns something else
+        setCandidates(Array.isArray(candidatesResponse) ? candidatesResponse : []);
         localStorage.removeItem("jobState");
-      } catch (error) { } finally {
+      } catch (error) { 
+        // On error, set empty array to avoid iteration issues
+        setCandidates([]);
+      } finally {
         setloading(false);
       }
     })()

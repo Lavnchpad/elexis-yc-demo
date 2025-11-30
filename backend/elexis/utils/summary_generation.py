@@ -79,7 +79,7 @@ def generate_summary_data(data, requirements):
             raise Exception("Unable to generate summary after retries")
         try:
             prompt = prompt_template.replace("{{data}}", data).replace("{{requirements}}", str(requirements))
-            model = genai.GenerativeModel('gemini-2.5-flash',
+            model = genai.GenerativeModel('gemini-2.0-flash',
                                           generation_config={"response_mime_type": "application/json"})
             chat = model.start_chat(history=[])
             response = chat.send_message(prompt)

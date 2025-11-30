@@ -213,20 +213,6 @@ SIMPLE_JWT = {
 
 
 
-# Enable S3 storage backend via django-storages
-
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-        },
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
-        # "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
-}
-
 # LocalStack S3 config
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -236,6 +222,26 @@ AWS_S3_REGION_NAME = os.getenv("AWS_REGION_NAME")
 AWS_S3_ADDRESSING_STYLE = "path"  # important for LocalStack
 # Optional: Make uploaded files publicly accessible
 # AWS_DEFAULT_ACL = "public-read"
+
+# Enable S3 storage backend via django-storages
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "access_key": AWS_ACCESS_KEY_ID,
+            "secret_key": AWS_SECRET_ACCESS_KEY,
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "endpoint_url": AWS_S3_ENDPOINT_URL,
+            "region_name": AWS_S3_REGION_NAME,
+            "addressing_style": "path",
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        # "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 
 # Email

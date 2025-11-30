@@ -6,6 +6,7 @@ from elexis.services.ecs_task import ECSAIBotTaskService, ECSInterviewLanguages,
 from elexis.services.daily import DailyMeetingService
 from elexis.services.questions_generator import generate_questions, GeneratedQuestionsDto
 from elexis.utils.summary_generation import resume_summary_generator , extract_text_from_pdf
+from elexis.services.resume_parser import extract_resume_data, extract_resumes_batch
 from rest_framework.exceptions import ValidationError
 # from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from django.core.mail import send_mail
@@ -269,6 +270,318 @@ class CandidateViewSet(viewsets.ModelViewSet):
         except Exception as e:
             print("Error in Candidateviewset ---> get_signed_urls meythod:::", e)
             return Response({"error": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated], url_path="extract-resume-data")
+    def extract_resume_data(self, request):
+        """
+        Extract name, email, phone from uploaded resume file
+        """
+        try:
+            if 'resume' not in request.FILES:
+                return Response(
+                    {"error": "No resume file provided"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            resume_file = request.FILES['resume']
+            
+            # Save temporarily to extract data
+            import tempfile
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
+                for chunk in resume_file.chunks():
+                    temp_file.write(chunk)
+                temp_file_path = temp_file.name
+            
+            # Extract data
+            extracted_data = extract_resume_data(temp_file_path)
+            
+            # Clean up
+            os.unlink(temp_file_path)
+            
+            # Check if extraction was successful
+            has_data = extracted_data.name or extracted_data.email or extracted_data.phone
+            
+            return Response({
+                "success": has_data,
+                "message": "Data extracted successfully" if has_data else "Could not extract data from resume",
+                "data": {
+                    "name": extracted_data.name,
+                    "email": extracted_data.email,
+                    "phone": extracted_data.phone
+                }
+            })
+            
+        except Exception as e:
+            print(f"Error extracting resume data: {e}")
+            return Response(
+                {"error": "Failed to extract data from resume"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated], url_path="bulk-upload")
+    def bulk_upload_resumes(self, request):
+        """
+        Bulk upload multiple resume files with data extraction and candidate creation
+        Uses Gemini Batch API for efficient processing
+        """
+        try:
+            # Check if files are provided
+            resume_files = request.FILES.getlist('resumes')
+            if not resume_files:
+                return Response(
+                    {"error": "No resume files provided"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Limit to 100 files
+            if len(resume_files) > 100:
+                return Response(
+                    {"error": "Maximum 100 files allowed per bulk upload"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            job_id = request.data.get('job_id')
+            job = None
+            if job_id:
+                try:
+                    job = Job.objects.get(id=job_id, organization=request.user.organization)
+                except Job.DoesNotExist:
+                    return Response(
+                        {"error": "Job not found"}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            # Save all files temporarily for batch processing
+            temp_file_paths = []
+            file_mapping = {}
+            
+            print(f"Processing {len(resume_files)} files for bulk upload")
+            
+            for i, resume_file in enumerate(resume_files):
+                try:
+                    import tempfile
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
+                        for chunk in resume_file.chunks():
+                            temp_file.write(chunk)
+                        temp_file_path = temp_file.name
+                        temp_file_paths.append(temp_file_path)
+                        file_mapping[temp_file_path] = {
+                            "index": i,
+                            "file_name": resume_file.name,
+                            "file_object": resume_file
+                        }
+                except Exception as e:
+                    print(f"Error saving temporary file for {resume_file.name}: {e}")
+                    continue
+            
+            # Use batch processing for data extraction
+            print(f"Using Gemini Batch API to process {len(temp_file_paths)} resumes")
+            batch_extracted_data = extract_resumes_batch(temp_file_paths)
+            
+            results = []
+            successful_candidates = []
+            
+            # Process batch results
+            for temp_file_path in temp_file_paths:
+                file_info = file_mapping[temp_file_path]
+                file_result = {
+                    "file_name": file_info["file_name"],
+                    "index": file_info["index"],
+                    "status": "processing"
+                }
+                
+                try:
+                    extracted_data = batch_extracted_data.get(temp_file_path)
+                    
+                    # Clean up temp file
+                    os.unlink(temp_file_path)
+                    
+                    if not extracted_data:
+                        file_result.update({
+                            "status": "error",
+                            "error": "Could not extract data from resume"
+                        })
+                        results.append(file_result)
+                        continue
+                    
+                    # Validate extracted data
+                    if not extracted_data.name or not extracted_data.email:
+                        file_result.update({
+                            "status": "error",
+                            "error": "Could not extract required data (name and email) from resume"
+                        })
+                        results.append(file_result)
+                        continue
+                    
+                    # Check for duplicate email
+                    existing_candidate = Candidate.objects.filter(
+                        email=extracted_data.email,
+                        organization=request.user.organization
+                    ).first()
+                    
+                    if existing_candidate:
+                        file_result.update({
+                            "status": "skipped",
+                            "warning": f"Candidate with email {extracted_data.email} already exists - skipped",
+                            "existing_candidate_id": str(existing_candidate.id),
+                            "existing_candidate_name": existing_candidate.name
+                        })
+                        results.append(file_result)
+                        continue
+                    
+                    # Create candidate
+                    candidate = Candidate.objects.create(
+                        name=extracted_data.name,
+                        email=extracted_data.email,
+                        phone_number=extracted_data.phone or "",
+                        organization=request.user.organization,
+                        created_by=request.user,
+                        modified_by=request.user,
+                        recruiter=request.user,
+                    )
+                    
+                    # Save resume file
+                    resume_file = file_info["file_object"]
+                    candidate.resume.save(resume_file.name, resume_file, save=True)
+                    
+                    # Create resume embedding using batch processing
+                    resume_text = extracted_data.raw_text
+                    if resume_text:
+                        resume_embedding_id = upsert_resume_vector(
+                            candiate_name=candidate.name,
+                            candidate_id=candidate.id,
+                            resume_full_text=resume_text,
+                            candidate_email=candidate.email,
+                            namespace=f"{candidate.organization.org_name}_{candidate.organization.id}"
+                        )
+                        candidate.resume_embedding_id = resume_embedding_id
+                        candidate.save()
+                        
+                        # If job is specified, create job matching score
+                        if job and job.job_description_embedding_id:
+                            try:
+                                similarity_score = pinecone_client.get_similarity_between_stored_vectors(
+                                    job.job_description_embedding_id, 
+                                    resume_embedding_id, 
+                                    namespace=f"{job.organization.org_name}_{job.organization.id}"
+                                )
+                                job_matching_score = JobMatchingResumeScore.objects.create(
+                                    job=job,
+                                    candidate=candidate,
+                                    score=similarity_score if similarity_score else 0,
+                                    created_by=request.user,
+                                    modified_by=request.user
+                                )
+                                
+                                # Send individual AI evaluation messages for each candidate
+                                try:
+                                    # Job resume matching score calculation
+                                    add_message_to_sqs_queue(type='job_resume_matching_score', data={
+                                        "id": str(job_matching_score.id),
+                                    })
+                                    print(f"job_resume_matching_score added to Queue for JobMatchingResumeScore: {job_matching_score.id}")
+                                    
+                                    # AI evaluation for individual candidate
+                                    add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
+                                        "id": str(job_matching_score.id),
+                                    })
+                                    print(f"ai_job_resume_evaluation added to Queue for JobMatchingResumeScore: {job_matching_score.id}")
+                                    
+                                except Exception as sqs_error:
+                                    print(f"Error adding individual SQS messages for candidate {candidate.id}: {sqs_error}")
+                                    
+                            except Exception as e:
+                                print(f"Error creating job matching score: {e}")
+                    
+                    file_result.update({
+                        "status": "success",
+                        "candidate_id": candidate.id,
+                        "extracted_data": {
+                            "name": extracted_data.name,
+                            "email": extracted_data.email,
+                            "phone": extracted_data.phone
+                        }
+                    })
+                    successful_candidates.append(candidate)
+                    
+                except Exception as e:
+                    print(f"Error processing file {file_info['file_name']}: {e}")
+                    # Clean up temp file if still exists
+                    try:
+                        os.unlink(temp_file_path)
+                    except:
+                        pass
+                    file_result.update({
+                        "status": "error",
+                        "error": str(e)
+                    })
+                
+                results.append(file_result)
+            
+            # Clean up any remaining temp files
+            for temp_path in temp_file_paths:
+                try:
+                    os.unlink(temp_path)
+                except:
+                    pass
+            
+            # Trigger resume ranking if job is specified
+            if job and successful_candidates:
+                try:
+                    add_message_to_sqs_queue(
+                        type="rank-resumes",
+                        data={"job_id": str(job.id)}
+                    )
+                except Exception as e:
+                    print(f"Error adding rank-resumes to queue: {e}")
+            
+            # Summary
+            successful_count = len([r for r in results if r["status"] == "success"])
+            failed_count = len([r for r in results if r["status"] == "error"])
+            skipped_count = len([r for r in results if r["status"] == "skipped"])
+            
+            # Determine overall success status
+            overall_success = successful_count > 0
+            
+            # Return appropriate HTTP status code
+            if successful_count == 0 and failed_count > 0:
+                # All failed - return 400 Bad Request
+                status_code = status.HTTP_400_BAD_REQUEST
+            elif successful_count == 0 and skipped_count > 0:
+                # All skipped (duplicates) - return 200 but mark as not successful
+                status_code = status.HTTP_200_OK
+                overall_success = False
+            elif failed_count == 0:
+                # All succeeded or skipped - return 200 OK
+                status_code = status.HTTP_200_OK
+            else:
+                # Mixed results - return 200
+                status_code = status.HTTP_200_OK
+                
+            return Response({
+                "success": overall_success,
+                "summary": {
+                    "total_files": len(resume_files),
+                    "successful": successful_count,
+                    "failed": failed_count,
+                    "skipped": skipped_count,
+                    "processing_method": "Gemini Batch API"
+                },
+                "results": results
+            }, status=status_code)
+            
+        except Exception as e:
+            print(f"Error in bulk upload: {e}")
+            # Clean up any temp files on error
+            for temp_path in temp_file_paths if 'temp_file_paths' in locals() else []:
+                try:
+                    os.unlink(temp_path)
+                except:
+                    pass
+            return Response(
+                {"error": "Bulk upload failed"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class InterviewViewSet(viewsets.ModelViewSet):
