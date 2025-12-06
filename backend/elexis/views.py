@@ -7,6 +7,7 @@ from elexis.services.daily import DailyMeetingService
 from elexis.services.questions_generator import generate_questions, GeneratedQuestionsDto
 from elexis.utils.summary_generation import resume_summary_generator , extract_text_from_pdf
 from elexis.services.resume_parser import extract_resume_data, extract_resumes_batch
+from elexis.services.unified_resume_processor import UnifiedResumeProcessor
 from rest_framework.exceptions import ValidationError
 # from elexis.utils.get_file_data_from_s3 import generate_signed_url
 from django.core.mail import send_mail
@@ -19,7 +20,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions ,JobMatchingResumeScore, JobRequirementEvaluation, JobQuestions, SuggestedCandidates, AiJdResumeMatchingResponse, ECSApplicationAutoScalingSchedule
+from .models import Recruiter, Candidate, Job, Interview, InterviewQuestions ,JobMatchingResumeScore, JobRequirementEvaluation, JobQuestions, SuggestedCandidates, AiJdResumeMatchingResponse, ECSApplicationAutoScalingSchedule, ResumeUploadTracker
 from elexis.utils.general import getHumanReadableTime
 from .serializers import (
     SuggestedCandidatesSerializer,
@@ -161,61 +162,77 @@ class CandidateViewSet(viewsets.ModelViewSet):
             organization=self.request.user.organization
         )
 
+    def create(self, request, *args, **kwargs):
+        """
+        Override create to return tracking information for async processing
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Perform creation using unified processor
+        self.perform_create(serializer)
+        
+        # Get the tracking info
+        tracker = getattr(self, '_upload_tracker', None)
+        
+        # Prepare response data
+        response_data = serializer.data
+        
+        if tracker:
+            # Add tracking information for frontend
+            response_data.update({
+                'batch_job_id': str(tracker.batch_job_id),
+                'upload_type': tracker.upload_type,
+                'status': tracker.status,
+                'processing_details': {
+                    'total_files': tracker.total_files,
+                    'is_async': tracker.upload_type == 'single_resume',  # Only resume uploads are async
+                    'message': 'Candidate created successfully. Embedding generation in progress.' if tracker.upload_type == 'single_resume' else 'Candidate created successfully.'
+                }
+            })
+        
+        headers = self.get_success_headers(response_data)
+        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+
     def perform_create(self, serializer):
-        candidate = serializer.save(
-            organization=self.request.user.organization,
-            created_by=self.request.user,
-            modified_by=self.request.user,
-            recruiter=self.request.user,
-        )
-        resume_text = extract_text_from_pdf(candidate.resume.url) if candidate.resume else ""
-        resume_embedding_id = upsert_resume_vector(candiate_name=candidate.name,
-                                candidate_id=candidate.id,
-                                resume_full_text=resume_text,
-                                candidate_email=candidate.email,
-                                namespace=f"{candidate.organization.org_name}_{candidate.organization.id}"
-                                )
-        candidate.resume_embedding_id = resume_embedding_id
-        # if job Id is there , that means the candidate is getting created from a job details page , so do calculations like getMatchingScore with job description and store in JobMatchingResumeScore table with default stage
-        if(self.request.query_params.get('job_id')):
-            job_id = self.request.query_params.get('job_id')
-            try:
-                job = Job.objects.get(id=job_id, organization=self.request.user.organization)
-                # get the embedding id of the job description
-                jd_embedding_id = job.job_description_embedding_id
-                if jd_embedding_id and resume_embedding_id:
-                    try:
-                        similarityScore = pinecone_client.get_similarity_between_stored_vectors(jd_embedding_id, resume_embedding_id, namespace=f"{job.organization.org_name}_{job.organization.id}")
-                        print("Similarity Score", similarityScore)
-                        JobMatchingResumeScoreInstance = JobMatchingResumeScore.objects.create(
-                            job=job,
-                            candidate=candidate,
-                            score=similarityScore if similarityScore else 0,
-                            created_by=self.request.user,
-                            modified_by=self.request.user
-                        )
-                        # rank resume async job
-                        print(f"rank-resumes added to Queue for jon: {job.id}")
-                        add_message_to_sqs_queue(type='rank-resumes', data ={
-                                    "jobId":str(job.id)
-                            })
-                        # calculate scores for all not archived jobs
-                        print(f"job_resume_matching_score added to Queue for JobMatchingResumeScore : {JobMatchingResumeScoreInstance.id}")
-                        add_message_to_sqs_queue(type='job_resume_matching_score',data ={
-                            "id": str(JobMatchingResumeScoreInstance.id),
-                        })
-                        # evaluate resumeagainst a job via AI
-                        print(f"ai_job_resume_evaluation added to Queue for JobMatchingResumeScore: {JobMatchingResumeScoreInstance.id}")
-                        add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
-                            "id": str(JobMatchingResumeScoreInstance.id),
-                        })
-                    except Exception as e:
-                        print("CandidateViewset:: Error in getting similarity score between job and candidate resume", e)
-                else:
-                    print('JDembeddingid and resumeembedding id not found', jd_embedding_id, resume_embedding_id)
-            except Job.DoesNotExist:
-                print("Job with ID {} does not exist.".format(job_id))
-        serializer.save(resume_embedding_id=resume_embedding_id)
+        # Extract candidate data from serializer
+        candidate_data = {
+            'name': serializer.validated_data.get('name', ''),
+            'email': serializer.validated_data.get('email', ''),
+            'phone_number': serializer.validated_data.get('phone_number', ''),
+            'profile_photo': serializer.validated_data.get('profile_photo'),
+        }
+        
+        resume_file = serializer.validated_data.get('resume')
+        job_id = self.request.query_params.get('job_id')
+        
+        # Determine upload type and use unified processor
+        if resume_file:
+            # Single resume upload
+            tracker, candidates = UnifiedResumeProcessor.create_single_resume_job(
+                organization=self.request.user.organization,
+                user=self.request.user,
+                candidate_data=candidate_data,
+                resume_file=resume_file,
+                job_id=job_id
+            )
+        else:
+            # Manual entry (no resume file)
+            tracker, candidates = UnifiedResumeProcessor.create_single_manual_job(
+                organization=self.request.user.organization,
+                user=self.request.user,
+                candidate_data=candidate_data,
+                job_id=job_id
+            )
+        
+        # Return the created candidate (for serializer response)
+        candidate = candidates[0]
+        
+        # Update the serializer instance with the created candidate
+        serializer.instance = candidate
+        
+        # Add tracking info to response (will be available in view)
+        self._upload_tracker = tracker
 
     def perform_update(self, serializer):
         serializer.save(modified_by=self.request.user)
@@ -274,7 +291,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated], url_path="extract-resume-data")
     def extract_resume_data(self, request):
         """
-        Extract name, email, phone from uploaded resume file
+        Extract name, email, phone from uploaded resume file using Gemini
         """
         try:
             if 'resume' not in request.FILES:
@@ -292,22 +309,30 @@ class CandidateViewSet(viewsets.ModelViewSet):
                     temp_file.write(chunk)
                 temp_file_path = temp_file.name
             
-            # Extract data
-            extracted_data = extract_resume_data(temp_file_path)
+            # Use Gemini batch service for consistency (single file batch)
+            from elexis.services.gemini_batch_service import GeminiBatchService
+            try:
+                batch_service = GeminiBatchService()
+                batch_results = batch_service.process_resume_batch([temp_file_path])
+                extracted_data = batch_results.get(temp_file_path) if batch_results else None
+            except Exception as e:
+                # Fallback to original extraction method
+                print(f"Gemini batch extraction failed, falling back to original method: {e}")
+                extracted_data = extract_resume_data(temp_file_path)
             
             # Clean up
             os.unlink(temp_file_path)
             
             # Check if extraction was successful
-            has_data = extracted_data.name or extracted_data.email or extracted_data.phone
+            has_data = extracted_data and (extracted_data.name or extracted_data.email or extracted_data.phone)
             
             return Response({
                 "success": has_data,
                 "message": "Data extracted successfully" if has_data else "Could not extract data from resume",
                 "data": {
-                    "name": extracted_data.name,
-                    "email": extracted_data.email,
-                    "phone": extracted_data.phone
+                    "name": extracted_data.name if extracted_data else "",
+                    "email": extracted_data.email if extracted_data else "",
+                    "phone": extracted_data.phone if extracted_data else ""
                 }
             })
             
@@ -321,8 +346,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated], url_path="bulk-upload")
     def bulk_upload_resumes(self, request):
         """
-        Bulk upload multiple resume files with data extraction and candidate creation
-        Uses Gemini Batch API for efficient processing
+        Bulk upload multiple resume files using unified processing system
         """
         try:
             # Check if files are provided
@@ -341,7 +365,6 @@ class CandidateViewSet(viewsets.ModelViewSet):
                 )
             
             job_id = request.data.get('job_id')
-            job = None
             if job_id:
                 try:
                     job = Job.objects.get(id=job_id, organization=request.user.organization)
@@ -351,233 +374,29 @@ class CandidateViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             
-            # Save all files temporarily for batch processing
-            temp_file_paths = []
-            file_mapping = {}
+            # Use unified processor for bulk upload
+            tracker = UnifiedResumeProcessor.create_bulk_upload_job(
+                organization=request.user.organization,
+                user=request.user,
+                resume_files=resume_files,
+                job_id=job_id
+            )
             
-            print(f"Processing {len(resume_files)} files for bulk upload")
-            
-            for i, resume_file in enumerate(resume_files):
-                try:
-                    import tempfile
-                    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
-                        for chunk in resume_file.chunks():
-                            temp_file.write(chunk)
-                        temp_file_path = temp_file.name
-                        temp_file_paths.append(temp_file_path)
-                        file_mapping[temp_file_path] = {
-                            "index": i,
-                            "file_name": resume_file.name,
-                            "file_object": resume_file
-                        }
-                except Exception as e:
-                    print(f"Error saving temporary file for {resume_file.name}: {e}")
-                    continue
-            
-            # Use batch processing for data extraction
-            print(f"Using Gemini Batch API to process {len(temp_file_paths)} resumes")
-            batch_extracted_data = extract_resumes_batch(temp_file_paths)
-            
-            results = []
-            successful_candidates = []
-            
-            # Process batch results
-            for temp_file_path in temp_file_paths:
-                file_info = file_mapping[temp_file_path]
-                file_result = {
-                    "file_name": file_info["file_name"],
-                    "index": file_info["index"],
-                    "status": "processing"
-                }
-                
-                try:
-                    extracted_data = batch_extracted_data.get(temp_file_path)
-                    
-                    # Clean up temp file
-                    os.unlink(temp_file_path)
-                    
-                    if not extracted_data:
-                        file_result.update({
-                            "status": "error",
-                            "error": "Could not extract data from resume"
-                        })
-                        results.append(file_result)
-                        continue
-                    
-                    # Validate extracted data
-                    if not extracted_data.name or not extracted_data.email:
-                        file_result.update({
-                            "status": "error",
-                            "error": "Could not extract required data (name and email) from resume"
-                        })
-                        results.append(file_result)
-                        continue
-                    
-                    # Check for duplicate email
-                    existing_candidate = Candidate.objects.filter(
-                        email=extracted_data.email,
-                        organization=request.user.organization
-                    ).first()
-                    
-                    if existing_candidate:
-                        file_result.update({
-                            "status": "skipped",
-                            "warning": f"Candidate with email {extracted_data.email} already exists - skipped",
-                            "existing_candidate_id": str(existing_candidate.id),
-                            "existing_candidate_name": existing_candidate.name
-                        })
-                        results.append(file_result)
-                        continue
-                    
-                    # Create candidate
-                    candidate = Candidate.objects.create(
-                        name=extracted_data.name,
-                        email=extracted_data.email,
-                        phone_number=extracted_data.phone or "",
-                        organization=request.user.organization,
-                        created_by=request.user,
-                        modified_by=request.user,
-                        recruiter=request.user,
-                    )
-                    
-                    # Save resume file
-                    resume_file = file_info["file_object"]
-                    candidate.resume.save(resume_file.name, resume_file, save=True)
-                    
-                    # Create resume embedding using batch processing
-                    resume_text = extracted_data.raw_text
-                    if resume_text:
-                        resume_embedding_id = upsert_resume_vector(
-                            candiate_name=candidate.name,
-                            candidate_id=candidate.id,
-                            resume_full_text=resume_text,
-                            candidate_email=candidate.email,
-                            namespace=f"{candidate.organization.org_name}_{candidate.organization.id}"
-                        )
-                        candidate.resume_embedding_id = resume_embedding_id
-                        candidate.save()
-                        
-                        # If job is specified, create job matching score
-                        if job and job.job_description_embedding_id:
-                            try:
-                                similarity_score = pinecone_client.get_similarity_between_stored_vectors(
-                                    job.job_description_embedding_id, 
-                                    resume_embedding_id, 
-                                    namespace=f"{job.organization.org_name}_{job.organization.id}"
-                                )
-                                job_matching_score = JobMatchingResumeScore.objects.create(
-                                    job=job,
-                                    candidate=candidate,
-                                    score=similarity_score if similarity_score else 0,
-                                    created_by=request.user,
-                                    modified_by=request.user
-                                )
-                                
-                                # Send individual AI evaluation messages for each candidate
-                                try:
-                                    # Job resume matching score calculation
-                                    add_message_to_sqs_queue(type='job_resume_matching_score', data={
-                                        "id": str(job_matching_score.id),
-                                    })
-                                    print(f"job_resume_matching_score added to Queue for JobMatchingResumeScore: {job_matching_score.id}")
-                                    
-                                    # AI evaluation for individual candidate
-                                    add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
-                                        "id": str(job_matching_score.id),
-                                    })
-                                    print(f"ai_job_resume_evaluation added to Queue for JobMatchingResumeScore: {job_matching_score.id}")
-                                    
-                                except Exception as sqs_error:
-                                    print(f"Error adding individual SQS messages for candidate {candidate.id}: {sqs_error}")
-                                    
-                            except Exception as e:
-                                print(f"Error creating job matching score: {e}")
-                    
-                    file_result.update({
-                        "status": "success",
-                        "candidate_id": candidate.id,
-                        "extracted_data": {
-                            "name": extracted_data.name,
-                            "email": extracted_data.email,
-                            "phone": extracted_data.phone
-                        }
-                    })
-                    successful_candidates.append(candidate)
-                    
-                except Exception as e:
-                    print(f"Error processing file {file_info['file_name']}: {e}")
-                    # Clean up temp file if still exists
-                    try:
-                        os.unlink(temp_file_path)
-                    except:
-                        pass
-                    file_result.update({
-                        "status": "error",
-                        "error": str(e)
-                    })
-                
-                results.append(file_result)
-            
-            # Clean up any remaining temp files
-            for temp_path in temp_file_paths:
-                try:
-                    os.unlink(temp_path)
-                except:
-                    pass
-            
-            # Trigger resume ranking if job is specified
-            if job and successful_candidates:
-                try:
-                    add_message_to_sqs_queue(
-                        type="rank-resumes",
-                        data={"job_id": str(job.id)}
-                    )
-                except Exception as e:
-                    print(f"Error adding rank-resumes to queue: {e}")
-            
-            # Summary
-            successful_count = len([r for r in results if r["status"] == "success"])
-            failed_count = len([r for r in results if r["status"] == "error"])
-            skipped_count = len([r for r in results if r["status"] == "skipped"])
-            
-            # Determine overall success status
-            overall_success = successful_count > 0
-            
-            # Return appropriate HTTP status code
-            if successful_count == 0 and failed_count > 0:
-                # All failed - return 400 Bad Request
-                status_code = status.HTTP_400_BAD_REQUEST
-            elif successful_count == 0 and skipped_count > 0:
-                # All skipped (duplicates) - return 200 but mark as not successful
-                status_code = status.HTTP_200_OK
-                overall_success = False
-            elif failed_count == 0:
-                # All succeeded or skipped - return 200 OK
-                status_code = status.HTTP_200_OK
-            else:
-                # Mixed results - return 200
-                status_code = status.HTTP_200_OK
-                
             return Response({
-                "success": overall_success,
-                "summary": {
-                    "total_files": len(resume_files),
-                    "successful": successful_count,
-                    "failed": failed_count,
-                    "skipped": skipped_count,
-                    "processing_method": "Gemini Batch API"
-                },
-                "results": results
-            }, status=status_code)
+                "success": True,
+                "message": f"Bulk upload initiated for {len(resume_files)} files",
+                "batch_job_id": str(tracker.batch_job_id),
+                "upload_type": tracker.upload_type,
+                "status": tracker.status,
+                "processing_details": {
+                    "total_files": tracker.total_files,
+                    "is_async": True,
+                    "status_endpoint": f"/upload-tracker/status/{tracker.batch_job_id}/"
+                }
+            }, status=status.HTTP_202_ACCEPTED)
             
         except Exception as e:
             print(f"Error in bulk upload: {e}")
-            # Clean up any temp files on error
-            for temp_path in temp_file_paths if 'temp_file_paths' in locals() else []:
-                try:
-                    os.unlink(temp_path)
-                except:
-                    pass
             return Response(
                 {"error": "Bulk upload failed"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -946,10 +765,32 @@ class JobViewSet(viewsets.ModelViewSet):
             created_by = self.request.user,
             modified_by = self.request.user
         )
-        jd_embedding_id = upsert_jd_vector(requirements_text=" ".join([req.requirement for req in job.requirements.all()]), job=job)
-        # serializer.save(job_description_embedding_id=job_embedding_id)
-        job.job_description_embedding_id = jd_embedding_id
-        job.save(update_fields=['job_description_embedding_id'])
+        
+        # Use Gemini-only embedding generation for jobs (consistent with candidate system)
+        try:
+            requirements_text = " ".join([req.requirement for req in job.requirements.all()])
+            job_description_text = f"{job.job_name} at {job.organization.org_name}\nDescription: {job.job_description}\nRequirements: {requirements_text}"
+            
+            # Generate embedding using existing Gemini service function
+            from elexis.services.gemini_embedding_service import generate_embedding
+            
+            job_embedding = generate_embedding(job_description_text)
+            
+            if job_embedding and len(job_embedding) > 0:
+                job_embedding_id = f"job-{job.id}"
+                
+                # Store in job record for future use
+                job.job_description_embedding_id = job_embedding_id
+                job.save(update_fields=['job_description_embedding_id'])
+                
+                print(f"✅ Generated Gemini embedding for job {job.id} with {len(job_embedding)} dimensions")
+            else:
+                print(f"⚠️ Failed to generate embedding for job {job.id} - empty result")
+            
+        except Exception as e:
+            print(f"❌ Error generating Gemini embedding for job {job.id}: {e}")
+            # Don't fail job creation if embedding fails
+            pass
 
         
     def perform_update(self, serializer):
@@ -1338,4 +1179,130 @@ class SuggestedCandidatesViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_200_OK
             )
         return Response(serializer.data)
+
+
+# Upload Status Tracking ViewSet
+class ResumeUploadTrackerViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for tracking resume upload status
+    """
+    queryset = ResumeUploadTracker.objects.all()
+    serializer_class = CandidateSerializer  # We'll create a proper serializer later
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return ResumeUploadTracker.objects.filter(
+            organization=self.request.user.organization
+        ).order_by('-created_date')
+    
+    @action(detail=False, methods=["get"], url_path="status/(?P<batch_job_id>[^/.]+)")
+    def get_upload_status(self, request, batch_job_id=None):
+        """
+        Get status of a specific upload job
+        """
+        try:
+            status_data = UnifiedResumeProcessor.get_upload_status(batch_job_id)
+            if not status_data:
+                return Response(
+                    {"error": "Upload job not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            return Response(status_data)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=["get"], url_path="recent")
+    def get_recent_uploads(self, request):
+        """
+        Get recent upload jobs for the organization
+        """
+        try:
+            limit = int(request.query_params.get('limit', 10))
+            recent_uploads = UnifiedResumeProcessor.get_recent_uploads(
+                organization=request.user.organization,
+                limit=limit
+            )
+            return Response({"uploads": recent_uploads})
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=["get"], url_path="active")
+    def get_active_uploads(self, request):
+        """
+        Get currently processing uploads
+        """
+        try:
+            active_uploads = ResumeUploadTracker.objects.filter(
+                organization=request.user.organization,
+                status__in=['pending', 'processing']
+            ).order_by('-created_date')
+            
+            result = []
+            for upload in active_uploads:
+                result.append({
+                    "batch_job_id": upload.batch_job_id,
+                    "upload_type": upload.upload_type,
+                    "status": upload.status,
+                    "progress_percentage": upload.progress_percentage,
+                    "total_files": upload.total_files,
+                    "processed_files": upload.processed_files,
+                    "started_at": upload.started_at,
+                    "created_date": upload.created_date
+                })
+                
+            return Response({"active_uploads": result})
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=["get"], url_path="summary")
+    def get_upload_summary(self, request):
+        """
+        Get upload statistics summary for the organization
+        """
+        try:
+            from django.db.models import Count, Q
+            from datetime import datetime, timedelta
+            
+            # Get counts by status
+            total_uploads = ResumeUploadTracker.objects.filter(
+                organization=request.user.organization
+            ).count()
+            
+            status_counts = ResumeUploadTracker.objects.filter(
+                organization=request.user.organization
+            ).aggregate(
+                pending=Count('id', filter=Q(status='pending')),
+                processing=Count('id', filter=Q(status='processing')),
+                completed=Count('id', filter=Q(status='completed')),
+                failed=Count('id', filter=Q(status='failed')),
+                partially_failed=Count('id', filter=Q(status='partially_failed'))
+            )
+            
+            # Get recent activity (last 24 hours)
+            yesterday = datetime.now() - timedelta(days=1)
+            recent_activity = ResumeUploadTracker.objects.filter(
+                organization=request.user.organization,
+                created_date__gte=yesterday
+            ).count()
+            
+            return Response({
+                "total_uploads": total_uploads,
+                "status_breakdown": status_counts,
+                "recent_activity_24h": recent_activity,
+                "active_jobs": status_counts['pending'] + status_counts['processing']
+            })
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     

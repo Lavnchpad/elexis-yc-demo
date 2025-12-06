@@ -424,3 +424,88 @@ class ECSApplicationAutoScalingSchedule(BaseModel):
 
     def __str__(self):
         return f"{self.scheduled_action_name}-({self.min_capacity}-{self.max_capacity})"
+
+
+class ResumeUploadTracker(BaseModel):
+    """
+    Tracks the status of resume upload processing (single or batch)
+    """
+    UPLOAD_TYPES = [
+        ('single_manual', 'Single Manual Entry'),
+        ('single_resume', 'Single Resume Upload'),
+        ('bulk', 'Bulk Upload'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('partially_failed', 'Partially Failed'),
+    ]
+
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name="upload_trackers"
+    )
+    upload_type = models.CharField(max_length=20, choices=UPLOAD_TYPES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Batch processing details
+    batch_job_id = models.UUIDField(default=uuid.uuid4, unique=True)
+    total_files = models.IntegerField(default=0)
+    processed_files = models.IntegerField(default=0)
+    successful_files = models.IntegerField(default=0)
+    failed_files = models.IntegerField(default=0)
+    
+    # Error tracking
+    error_message = models.TextField(blank=True, null=True)
+    processing_details = JSONField(default=dict, blank=True)
+    
+    # Job association (optional)
+    job = models.ForeignKey(
+        'Job', on_delete=models.CASCADE, null=True, blank=True,
+        help_text="Associated job if candidates are being added to specific job"
+    )
+    
+    # Timing
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    def start_processing(self):
+        """Mark job as started"""
+        self.status = 'processing'
+        self.started_at = timezone.now()
+        self.save(update_fields=['status', 'started_at'])
+    
+    def complete_processing(self):
+        """Mark job as completed"""
+        self.status = 'completed' if self.failed_files == 0 else 'partially_failed'
+        self.completed_at = timezone.now()
+        self.save(update_fields=['status', 'completed_at'])
+    
+    def fail_processing(self, error_message):
+        """Mark job as failed"""
+        self.status = 'failed'
+        self.error_message = error_message
+        self.completed_at = timezone.now()
+        self.save(update_fields=['status', 'error_message', 'completed_at'])
+    
+    def update_progress(self, processed=None, successful=None, failed=None):
+        """Update processing progress"""
+        if processed is not None:
+            self.processed_files = processed
+        if successful is not None:
+            self.successful_files = successful
+        if failed is not None:
+            self.failed_files = failed
+        self.save(update_fields=['processed_files', 'successful_files', 'failed_files'])
+    
+    @property
+    def progress_percentage(self):
+        """Calculate progress percentage"""
+        if self.total_files == 0:
+            return 0
+        return (self.processed_files / self.total_files) * 100
+    
+    def __str__(self):
+        return f"{self.upload_type} - {self.status} - {self.progress_percentage:.1f}%"

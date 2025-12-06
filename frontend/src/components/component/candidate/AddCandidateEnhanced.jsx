@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+// import { Progress } from "@/components/ui/progress";
 import {
   Form,
   FormControl,
@@ -69,6 +69,10 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
   const [bulkProcessing, setBulkProcessing] = useState(false);
   const [bulkResults, setBulkResults] = useState([]);
   const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
+  
+  // Async upload tracking
+  const [asyncUpload, setAsyncUpload] = useState(null); // { batchJobId, type, candidate }
+  const [pollingInterval, setPollingInterval] = useState(null);
 
   const form = useForm({
     resolver: zodResolver(candidateSchema),
@@ -216,51 +220,66 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
         body: formData,
       });
       
-      const result = await response.json();
-      
       // Dismiss the progress toast
       toast.dismiss(progressToastId);
       
-      if (response.ok && result.success) {
-        setBulkResults(result.results);
+      if (response.ok) {
+        const result = await response.json();
         
-        // Update candidates list with successful uploads
-        const successfulCandidates = result.results
-          .filter(r => r.status === "success")
-          .map(r => ({
-            id: r.candidate_id,
-            name: r.extracted_data.name,
-            email: r.extracted_data.email,
-            phone_number: r.extracted_data.phone || ""
-          }));
-        
-        if (successfulCandidates.length > 0) {
-          setCandidates(prev => {
-            const currentCandidates = Array.isArray(prev) ? prev : [];
-            return [...currentCandidates, ...successfulCandidates];
-          });
-        }
-        
-        // Show final summary toast
-        const { successful, failed, skipped = 0 } = result.summary;
-        
-        if (successful > 0 && failed === 0 && skipped === 0) {
-          toast.success(`🎉 Successfully added ${successful} candidates!`);
-        } else if (successful > 0 && skipped > 0 && failed === 0) {
-          toast.success(`✅ Added ${successful} candidates, ⏭️ ${skipped} skipped (duplicates)`);
-        } else if (successful > 0 && failed > 0 && skipped === 0) {
-          toast.success(`✅ Added ${successful} candidates, ⚠️ ${failed} failed`);
-        } else if (successful > 0 && failed > 0 && skipped > 0) {
-          toast.success(`✅ Added ${successful} candidates, ⏭️ ${skipped} skipped, ⚠️ ${failed} failed`);
-        } else if (skipped > 0 && failed === 0) {
-          toast.warning(`⏭️ All ${skipped} candidates already exist - skipped duplicates`);
-        } else if (failed > 0 && skipped > 0) {
-          toast.warning(`⏭️ ${skipped} skipped (duplicates), ⚠️ ${failed} failed`);
-        } else if (failed > 0) {
-          toast.error(`❌ All ${failed} files failed to process`);
+        if (result.success && result.batch_job_id) {
+          // New async bulk upload with tracking
+          toast.success(`🚀 Bulk upload initiated for ${result.processing_details.total_files} files! Processing in background...`);
+          
+          // You could implement bulk status polling here similar to single upload
+          // For now, just show success message
+        } else {
+          toast.error(result.error || "Bulk upload failed");
         }
       } else {
-        toast.error(result.error || "Bulk upload failed");
+        const result = await response.json();
+        
+        // Handle old format response or error
+        if (result.success) {
+          setBulkResults(result.results);
+          
+          // Update candidates list with successful uploads
+          const successfulCandidates = result.results
+            .filter(r => r.status === "success")
+            .map(r => ({
+              id: r.candidate_id,
+              name: r.extracted_data.name,
+              email: r.extracted_data.email,
+              phone_number: r.extracted_data.phone || ""
+            }));
+          
+          if (successfulCandidates.length > 0) {
+            setCandidates(prev => {
+              const currentCandidates = Array.isArray(prev) ? prev : [];
+              return [...currentCandidates, ...successfulCandidates];
+            });
+          }
+          
+          // Show final summary toast
+          const { successful, failed, skipped = 0 } = result.summary;
+          
+          if (successful > 0 && failed === 0 && skipped === 0) {
+            toast.success(`🎉 Successfully added ${successful} candidates!`);
+          } else if (successful > 0 && skipped > 0 && failed === 0) {
+            toast.success(`✅ Added ${successful} candidates, ⏭️ ${skipped} skipped (duplicates)`);
+          } else if (successful > 0 && failed > 0 && skipped === 0) {
+            toast.success(`✅ Added ${successful} candidates, ⚠️ ${failed} failed`);
+          } else if (successful > 0 && failed > 0 && skipped > 0) {
+            toast.success(`✅ Added ${successful} candidates, ⏭️ ${skipped} skipped, ⚠️ ${failed} failed`);
+          } else if (skipped > 0 && failed === 0) {
+            toast.warning(`⏭️ All ${skipped} candidates already exist - skipped duplicates`);
+          } else if (failed > 0 && skipped > 0) {
+            toast.warning(`⏭️ ${skipped} skipped (duplicates), ⚠️ ${failed} failed`);
+          } else if (failed > 0) {
+            toast.error(`❌ All ${failed} files failed to process`);
+          }
+        } else {
+          toast.error(result.error || "Bulk upload failed");
+        }
       }
     } catch (error) {
       console.error("Bulk upload error:", error);
@@ -291,18 +310,34 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
       });
 
       if (response.ok) {
-        const newCandidate = await response.json();
+        const result = await response.json();
+        
         // Ensure candidates is always an array before spreading
         const currentCandidates = Array.isArray(candidates) ? candidates : [];
-        setCandidates([...currentCandidates, newCandidate]);
+        setCandidates([...currentCandidates, result]);
         
+        // Check if this is an async upload (has batch_job_id and is_async)
+        const isAsync = result.processing_details?.is_async;
+        const batchJobId = result.batch_job_id;
+        
+        if (isAsync && batchJobId) {
+          // Async upload - start polling for completion
+          toast.loading(`Processing resume for ${result.name}... This may take a moment.`, {
+            duration: 4000,
+          });
+          
+          startPolling(batchJobId, result);
+        } else {
+          // Sync upload - show success immediately
+          toast.success(`✅ Candidate ${result.name} added successfully!`);
+        }
+        
+        // Reset form and close dialog
         form.reset();
         setSelectedFile(null);
         setSelectedPhoto(null);
         setResumeFile(null);
         setExtractedData(null);
-        
-        toast.success(`Candidate ${newCandidate.name} added successfully!`);
         setOpen(false);
         
         if (onCloseCb) onCloseCb();
@@ -318,6 +353,66 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
     }
   };
 
+  // Poll upload status for async operations
+  const pollUploadStatus = async (batchJobId) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/upload-tracker/status/${batchJobId}/`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const statusData = await response.json();
+        return statusData;
+      }
+    } catch (error) {
+      console.error("Error polling upload status:", error);
+    }
+    return null;
+  };
+  
+  // Start polling for async upload completion
+  const startPolling = (batchJobId, candidateData) => {
+    setAsyncUpload({ batchJobId, type: 'single_resume', candidate: candidateData });
+    
+    const interval = setInterval(async () => {
+      const status = await pollUploadStatus(batchJobId);
+      
+      if (status) {
+        if (status.status === 'completed') {
+          // Upload completed successfully
+          clearInterval(interval);
+          setPollingInterval(null);
+          setAsyncUpload(null);
+          
+          toast.success(`🎉 Resume processed! Embedding generated for ${candidateData.name}`);
+        } else if (status.status === 'failed') {
+          // Upload failed
+          clearInterval(interval);
+          setPollingInterval(null);
+          setAsyncUpload(null);
+          
+          toast.error(`❌ Resume processing failed: ${status.error_message || 'Unknown error'}`);
+        }
+        // Continue polling for 'pending' or 'processing' status
+      }
+    }, 2000); // Poll every 2 seconds
+    
+    setPollingInterval(interval);
+    
+    // Auto-stop polling after 5 minutes
+    setTimeout(() => {
+      if (interval) {
+        clearInterval(interval);
+        setPollingInterval(null);
+        setAsyncUpload(null);
+        toast.warning("⏰ Resume processing is taking longer than expected");
+      }
+    }, 300000);
+  };
+
   const resetAllStates = () => {
     form.reset();
     setSelectedFile(null);
@@ -327,6 +422,11 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
     setBulkFiles([]);
     setBulkResults([]);
     setBulkProgress({ current: 0, total: 0 });
+    setAsyncUpload(null);
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
     setActiveTab("manual");
   };
 
@@ -344,6 +444,12 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Candidate{jobData ? ` to ${jobData.title}` : ''}</DialogTitle>
+          {asyncUpload && (
+            <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-2 rounded-md">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <span>Processing resume for {asyncUpload.candidate?.name}...</span>
+            </div>
+          )}
         </DialogHeader>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
