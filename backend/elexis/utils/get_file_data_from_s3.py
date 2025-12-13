@@ -15,13 +15,37 @@ def get_file_data_from_s3(bucket,key):
     return response['Body'].read().decode('utf-8')
 
 def put_dict_as_json_to_s3(bucket, key, data):
-
     s3.put_object(
                 Bucket=bucket,
                 Key=key,
                 Body=json.dumps(data, indent=2).encode('utf-8'),
                 ContentType='application/json'
             )
+
+def upload_file_to_s3(bucket_name, key, file_content, content_type='application/pdf'):
+    """
+    Upload a file to S3 bucket
+    
+    Args:
+        bucket_name (str): S3 bucket name
+        key (str): S3 object key (file path)
+        file_content (bytes): File content to upload
+        content_type (str): MIME type of the file
+        
+    Returns:
+        bool: True if upload successful, False otherwise
+    """
+    try:
+        s3.put_object(
+            Bucket=bucket_name,
+            Key=key,
+            Body=file_content,
+            ContentType=content_type
+        )
+        return True
+    except Exception as e:
+        print(f"Error uploading file to S3: {e}")
+        return False
 
 
 def generate_signed_url(bucket_name, object_key, expires_in=3600):

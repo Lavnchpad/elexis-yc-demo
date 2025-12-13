@@ -230,8 +230,8 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
           // New async bulk upload with tracking
           toast.success(`🚀 Bulk upload initiated for ${result.processing_details.total_files} files! Processing in background...`);
           
-          // You could implement bulk status polling here similar to single upload
-          // For now, just show success message
+          // Start polling for bulk upload status
+          startBulkPolling(result.batch_job_id, result.processing_details.total_files);
         } else {
           toast.error(result.error || "Bulk upload failed");
         }
@@ -411,6 +411,70 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
         toast.warning("⏰ Resume processing is taking longer than expected");
       }
     }, 300000);
+  };
+
+  // Start polling for bulk upload completion
+  const startBulkPolling = (batchJobId, totalFiles) => {
+    setAsyncUpload({ batchJobId, type: 'bulk', totalFiles });
+    
+    const interval = setInterval(async () => {
+      const status = await pollUploadStatus(batchJobId);
+      
+      if (status) {
+        // Update progress
+        if (status.progress_percentage !== undefined) {
+          setBulkProgress({ current: status.processed_files, total: totalFiles });
+        }
+        
+        if (status.status === 'completed') {
+          // Bulk upload completed successfully
+          clearInterval(interval);
+          setPollingInterval(null);
+          setAsyncUpload(null);
+          setBulkProgress({ current: 0, total: 0 });
+          
+          toast.success(`🎉 Bulk upload completed! Successfully processed ${status.successful_files}/${totalFiles} resumes`);
+          
+          // Refresh candidates list to show new candidates
+          // Force a page refresh or trigger candidates context update to show new data
+          window.location.reload();
+        } else if (status.status === 'failed') {
+          // Bulk upload failed
+          clearInterval(interval);
+          setPollingInterval(null);
+          setAsyncUpload(null);
+          setBulkProgress({ current: 0, total: 0 });
+          
+          toast.error(`❌ Bulk upload failed: ${status.error_message || 'Unknown error'}`);
+        } else if (status.status === 'partially_failed') {
+          // Some files failed
+          clearInterval(interval);
+          setPollingInterval(null);
+          setAsyncUpload(null);
+          setBulkProgress({ current: 0, total: 0 });
+          
+          toast.warning(`⚠️ Bulk upload completed with issues: ${status.successful_files}/${totalFiles} successful, ${status.failed_files} failed`);
+          
+          // Refresh candidates list to show successful candidates
+          // Force a page refresh or trigger candidates context update to show new data
+          window.location.reload();
+        }
+        // Continue polling for 'pending' or 'processing' status
+      }
+    }, 3000); // Poll every 3 seconds for bulk (slower than single)
+    
+    setPollingInterval(interval);
+    
+    // Auto-stop polling after 10 minutes (longer for bulk)
+    setTimeout(() => {
+      if (interval) {
+        clearInterval(interval);
+        setPollingInterval(null);
+        setAsyncUpload(null);
+        setBulkProgress({ current: 0, total: 0 });
+        toast.warning("⏰ Bulk upload processing is taking longer than expected");
+      }
+    }, 600000);
   };
 
   const resetAllStates = () => {

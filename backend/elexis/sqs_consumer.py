@@ -8,6 +8,7 @@ from elexis.dto.Ai_JobResume_Matching_Evaluation_Dto import AiJdResumeMatchingRe
 import boto3
 import json
 import time
+import uuid
 from .services.pinecone_service import pinecone_client
 from elexis.services.QueryGemini import GeminiClient
 from elexis.prompts.jobMatchingResume import getJobResumeMatchingPrompt
@@ -149,12 +150,150 @@ def process_message(message_body):
             return
         elif type == "process_bulk_resumes":
             print(f"process_bulk_resumes SQS_Consumer :: process_message:: ",  message)
-            tracker_id = message["data"].get("tracker_id")
-            if not tracker_id:
-                print(f"SQS Consumer ::: Process message. type: {type} ::: message: {message} error: no tracker_id found")
+            batch_job_id = message["data"].get("batch_job_id")
+            organization_id = message["data"].get("organization_id") 
+            user_id = message["data"].get("user_id")
+            job_id = message["data"].get("job_id")
+            file_count = message["data"].get("file_count")
+            
+            if not batch_job_id:
+                print(f"SQS Consumer ::: Process message. type: {type} ::: message: {message} error: no batch_job_id found")
                 return
-            from elexis.services.unified_resume_processor import process_bulk_resumes_async
-            process_bulk_resumes_async(tracker_id)
+                
+            # Process the bulk upload following single resume pattern
+            try:
+                # Find the tracker using batch_job_id
+                from elexis.models import ResumeUploadTracker, Organization, Recruiter, Job, Candidate, JobMatchingResumeScore
+                from django.core.files.uploadedfile import InMemoryUploadedFile
+                from io import BytesIO
+                import tempfile
+                
+                tracker = ResumeUploadTracker.objects.get(batch_job_id=batch_job_id)
+                organization = Organization.objects.get(id=organization_id)
+                user = Recruiter.objects.get(id=user_id)
+                job = Job.objects.get(id=job_id) if job_id else None
+                
+                print(f"Processing bulk upload for tracker {tracker.id} with {file_count} files")
+                tracker.start_processing()
+                
+                # Get file data from tracker
+                file_data_list = tracker.processing_details.get('file_data', [])
+                
+                if not file_data_list:
+                    print(f"❌ No file data found in tracker {tracker.id}")
+                    tracker.fail_processing("No file data found")
+                    return
+                
+                processed_count = 0
+                successful_count = 0
+                failed_count = 0
+                
+                for file_data in file_data_list:
+                    try:
+                        processed_count += 1
+                        
+                        # Extract file info
+                        filename = file_data.get('name', f'resume_{processed_count}.pdf')
+                        file_content = file_data.get('content', '').encode('latin-1')
+                        content_type = file_data.get('content_type', 'application/pdf')
+                        
+                        # Create InMemoryUploadedFile like single resume upload
+                        file_obj = InMemoryUploadedFile(
+                            BytesIO(file_content),
+                            None,
+                            filename,
+                            content_type,
+                            len(file_content),
+                            None
+                        )
+                        
+                        # Extract candidate name from filename
+                        candidate_name = filename.replace('.pdf', '').replace('_', ' ').replace('-', ' ').title()
+                        
+                        # Create candidate exactly like single resume upload
+                        candidate = Candidate.objects.create(
+                            organization=organization,
+                            name=candidate_name,
+                            resume=file_obj,  # Store file directly like single upload
+                            created_by=user,
+                            modified_by=user,
+                            recruiter=user
+                        )
+                        
+                        print(f"✅ Created candidate: {candidate.name} (ID: {candidate.id})")
+                        
+                        # Queue for embedding generation like single resume
+                        add_message_to_sqs_queue(type='generate_embedding', data={
+                            "candidate_id": str(candidate.id),
+                            "batch_job_id": str(tracker.batch_job_id),
+                            "organization_namespace": f"{organization.org_name}_{organization.id}"
+                        })
+                        
+                        # Create job matching score if job exists
+                        if job:
+                            job_matching_score = JobMatchingResumeScore.objects.create(
+                                job=job,
+                                candidate=candidate,
+                                score=0,  # Will be calculated after embedding
+                                created_by=user,
+                                modified_by=user
+                            )
+                            
+                            # Queue for AI evaluation
+                            add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
+                                "id": str(job_matching_score.id),
+                            })
+                            
+                            print(f"✅ Created job matching score for candidate {candidate.name}")
+                        
+                        successful_count += 1
+                        
+                        # Update progress
+                        tracker.update_progress(
+                            processed=processed_count, 
+                            successful=successful_count, 
+                            failed=failed_count
+                        )
+                        
+                    except Exception as file_error:
+                        print(f"❌ Error processing file {filename}: {file_error}")
+                        failed_count += 1
+                        tracker.update_progress(
+                            processed=processed_count,
+                            successful=successful_count, 
+                            failed=failed_count
+                        )
+                        continue
+                
+                # Complete processing
+                if failed_count == 0:
+                    tracker.complete_processing()
+                    print(f"✅ Successfully processed all {successful_count} candidates")
+                else:
+                    tracker.status = 'partially_failed'
+                    tracker.save()
+                    print(f"⚠️ Partially completed: {successful_count} successful, {failed_count} failed")
+                
+                # Queue for ranking update if job exists (like single resume)
+                if job:
+                    add_message_to_sqs_queue(type='rank-resumes', data={
+                        "jobId": str(job.id)
+                    })
+                
+                print(f"✅ Bulk upload processing completed for batch {batch_job_id}")
+                
+            except Exception as e:
+                print(f"❌ Error processing bulk resumes for batch {batch_job_id}: {e}")
+                import traceback
+                traceback.print_exc()
+                
+                # Update tracker with failure
+                try:
+                    tracker = ResumeUploadTracker.objects.get(batch_job_id=batch_job_id)
+                    tracker.fail_processing(str(e))
+                except:
+                    pass
+                    
             return
         # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://bohot-wickets.com"}
         # {"type":"proctor","video":"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4","room_url":"https://google.com"}
@@ -345,8 +484,17 @@ def evaluateJobResumeMatchingByAi(jobResumeMatchingScoreId: str, type: str):
             logIdentifier=f"SQS Consumer, Async Job :{type} JobResumeMatchingByAI ID: {jobResumeMatchingScoreId}, "
         )
     
-        # If aiEvaluationResponse is a string (JSON)
-        serializer_data =aiEvaluationResponseDict.model_dump()
+        # Check if response is valid before processing
+        if isinstance(aiEvaluationResponseDict, str):
+            print(f"SQS Consumer, Async Job :{type} Error: Gemini returned error string: {aiEvaluationResponseDict}")
+            return
+        
+        if not hasattr(aiEvaluationResponseDict, 'model_dump'):
+            print(f"SQS Consumer, Async Job :{type} Error: Invalid response object from Gemini")
+            return
+    
+        # If aiEvaluationResponse is valid response object
+        serializer_data = aiEvaluationResponseDict.model_dump()
         serializer = AiJdResumeMatchingResponseSerializer(data={
             "job_matching_resume_score": jobResumeMatchingScore.id,
             **serializer_data})
@@ -382,6 +530,14 @@ def generate_candidate_suggestions(jobId: str , candidateId: str):
             logIdentifier=f"SQS Consumer, Async Job :generate_candidate_suggestions Job ID: {jobId}, Candidate ID: {candidateId}, "
         )
 
+        # Check if response is valid before processing
+        if isinstance(aiEvaluationResponseDict, str):
+            print(f"SQS Consumer, generate_candidate_suggestions Error: Gemini returned error string: {aiEvaluationResponseDict}")
+            return
+        
+        if not hasattr(aiEvaluationResponseDict, 'model_dump'):
+            print(f"SQS Consumer, generate_candidate_suggestions Error: Invalid response object from Gemini")
+            return
 
         serializer_data = aiEvaluationResponseDict.model_dump()
         serializer = AiJdResumeMatchingResponseSerializer(data={
