@@ -232,3 +232,83 @@ class UnifiedResumeProcessor:
             }
             for tracker in trackers
         ]
+
+def process_bulk_resumes_async(tracker_id):
+    """
+    Process bulk resumes asynchronously through SQS
+    Called by SQS consumer when processing bulk upload jobs
+    """
+    try:
+        tracker = ResumeUploadTracker.objects.get(id=tracker_id)
+        print(f"📦 Processing bulk resumes for tracker {tracker_id}")
+        
+        # Get the bulk upload data from processing_details
+        bulk_data = tracker.processing_details.get('bulk_data', [])
+        
+        if not bulk_data:
+            print(f"❌ No bulk data found for tracker {tracker_id}")
+            tracker.fail_processing("No bulk data found")
+            return
+        
+        # Mark as processing
+        tracker.start_processing()
+        
+        successful_count = 0
+        failed_count = 0
+        
+        for i, candidate_data in enumerate(bulk_data):
+            try:
+                # Create candidate from bulk data
+                candidate = Candidate.objects.create(
+                    organization=tracker.organization,
+                    created_by=tracker.created_by,
+                    modified_by=tracker.created_by,
+                    recruiter=tracker.created_by,
+                    **candidate_data
+                )
+                
+                # If associated with a job, create JobMatchingResumeScore
+                if tracker.job:
+                    JobMatchingResumeScore.objects.create(
+                        job=tracker.job,
+                        candidate=candidate,
+                        organization=tracker.organization,
+                        created_by=tracker.created_by,
+                        modified_by=tracker.created_by
+                    )
+                    
+                    # Trigger job-resume matching score calculation
+                    add_message_to_sqs_queue("job_resume_matching_score", {
+                        "id": str(JobMatchingResumeScore.objects.filter(
+                            job=tracker.job, 
+                            candidate=candidate
+                        ).first().id)
+                    })
+                
+                successful_count += 1
+                print(f"✅ Created candidate {i+1}/{len(bulk_data)}: {candidate.email}")
+                
+            except Exception as e:
+                failed_count += 1
+                print(f"❌ Failed to create candidate {i+1}/{len(bulk_data)}: {e}")
+                
+            # Update progress
+            tracker.update_progress(
+                processed=i + 1,
+                successful=successful_count,
+                failed=failed_count
+            )
+        
+        # Mark as completed
+        tracker.complete_processing()
+        print(f"🎉 Bulk processing completed: {successful_count} successful, {failed_count} failed")
+        
+    except ResumeUploadTracker.DoesNotExist:
+        print(f"❌ Tracker {tracker_id} not found")
+    except Exception as e:
+        print(f"💥 Error processing bulk resumes for tracker {tracker_id}: {e}")
+        try:
+            tracker = ResumeUploadTracker.objects.get(id=tracker_id)
+            tracker.fail_processing(str(e))
+        except:
+            pass

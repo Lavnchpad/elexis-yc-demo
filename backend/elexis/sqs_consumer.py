@@ -147,6 +147,15 @@ def process_message(message_body):
                 return
             generate_candidate_suggestions(jobId, candidateId)
             return
+        elif type == "process_bulk_resumes":
+            print(f"process_bulk_resumes SQS_Consumer :: process_message:: ",  message)
+            tracker_id = message["data"].get("tracker_id")
+            if not tracker_id:
+                print(f"SQS Consumer ::: Process message. type: {type} ::: message: {message} error: no tracker_id found")
+                return
+            from elexis.services.unified_resume_processor import process_bulk_resumes_async
+            process_bulk_resumes_async(tracker_id)
+            return
         # {"s3_file_url":"http://elexis-random.s3.us-east-1.localhost.localstack.cloud:4566/transcript01.txt","room_url":"https://bohot-wickets.com"}
         # {"type":"proctor","video":"http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4","room_url":"https://google.com"}
         elif not room_url or not transcript_url:
