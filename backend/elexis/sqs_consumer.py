@@ -176,26 +176,42 @@ def process_message(message_body):
                 print(f"Processing bulk upload for tracker {tracker.id} with {file_count} files")
                 tracker.start_processing()
                 
-                # Get file data from tracker
-                file_data_list = tracker.processing_details.get('file_data', [])
+                # Get uploaded files from S3
+                from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3
+                import boto3
                 
-                if not file_data_list:
-                    print(f"❌ No file data found in tracker {tracker.id}")
-                    tracker.fail_processing("No file data found")
+                files_metadata = tracker.processing_details.get('files', [])
+                
+                if not files_metadata:
+                    print(f"❌ No uploaded files found in tracker {tracker.id}")
+                    tracker.fail_processing("No uploaded files found")
                     return
                 
                 processed_count = 0
                 successful_count = 0
                 failed_count = 0
                 
-                for file_data in file_data_list:
+                for file_metadata in files_metadata:
                     try:
                         processed_count += 1
                         
-                        # Extract file info
-                        filename = file_data.get('name', f'resume_{processed_count}.pdf')
-                        file_content = file_data.get('content', '').encode('latin-1')
-                        content_type = file_data.get('content_type', 'application/pdf')
+                        # Extract file info from S3 metadata
+                        filename = file_metadata.get('name', f'resume_{processed_count}.pdf')
+                        s3_bucket = file_metadata.get('s3_bucket')
+                        s3_key = file_metadata.get('s3_key')
+                        content_type = file_metadata.get('content_type', 'application/pdf')
+                        
+                        # Download file content from S3
+                        s3_client = boto3.client(
+                            's3',
+                            endpoint_url=os.getenv("AWS_S3_ENDPOINT_URL"),
+                            aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+                            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+                            region_name=os.getenv("AWS_REGION_NAME")
+                        )
+                        
+                        response = s3_client.get_object(Bucket=s3_bucket, Key=s3_key)
+                        file_content = response['Body'].read()
                         
                         # Create InMemoryUploadedFile like single resume upload
                         file_obj = InMemoryUploadedFile(
@@ -474,6 +490,19 @@ def evaluateJobResumeMatchingByAi(jobResumeMatchingScoreId: str, type: str):
         if not job or not candidate:
             print(f"Job or Candidate not found for JobResumeMatchingScore ID: {jobResumeMatchingScoreId}")
             return
+        
+        # Check if this is part of a bulk upload by looking for a tracker with this candidate
+        tracker = None
+        try:
+            from elexis.models import ResumeUploadTracker
+            tracker = ResumeUploadTracker.objects.filter(
+                status__in=['processing', 'pending'],
+                job=job,
+                upload_type='bulk'
+            ).order_by('-created_date').first()
+        except:
+            pass  # Not part of bulk upload
+            
         # Prepare the context for AI evaluation
         resumeContext = extract_text_from_pdf(candidate.resume.url) if candidate.resume else ""
         jobContext = job.job_description if job.job_description else ""
@@ -487,10 +516,29 @@ def evaluateJobResumeMatchingByAi(jobResumeMatchingScoreId: str, type: str):
         # Check if response is valid before processing
         if isinstance(aiEvaluationResponseDict, str):
             print(f"SQS Consumer, Async Job :{type} Error: Gemini returned error string: {aiEvaluationResponseDict}")
+            
+            # Update tracker for AI failure if this is bulk upload
+            if tracker:
+                current_failed = tracker.ai_failed_files + 1
+                current_processed = tracker.ai_processed_files + 1
+                tracker.update_ai_progress(
+                    ai_processed=current_processed,
+                    ai_failed=current_failed
+                )
+                print(f"📊 Updated bulk tracker: AI failed {current_failed}, processed {current_processed}/{tracker.successful_files}")
             return
         
         if not hasattr(aiEvaluationResponseDict, 'model_dump'):
             print(f"SQS Consumer, Async Job :{type} Error: Invalid response object from Gemini")
+            
+            # Update tracker for AI failure if this is bulk upload
+            if tracker:
+                current_failed = tracker.ai_failed_files + 1
+                current_processed = tracker.ai_processed_files + 1
+                tracker.update_ai_progress(
+                    ai_processed=current_processed,
+                    ai_failed=current_failed
+                )
             return
     
         # If aiEvaluationResponse is valid response object
@@ -501,13 +549,49 @@ def evaluateJobResumeMatchingByAi(jobResumeMatchingScoreId: str, type: str):
         if serializer.is_valid():
             serializer.save()
             print(f"Ai Evaluation for JobResumeMatchingScoreRecord : {jobResumeMatchingScore.id}  Saved successfully")
+            
+            # Update tracker for AI success if this is bulk upload
+            if tracker:
+                current_successful = tracker.ai_successful_files + 1
+                current_processed = tracker.ai_processed_files + 1
+                tracker.update_ai_progress(
+                    ai_processed=current_processed,
+                    ai_successful=current_successful
+                )
+                print(f"📊 Updated bulk tracker: AI successful {current_successful}, processed {current_processed}/{tracker.successful_files}")
         else:
             print(f"Error in Ai Evaluation for JobResumeMatchingScoreRecord :{jobResumeMatchingScore.id}, error: {serializer.errors}", )
+            
+            # Update tracker for AI failure if this is bulk upload
+            if tracker:
+                current_failed = tracker.ai_failed_files + 1
+                current_processed = tracker.ai_processed_files + 1
+                tracker.update_ai_progress(
+                    ai_processed=current_processed,
+                    ai_failed=current_failed
+                )
         
         return 
     except Exception as e:
         print(f"SQS Consumer, Async Job :{type} Error evaluating JobResumeMatchingByAI: {e}")
         traceback.print_exc()
+        
+        # Update tracker for AI failure if this is bulk upload and we can find the tracker
+        try:
+            from elexis.models import ResumeUploadTracker
+            tracker = ResumeUploadTracker.objects.filter(
+                status__in=['processing', 'pending'],
+                upload_type='bulk'
+            ).order_by('-created_date').first()
+            if tracker:
+                current_failed = tracker.ai_failed_files + 1
+                current_processed = tracker.ai_processed_files + 1
+                tracker.update_ai_progress(
+                    ai_processed=current_processed,
+                    ai_failed=current_failed
+                )
+        except:
+            pass
         return ''
 
 def generate_candidate_suggestions(jobId: str , candidateId: str):

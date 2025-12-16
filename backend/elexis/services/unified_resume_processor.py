@@ -175,34 +175,57 @@ class UnifiedResumeProcessor:
             modified_by=user
         )
         
+        # Store files in S3 for async processing
+        from elexis.utils.get_file_data_from_s3 import upload_file_to_s3
+        import json
+        
+        tracker.processing_details = {
+            'files': [],
+            'processing_timestamp': timezone.now().isoformat()
+        }
+        
+        bucket_name = os.getenv('AWS_STORAGE_BUCKET_NAME', 'elexis-bucket')
+        print(f"📦 Using S3 bucket: {bucket_name}")
+        uploaded_files = []
+        
+        # Upload files to S3 and store metadata
+        for i, resume_file in enumerate(resume_files):
+            try:
+                # Create unique S3 key for this file
+                s3_key = f"bulk_uploads/{tracker.batch_job_id}/{resume_file.name}"
+                
+                # Read file content
+                file_content = resume_file.read()
+                
+                # Upload to S3
+                if upload_file_to_s3(bucket_name, s3_key, file_content, resume_file.content_type):
+                    file_metadata = {
+                        'name': resume_file.name,
+                        's3_bucket': bucket_name,
+                        's3_key': s3_key,
+                        'content_type': resume_file.content_type,
+                        'size': resume_file.size
+                    }
+                    tracker.processing_details['files'].append(file_metadata)
+                    uploaded_files.append(file_metadata)
+                    print(f"✅ Uploaded file {resume_file.name} to S3")
+                else:
+                    print(f"❌ Failed to upload file {resume_file.name} to S3")
+                    
+            except Exception as e:
+                print(f"Error processing file {resume_file.name}: {e}")
+                continue
+        
+        print(f"✅ Saved {len(uploaded_files)} files to S3 for batch {tracker.batch_job_id}")
+        
         # Queue for batch processing with file data
         add_message_to_sqs_queue(type='process_bulk_resumes', data={
             "batch_job_id": str(tracker.batch_job_id),
             "organization_id": str(organization.id),
             "user_id": str(user.id),
             "job_id": job_id,
-            "file_count": len(resume_files)
+            "file_count": len(uploaded_files)  # Use actual uploaded files count
         })
-        
-        # Store files temporarily in tracker for processing
-        tracker.processing_details = {
-            'file_data': [],
-            'processing_timestamp': timezone.now().isoformat()
-        }
-        
-        # Read and store file content for async processing
-        for i, resume_file in enumerate(resume_files):
-            try:
-                file_content = resume_file.read()
-                tracker.processing_details['file_data'].append({
-                    'name': resume_file.name,
-                    'content': file_content.decode('latin-1'),  # Store as string
-                    'content_type': resume_file.content_type,
-                    'size': resume_file.size
-                })
-            except Exception as e:
-                print(f"Error reading file {resume_file.name}: {e}")
-                continue
         
         tracker.save()
         return tracker

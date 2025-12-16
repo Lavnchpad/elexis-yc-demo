@@ -457,6 +457,11 @@ class ResumeUploadTracker(BaseModel):
     successful_files = models.IntegerField(default=0)
     failed_files = models.IntegerField(default=0)
     
+    # AI processing tracking (separate from file upload success)
+    ai_processed_files = models.IntegerField(default=0)
+    ai_successful_files = models.IntegerField(default=0)
+    ai_failed_files = models.IntegerField(default=0)
+    
     # Error tracking
     error_message = models.TextField(blank=True, null=True)
     processing_details = JSONField(default=dict, blank=True)
@@ -500,6 +505,37 @@ class ResumeUploadTracker(BaseModel):
             self.failed_files = failed
         self.save(update_fields=['processed_files', 'successful_files', 'failed_files'])
     
+    def update_ai_progress(self, ai_processed=None, ai_successful=None, ai_failed=None):
+        """Update AI processing progress separately"""
+        if ai_processed is not None:
+            self.ai_processed_files = ai_processed
+        if ai_successful is not None:
+            self.ai_successful_files = ai_successful
+        if ai_failed is not None:
+            self.ai_failed_files = ai_failed
+        self.save(update_fields=['ai_processed_files', 'ai_successful_files', 'ai_failed_files'])
+        
+        # Update overall status if AI processing is complete
+        if self.ai_processed_files >= self.successful_files and self.status == 'processing':
+            if self.ai_failed_files > 0:
+                self.status = 'partially_failed'
+                self.error_message = f"AI processing failed for {self.ai_failed_files} out of {self.successful_files} files"
+            else:
+                self.status = 'completed'
+            self.completed_at = timezone.now()
+            self.save(update_fields=['status', 'error_message', 'completed_at'])
+    
+    def complete_processing(self):
+        """Mark job as completed"""
+        # Only mark as completed if no file upload failures
+        # AI failures are tracked separately and will be handled by update_ai_progress
+        if self.failed_files == 0:
+            self.status = 'processing'  # Keep as processing until AI is done
+        else:
+            self.status = 'partially_failed'
+        self.completed_at = timezone.now()
+        self.save(update_fields=['status', 'completed_at'])
+    
     @property
     def progress_percentage(self):
         """Calculate progress percentage"""
@@ -507,5 +543,13 @@ class ResumeUploadTracker(BaseModel):
             return 0
         return (self.processed_files / self.total_files) * 100
     
+    @property 
+    def ai_progress_percentage(self):
+        """Calculate AI processing percentage"""
+        if self.successful_files == 0:
+            return 0
+        return (self.ai_processed_files / self.successful_files) * 100
+    
     def __str__(self):
+        return f"Upload Tracker {self.upload_type} - {self.status} ({self.processed_files}/{self.total_files})"
         return f"{self.upload_type} - {self.status} - {self.progress_percentage:.1f}%"

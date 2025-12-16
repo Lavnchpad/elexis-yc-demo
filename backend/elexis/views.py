@@ -36,7 +36,8 @@ from .serializers import (
     QuestionsRequestSerializer,
     InterviewQuestionsSerializer,
     JobQuestionsSerializer,
-    JobMatchingResumeScoreSerializer
+    JobMatchingResumeScoreSerializer,
+    ResumeUploadTrackerSerializer
 )
 from elexis.sqs_consumer import add_message_to_sqs_queue
 from datetime import datetime, timedelta
@@ -1187,7 +1188,7 @@ class ResumeUploadTrackerViewSet(viewsets.ReadOnlyModelViewSet):
     ViewSet for tracking resume upload status
     """
     queryset = ResumeUploadTracker.objects.all()
-    serializer_class = CandidateSerializer  # We'll create a proper serializer later
+    serializer_class = ResumeUploadTrackerSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):

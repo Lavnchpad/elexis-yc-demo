@@ -228,7 +228,13 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
         
         if (result.success && result.batch_job_id) {
           // New async bulk upload with tracking
-          toast.success(`🚀 Bulk upload initiated for ${result.processing_details.total_files} files! Processing in background...`);
+          toast.success(
+            `🚀 Bulk Upload Started!`,
+            {
+              description: `Processing ${result.processing_details.total_files} resumes in the background. You'll receive notifications as they complete.`,
+              duration: 5000,
+            }
+          );
           
           // Start polling for bulk upload status
           startBulkPolling(result.batch_job_id, result.processing_details.total_files);
@@ -417,6 +423,8 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
   const startBulkPolling = (batchJobId, totalFiles) => {
     setAsyncUpload({ batchJobId, type: 'bulk', totalFiles });
     
+    let progressToastId = null;
+    
     const interval = setInterval(async () => {
       const status = await pollUploadStatus(batchJobId);
       
@@ -433,10 +441,24 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
           setAsyncUpload(null);
           setBulkProgress({ current: 0, total: 0 });
           
-          toast.success(`🎉 Bulk upload completed! Successfully processed ${status.successful_files}/${totalFiles} resumes`);
+          // Dismiss progress toast
+          if (progressToastId) {
+            toast.dismiss(progressToastId);
+          }
+          
+          // Check if AI processing had issues
+          const aiIssues = status.has_ai_errors ? 
+            ` AI analysis failed for ${status.ai_failed_files} resume(s) due to API limitations.` : '';
+          
+          toast.success(
+            `🎉 Bulk Upload Complete!`,
+            {
+              description: `Successfully processed ${status.successful_files} out of ${totalFiles} resumes.${aiIssues}`,
+              duration: 8000,
+            }
+          );
           
           // Refresh candidates list to show new candidates
-          // Force a page refresh or trigger candidates context update to show new data
           window.location.reload();
         } else if (status.status === 'failed') {
           // Bulk upload failed
@@ -445,7 +467,18 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
           setAsyncUpload(null);
           setBulkProgress({ current: 0, total: 0 });
           
-          toast.error(`❌ Bulk upload failed: ${status.error_message || 'Unknown error'}`);
+          // Dismiss progress toast
+          if (progressToastId) {
+            toast.dismiss(progressToastId);
+          }
+          
+          toast.error(
+            `❌ Bulk Upload Failed`,
+            {
+              description: status.error_message || 'An unexpected error occurred during processing. Please try again.',
+              duration: 8000,
+            }
+          );
         } else if (status.status === 'partially_failed') {
           // Some files failed
           clearInterval(interval);
@@ -453,11 +486,43 @@ const AddCandidate = ({ children, jobData, onCloseCb }) => {
           setAsyncUpload(null);
           setBulkProgress({ current: 0, total: 0 });
           
-          toast.warning(`⚠️ Bulk upload completed with issues: ${status.successful_files}/${totalFiles} successful, ${status.failed_files} failed`);
+          // Dismiss progress toast
+          if (progressToastId) {
+            toast.dismiss(progressToastId);
+          }
+          
+          // Distinguish between file upload failures and AI failures
+          const fileFailures = status.failed_files > 0 ? 
+            `${status.failed_files} file(s) could not be uploaded. ` : '';
+          const aiFailures = status.has_ai_errors ? 
+            `AI analysis failed for ${status.ai_failed_files} resume(s) due to API limitations.` : '';
+          
+          toast.warning(
+            `⚠️ Bulk Upload Completed with Issues`,
+            {
+              description: `Successfully processed ${status.successful_files} out of ${totalFiles} resumes. ${fileFailures}${aiFailures}`,
+              duration: 10000,
+            }
+          );
           
           // Refresh candidates list to show successful candidates
-          // Force a page refresh or trigger candidates context update to show new data
           window.location.reload();
+        } else if (status.status === 'processing') {
+          // Show detailed progress for both file upload and AI processing
+          const fileProgress = `Files: ${status.processed_files}/${totalFiles}`;
+          const aiProgress = status.ai_processed_files > 0 ? 
+            ` | AI: ${status.ai_processed_files}/${status.successful_files}` : '';
+          
+          if (progressToastId) {
+            toast.dismiss(progressToastId);
+          }
+          progressToastId = toast.loading(
+            `Processing resumes... ${fileProgress}${aiProgress} (${status.progress_percentage.toFixed(1)}%)`,
+            {
+              id: `bulk-progress-${batchJobId}`,
+              duration: Infinity,
+            }
+          );
         }
         // Continue polling for 'pending' or 'processing' status
       }
