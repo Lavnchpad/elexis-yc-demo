@@ -8,6 +8,7 @@ from elexis.dto.Ai_JobResume_Matching_Evaluation_Dto import AiJdResumeMatchingRe
 import boto3
 import json
 import time
+import os
 import uuid
 from .services.pinecone_service import pinecone_client
 from elexis.services.QueryGemini import GeminiClient
@@ -223,13 +224,45 @@ def process_message(message_body):
                             None
                         )
                         
-                        # Extract candidate name from filename
-                        candidate_name = filename.replace('.pdf', '').replace('_', ' ').replace('-', ' ').title()
+                        # Extract candidate data from resume file using AI
+                        # Save file temporarily for AI extraction
+                        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
+                            temp_file.write(file_content)
+                            temp_file_path = temp_file.name
                         
-                        # Create candidate exactly like single resume upload
+                        # Initialize candidate data with filename as fallback
+                        candidate_name = filename.replace('.pdf', '').replace('_', ' ').replace('-', ' ').title()
+                        candidate_email = None
+                        candidate_phone = None
+                        
+                        try:
+                            # Try to extract better data from resume
+                            from elexis.services.resume_parser import extract_resume_data
+                            extracted_data = extract_resume_data(temp_file_path)
+                            
+                            # Use extracted data if available, keep fallback otherwise
+                            if extracted_data and hasattr(extracted_data, 'name') and extracted_data.name:
+                                candidate_name = extracted_data.name
+                            if extracted_data and hasattr(extracted_data, 'email') and extracted_data.email:
+                                candidate_email = extracted_data.email
+                            if extracted_data and hasattr(extracted_data, 'phone') and extracted_data.phone:
+                                candidate_phone = extracted_data.phone
+                            
+                            print(f"📋 Using: name={candidate_name}, email={candidate_email}, phone={candidate_phone}")
+                            
+                        except Exception as extract_error:
+                            print(f"⚠️  AI extraction failed for {filename}, using filename fallback: {extract_error}")
+                        finally:
+                            # Clean up temporary file
+                            if os.path.exists(temp_file_path):
+                                os.unlink(temp_file_path)
+                        
+                        # Create candidate with available data (use phone_number field)
                         candidate = Candidate.objects.create(
                             organization=organization,
                             name=candidate_name,
+                            email=candidate_email,
+                            phone_number=candidate_phone,  # Use correct field name
                             resume=file_obj,  # Store file directly like single upload
                             created_by=user,
                             modified_by=user,
