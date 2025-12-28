@@ -10,7 +10,7 @@ import EditJobForm from "./EditJobForm";
 import ScheduledInterviews from "./ScheduledInterview";
 import CollapsibleSection from "../../resuable/CollapsibleSection";
 import Ats from "./ATS/Ats";
-import AddCandidate from "../../candidate/AddCandidate";
+import AddCandidate from "../../candidate/AddCandidateEnhanced";
 import { Button } from "@/components/ui/button";
 import SuggestedCandidates from "./SuggestedCandidates";
 import JobsQuestions from "./JobsQuestions";

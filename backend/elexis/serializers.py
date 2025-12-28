@@ -6,7 +6,8 @@ from .models import( Recruiter, Candidate, Job,
     HiringSignals,
     Recommendation,
     DirectComparison,
-    SuggestedCandidates
+    SuggestedCandidates,
+    ResumeUploadTracker
 )
 from django.contrib.auth.password_validation import validate_password
 from elexis.utils.get_file_data_from_s3 import generate_signed_url
@@ -399,6 +400,53 @@ class SuggestedCandidatesSerializer(serializers.ModelSerializer):
         model = SuggestedCandidates
         fields = '__all__'
         read_only_fields = ('job', 'candidate',)
+
+
+class ResumeUploadTrackerSerializer(serializers.ModelSerializer):
+    """Serializer for tracking resume upload status"""
+    
+    job_title = serializers.CharField(source="job.job_title", read_only=True)
+    progress_percentage = serializers.SerializerMethodField()
+    ai_progress_percentage = serializers.SerializerMethodField()
+    is_complete = serializers.SerializerMethodField()
+    has_errors = serializers.SerializerMethodField()
+    has_ai_errors = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ResumeUploadTracker
+        fields = [
+            'id', 'batch_job_id', 'upload_type', 'status', 
+            'total_files', 'processed_files', 'successful_files', 'failed_files',
+            'ai_processed_files', 'ai_successful_files', 'ai_failed_files',
+            'error_message', 'processing_details', 'job_title', 'job_id',
+            'started_at', 'completed_at', 'created_date', 'modified_date',
+            'progress_percentage', 'ai_progress_percentage', 'is_complete', 
+            'has_errors', 'has_ai_errors'
+        ]
+    
+    def get_progress_percentage(self, obj):
+        """Calculate progress percentage"""
+        if obj.total_files == 0:
+            return 0
+        return round((obj.processed_files / obj.total_files) * 100, 1)
+    
+    def get_ai_progress_percentage(self, obj):
+        """Calculate AI processing percentage"""
+        if obj.successful_files == 0:
+            return 0
+        return round((obj.ai_processed_files / obj.successful_files) * 100, 1)
+    
+    def get_is_complete(self, obj):
+        """Check if upload is complete"""
+        return obj.status in ['completed', 'failed', 'partially_failed']
+    
+    def get_has_errors(self, obj):
+        """Check if upload has file processing errors"""
+        return obj.failed_files > 0 or obj.status == 'failed'
+    
+    def get_has_ai_errors(self, obj):
+        """Check if upload has AI processing errors"""
+        return obj.ai_failed_files > 0
 
 
 
