@@ -268,7 +268,13 @@ def process_message(message_body):
                             modified_by=user,
                             recruiter=user
                         )
-                        
+                        # Queue for Gemini embedding generation
+                        add_message_to_sqs_queue(type='generate_embedding', data={
+                            "candidate_id": str(candidate.id),
+                            "batch_job_id": str(tracker.batch_job_id),
+                            "organization_namespace": f"{organization.org_name}_{organization.id}"
+                        })
+                                    
                         print(f"✅ Created candidate: {candidate.name} (ID: {candidate.id})")
                         
                         # Queue for embedding generation like single resume
