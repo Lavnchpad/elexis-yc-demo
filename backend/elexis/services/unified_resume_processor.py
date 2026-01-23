@@ -62,6 +62,12 @@ class UnifiedResumeProcessor:
                     add_message_to_sqs_queue(type='ai_job_resume_evaluation', data={
                         "id": str(job_matching_score.id),
                     })
+                    # Queue for Gemini embedding generation
+                    add_message_to_sqs_queue(type='generate_embedding', data={
+                        "candidate_id": str(candidate.id),
+                        "batch_job_id": str(tracker.batch_job_id),
+                        "organization_namespace": f"{organization.org_name}_{organization.id}"
+                    })
                 
                 # Queue for ranking update
                 add_message_to_sqs_queue(type='rank-resumes', data={
