@@ -766,32 +766,10 @@ class JobViewSet(viewsets.ModelViewSet):
             created_by = self.request.user,
             modified_by = self.request.user
         )
-        
-        # Use Gemini-only embedding generation for jobs (consistent with candidate system)
-        try:
-            requirements_text = " ".join([req.requirement for req in job.requirements.all()])
-            job_description_text = f"{job.job_name} at {job.organization.org_name}\nDescription: {job.job_description}\nRequirements: {requirements_text}"
-            
-            # Generate embedding using existing Gemini service function
-            from elexis.services.gemini_embedding_service import generate_embedding
-            
-            job_embedding = generate_embedding(job_description_text)
-            
-            if job_embedding and len(job_embedding) > 0:
-                job_embedding_id = f"job-{job.id}"
-                
-                # Store in job record for future use
-                job.job_description_embedding_id = job_embedding_id
-                job.save(update_fields=['job_description_embedding_id'])
-                
-                print(f"✅ Generated Gemini embedding for job {job.id} with {len(job_embedding)} dimensions")
-            else:
-                print(f"⚠️ Failed to generate embedding for job {job.id} - empty result")
-            
-        except Exception as e:
-            print(f"❌ Error generating Gemini embedding for job {job.id}: {e}")
-            # Don't fail job creation if embedding fails
-            pass
+        jd_embedding_id = upsert_jd_vector(requirements_text=" ".join([req.requirement for req in job.requirements.all()]), job=job)
+        # serializer.save(job_description_embedding_id=job_embedding_id)
+        job.job_description_embedding_id = jd_embedding_id
+        job.save(update_fields=['job_description_embedding_id'])
 
         
     def perform_update(self, serializer):
