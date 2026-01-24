@@ -178,8 +178,6 @@ def process_message(message_body):
                 tracker.start_processing()
                 
                 # Get uploaded files from S3
-                from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3
-                import boto3
                 
                 files_metadata = tracker.processing_details.get('files', [])
                 
