@@ -1,4 +1,5 @@
 from elexis.models import Interview, Snapshots, JobRequirement , JobRequirementEvaluation, JobMatchingResumeScore, Job, Candidate, SuggestedCandidates
+from elexis.models import ResumeUploadTracker, Organization, Recruiter
 from elexis.utils.get_file_data_from_s3 import get_file_data_from_s3, put_dict_as_json_to_s3
 from elexis.utils.summary_generation import generate_summary, experience_information_generation, extract_text_from_pdf
 from elexis.serializers import JobRequirementSerializer, AiJdResumeMatchingResponseSerializer
@@ -16,6 +17,11 @@ from elexis.prompts.jobMatchingResume import getJobResumeMatchingPrompt
 from dotenv import load_dotenv
 import os
 import traceback
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from io import BytesIO
+import tempfile
+from elexis.services.resume_parser import extract_resume_data
+
 load_dotenv()
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -164,10 +170,8 @@ def process_message(message_body):
             # Process the bulk upload following single resume pattern
             try:
                 # Find the tracker using batch_job_id
-                from elexis.models import ResumeUploadTracker, Organization, Recruiter, Job, Candidate, JobMatchingResumeScore
-                from django.core.files.uploadedfile import InMemoryUploadedFile
-                from io import BytesIO
-                import tempfile
+                
+                
                 
                 tracker = ResumeUploadTracker.objects.get(batch_job_id=batch_job_id)
                 organization = Organization.objects.get(id=organization_id)
@@ -235,7 +239,7 @@ def process_message(message_body):
                         
                         try:
                             # Try to extract better data from resume
-                            from elexis.services.resume_parser import extract_resume_data
+                            
                             extracted_data = extract_resume_data(temp_file_path)
                             
                             # Use extracted data if available, keep fallback otherwise
@@ -337,7 +341,7 @@ def process_message(message_body):
                 
             except Exception as e:
                 print(f"❌ Error processing bulk resumes for batch {batch_job_id}: {e}")
-                import traceback
+                
                 traceback.print_exc()
                 
                 # Update tracker with failure
@@ -531,7 +535,7 @@ def evaluateJobResumeMatchingByAi(jobResumeMatchingScoreId: str, type: str):
         # Check if this is part of a bulk upload by looking for a tracker with this candidate
         tracker = None
         try:
-            from elexis.models import ResumeUploadTracker
+            
             tracker = ResumeUploadTracker.objects.filter(
                 status__in=['processing', 'pending'],
                 job=job,
@@ -615,7 +619,6 @@ def evaluateJobResumeMatchingByAi(jobResumeMatchingScoreId: str, type: str):
         
         # Update tracker for AI failure if this is bulk upload and we can find the tracker
         try:
-            from elexis.models import ResumeUploadTracker
             tracker = ResumeUploadTracker.objects.filter(
                 status__in=['processing', 'pending'],
                 upload_type='bulk'
