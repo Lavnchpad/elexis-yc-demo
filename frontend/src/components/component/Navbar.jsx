@@ -21,9 +21,11 @@ const Navbar = () => {
   const { user } = useUser();
   const location = useLocation();
 
+  // Determine if we're in demo mode
+  const isDemo = location.pathname.startsWith("/demo");
+
   // Determine the active path for default and dynamic selection
-  const activePath = location.pathname === "/" ? "candidates" : location.pathname === "/jobs" ? "jobs" : "analytics";
-  console.log("Active Path:", activePath);
+  const activePath = location.pathname === "/" || location.pathname === "/demo/candidate" ? "candidates" : location.pathname === "/jobs" || location.pathname.startsWith("/demo/job") ? "jobs" : "analytics";
   const handleLogout = () => {
     localStorage.removeItem("authToken"); // Clear the auth token
     navigate("/login"); // Redirect to login page (you can change this to another page)
@@ -52,10 +54,10 @@ const Navbar = () => {
           {/* <Button>Add Candidate</Button>
           */}
           <Button asChild className='bg-white text-muted-foreground rounded-full'>
-            <Link to='/jobs' className=' border border-gray-200 shadow-lg'><WalletCards /> Jobs</Link>
+            <Link to={isDemo ? '/demo/jobs' : '/jobs'} className=' border border-gray-200 shadow-lg'><WalletCards /> Jobs</Link>
           </Button>
           <Button asChild className='rounded-full'>
-            <Link to='/' className=' bg-red-700 text-white border shadow-2xl'><PersonStanding /> Candidates</Link>
+            <Link to={isDemo ? '/demo/candidate' : '/'} className=' bg-red-700 text-white border shadow-2xl'><PersonStanding /> Candidates</Link>
           </Button>
         </div>
 

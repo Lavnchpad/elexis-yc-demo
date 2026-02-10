@@ -19,6 +19,9 @@ import MyTeamDetails from './components/component/profile/MyTeamDetails';
 import InterviewFilter from './page/InterviewFilter';
 import {Maintenance} from './page/Maintenance';
 import { InterviewPrintPreview } from './page/interview/InterviewPrintPreview';
+import DemoJobsList from './page/demo/DemoJobsList';
+import DemoJobDetail from './page/demo/DemoJobDetail';
+import DemoCandidate from './page/demo/DemoCandidate';
 const App = () => {
   return (
     <BrowserRouter>
@@ -55,6 +58,10 @@ const App = () => {
             <Route path="/interviewFilter" element={<ProtectedRoute><InterviewFilter /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
             <Route path="/interviews/:interviewId/print-preview" element={<ProtectedRoute><InterviewPrintPreview/></ProtectedRoute>} />
+            {/* Demo Routes — No auth required, hardcoded data */}
+            <Route path="/demo/jobs" element={<DemoJobsList />} />
+            <Route path="/demo/job" element={<DemoJobDetail />} />
+            <Route path="/demo/candidate" element={<DemoCandidate />} />
           </Route>
 
           {/* Start Interview Route */}

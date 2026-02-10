@@ -1,0 +1,1252 @@
+// ============================================================
+// DEMO DATA — Hardcoded for YC Demo Video
+// ============================================================
+
+// Screen 1: Rubric Data
+export const rubricData = {
+  client: "Allervision Tech",
+  role: "Senior Full Stack Engineer",
+  department: "Platform Engineering",
+  priority: "HIGH",
+  established: "Jan 15, 2026",
+  location: "Remote-first",
+  headcount: "1 position",
+  targetStart: "March 2026",
+  engagement: "Full-time",
+  mustHave: [
+    { skill: "Flutter / Dart", proficiency: "Advanced+", checked: true },
+    { skill: "Python", proficiency: "Advanced+", checked: true },
+    { skill: "REST APIs", proficiency: "Advanced+", checked: true },
+    { skill: "Azure", proficiency: "Intermediate+", checked: true },
+  ],
+  shouldHave: [
+    { skill: "MongoDB", proficiency: "Intermediate+", checked: true },
+    { skill: "AI/ML Integration", proficiency: "Any experience", checked: true },
+  ],
+  niceToHave: [
+    { skill: "iOS Development", proficiency: "Any exposure", checked: true },
+    { skill: "CI/CD", proficiency: "Any exposure", checked: true },
+    { skill: "Docker", proficiency: "Any exposure", checked: true },
+    { skill: "Test-Driven Development", proficiency: "Any exposure", checked: true },
+  ],
+  parameters: {
+    experienceMin: 2,
+    experienceMax: 4,
+    salaryMin: "₹10L",
+    salaryMax: "₹12L",
+    location: "Remote-first",
+    availability: "Within 30 days",
+    noticePeriodMax: "30 days",
+  },
+  culture: [
+    { label: "Strong ownership mentality", checked: true },
+    { label: "Excellent communicator", checked: true },
+    { label: "Startup / small team experience", checked: true },
+    { label: "Thrives under pressure & ambiguity", checked: false },
+  ],
+  aiNote:
+    'Based on the JD, this is a sole full-stack developer role at an early-stage startup — the candidate will own both Flutter frontend and Python REST API backend, plus Azure infrastructure. Flutter/Dart and Python are the most critical skills since the candidate will be the primary architect, developer, and tester across the entire stack. AI/ML integration experience is strongly preferred given the product\'s inference-heavy workflows. I\'ve classified Flutter and Python as Advanced+ since independent ownership of the full SDLC requires senior-level proficiency.',
+};
+
+// Screen 4: Candidate Data
+export const candidateData = {
+  name: "Rahul Kumar",
+  currentRole: "Senior Software Engineer",
+  company: "Infosys",
+  location: "Bangalore, India",
+  availability: "30 days notice",
+  searchStatus: "Actively Looking",
+  source: "Saarthi",
+  salaryEstimate: "₹10L - ₹12L",
+  rubric: "Allervision Tech — Senior Full Stack Engineer",
+  overallFit: 87,
+  growthPotential: 89,
+  email: "rahul.k94@gmail.com",
+  phone: "+91 98765 43210",
+};
+
+export const rubricMatch = {
+  mustHave: [
+    {
+      skill: "Flutter / Dart",
+      resumeSections: ["Skills", "Experience", "Projects"],
+      github: { status: "strong", repos: 10, commits: 280, latest: "3 days ago", detail: "Cross-platform apps, BLoC pattern" },
+      interview: {
+        status: "confirmed",
+        note: "Deep knowledge of Flutter state management (BLoC + Riverpod). Built production iOS app with 50K+ users. Strong understanding of widget lifecycle and performance optimization.",
+      },
+      confidence: "high",
+      rubricWeight: 10,
+      score: 10,
+    },
+    {
+      skill: "Python",
+      resumeSections: ["Skills", "Experience"],
+      github: { status: "strong", repos: 8, commits: 190, latest: "1 week ago", detail: "FastAPI + Flask backends" },
+      interview: {
+        status: "confirmed",
+        note: "Built REST APIs handling 30K req/min. Strong understanding of async patterns, decorators, and Python packaging best practices.",
+      },
+      confidence: "high",
+      rubricWeight: 9,
+      score: 9,
+    },
+    {
+      skill: "REST APIs",
+      resumeSections: ["Skills", "Experience", "Projects"],
+      github: { status: "moderate", repos: 6, commits: null, latest: null, detail: "OpenAPI specs in 4 repos" },
+      interview: {
+        status: "confirmed",
+        note: "Designed versioned APIs serving mobile + web clients. Strong opinions on pagination, auth flows, and error handling.",
+      },
+      confidence: "high",
+      rubricWeight: 8,
+      score: 8,
+    },
+    {
+      skill: "Azure",
+      resumeSections: ["Skills"],
+      github: { status: "moderate", repos: 3, commits: null, latest: null, detail: "Azure Functions + Blob Storage usage" },
+      interview: {
+        status: "confirmed",
+        note: "1.5 years production Azure. Managed App Service, Azure Functions, and Cosmos DB. Set up CI/CD pipelines with Azure DevOps.",
+      },
+      confidence: "medium",
+      rubricWeight: 8,
+      score: 6,
+    },
+  ],
+  shouldHave: [
+    {
+      skill: "MongoDB",
+      resumeSections: ["Skills", "Experience"],
+      github: { status: "moderate", repos: 5, commits: null, latest: null, detail: "Mongoose ODM, aggregation pipelines" },
+      interview: {
+        status: "confirmed",
+        note: "2 years production MongoDB. Designed schemas for high-throughput user data collection. Experience with indexing strategies and sharding basics.",
+      },
+      confidence: "high",
+      rubricWeight: 6,
+      score: 6,
+    },
+    {
+      skill: "AI/ML Integration",
+      resumeSections: ["Experience"],
+      github: { status: "weak", repos: 2, commits: 25, latest: "1 month ago", detail: "TensorFlow Lite + on-device inference" },
+      interview: {
+        status: "confirmed",
+        note: "Integrated on-device ML models in Flutter app for image classification. Familiar with cloud inference APIs (OpenAI, Azure Cognitive Services). Not an ML engineer but can integrate and optimize workflows.",
+      },
+      confidence: "medium",
+      rubricWeight: 5,
+      score: 4,
+    },
+  ],
+  niceToHave: [
+    {
+      skill: "iOS Development",
+      resumeSections: ["Skills", "Experience"],
+      github: { status: "moderate", repos: 3, commits: 60, latest: "2 weeks ago", detail: "Swift + SwiftUI side projects" },
+      interview: {
+        status: "confirmed",
+        note: "Published 2 apps to App Store. Understands iOS-specific patterns (push notifications, App Store review process, provisioning profiles).",
+      },
+      confidence: "high",
+      rubricWeight: 3,
+      score: 3,
+    },
+    {
+      skill: "CI/CD",
+      resumeSections: [],
+      github: { status: "discovered", repos: 7, commits: null, latest: null, detail: "GitHub Actions workflows in 7 repos" },
+      interview: null,
+      confidence: "medium",
+      rubricWeight: 2,
+      score: 2,
+    },
+    {
+      skill: "Docker",
+      resumeSections: ["Skills"],
+      github: { status: "moderate", repos: 4, commits: null, latest: null, detail: "Dockerfiles for Python APIs" },
+      interview: {
+        status: "confirmed",
+        note: "Uses Docker for local dev and staging environments. No production orchestration experience.",
+      },
+      confidence: "medium",
+      rubricWeight: 2,
+      score: 2,
+    },
+    {
+      skill: "Test-Driven Development",
+      resumeSections: [],
+      github: { status: "weak", repos: 3, commits: null, latest: null, detail: "pytest in 3 repos, Flutter widget tests" },
+      interview: {
+        status: "gap_confirmed",
+        note: "Writes tests for critical paths but doesn't follow strict TDD. Familiar with pytest and Flutter testing framework. Room for growth.",
+      },
+      confidence: "low",
+      rubricWeight: 2,
+      score: 1,
+    },
+  ],
+};
+
+export const githubDiscoveries = [
+  { skill: "GitHub Actions", detail: "CI/CD pipelines in 7 repos — candidate didn't list on resume", relevant: true },
+  { skill: "Firebase", detail: "Push notifications + analytics in 3 repos", relevant: true },
+  { skill: "GraphQL", detail: "Used in 2 Flutter projects for API layer", relevant: false },
+];
+
+export const educationContext = {
+  institution: "IIIT Hyderabad",
+  degree: "B.Tech Computer Science, 2018",
+  tier: "Tier 1 Engineering Institution (India)",
+  ranking: "Ranked #15 in India for CS (NIRF 2025)",
+  acceptance: "~2%",
+  comparable: "Georgia Tech, UIUC (for US context)",
+  rubricRelevance:
+    "Rubric requires strong CS fundamentals — IIIT-H curriculum covers distributed systems, algorithms, and systems programming at depth.",
+};
+
+export const orgFit = {
+  targetIndustry: "Ecommerce",
+  matchPercent: 88,
+  industries: [
+    { name: "SaaS/B2B", years: 4, relevance: "High", detail: "Enterprise platforms, multi-tenant architecture" },
+    { name: "E-commerce", years: 3, relevance: "High", detail: "Scalable checkout systems, product management" },
+    { name: "Logistics", years: 2, relevance: "Medium", detail: "Real-time data processing and tracking" },
+  ],
+};
+
+export const salaryAnalysis = {
+  estimate: "₹10L - ₹12L",
+  dataPoints: [
+    { source: "Levels.fyi", value: "₹11L", detail: "Median for similar role/YOE" },
+    { source: "LinkedIn Salary", value: "₹9-13L", detail: "Range for market" },
+    { source: "Glassdoor", value: "₹10-12L", detail: "Comparable startups" },
+  ],
+  rubricBudget: "₹10L - ₹12L",
+  alignment: "within",
+  likelyAccepts: "₹10.5-11.5L",
+};
+
+export const interviewSummary = {
+  scores: [
+    { area: "Technical Depth", score: 9, max: 10 },
+    { area: "System Design", score: 8, max: 10 },
+    { area: "Communication", score: 9, max: 10 },
+    { area: "Problem Solving", score: 8, max: 10 },
+    { area: "Culture Fit", score: 8, max: 10 },
+  ],
+  keyFindings: [
+    "Built and shipped a Flutter app with 50K+ users on iOS — handled full lifecycle from architecture to App Store submission. Uses BLoC pattern for state management.",
+    "Strong Python backend experience — built FastAPI services handling 30K req/min with MongoDB. Understands async patterns and connection pooling.",
+    "Azure experience is solid but not architect-level — has managed App Service, Functions, and Cosmos DB. Needs guidance on cost optimization at scale.",
+    "AI/ML integration experience confirmed — integrated TensorFlow Lite for on-device inference and cloud APIs (OpenAI, Azure Cognitive Services) in production apps.",
+    "Available in 30 days. Strong startup mindset — previously worked at a 5-person team, comfortable owning full stack independently.",
+  ],
+  recommendation: "STRONG FIT",
+};
+
+// ── Jobs List Data ──
+export const demoJobs = [
+  {
+    id: "demo-1",
+    job_name: "Senior Full Stack Engineer",
+    location: "Remote-first",
+    max_ctc: "₹10L - ₹12L",
+    recruiter: { id: "demo-recruiter", name: "Hardik" },
+    client: "Allervision Tech",
+    status: "Active",
+    candidates: 4,
+    created: "Jan 15, 2026",
+  },
+  {
+    id: "demo-2",
+    job_name: "Backend Engineer",
+    location: "Bangalore",
+    max_ctc: "₹15L - ₹20L",
+    recruiter: { id: "demo-recruiter", name: "Hardik" },
+    client: "AccountingBaba",
+    status: "Active",
+    candidates: 12,
+    created: "Jan 8, 2026",
+  },
+  {
+    id: "demo-3",
+    job_name: "React Native Developer",
+    location: "Mumbai",
+    max_ctc: "₹8L - ₹12L",
+    recruiter: { id: "demo-recruiter", name: "Hardik" },
+    client: "Sahas Engineering Corp.",
+    status: "Active",
+    candidates: 8,
+    created: "Dec 28, 2025",
+  },
+  {
+    id: "demo-4",
+    job_name: "DevOps Engineer",
+    location: "Pune",
+    max_ctc: "₹18L - ₹22L",
+    recruiter: { id: "demo-recruiter", name: "Hardik" },
+    client: "Soltech Techservices",
+    status: "Paused",
+    candidates: 3,
+    created: "Dec 20, 2025",
+  },
+];
+
+// ── Applications (Inbound Applicants) — Screen 2: Resume Analysis ──
+// Data shape matches AiEvaluationCard component expectations
+export const demoApplications = [
+  {
+    id: "app-1",
+    stage: "candidate_onboard",
+    created_date: "2026-01-20T10:13:54Z",
+    created_by: { name: "Elexis AI" },
+    candidate: {
+      id: "cand-1",
+      name: "Rahul Kumar",
+      email: "rahul.k94@gmail.com",
+      phone_number: "+91 98765 43210",
+    },
+    ai_evaluations: [{
+      id: "eval-1",
+      roleFitScore: 87,
+      recommendation: {
+        overallRecommendation: "Highly Recommended — Resume demonstrates strong full-stack capabilities across Flutter, Python, and cloud technologies. Experience profile closely matches the sole-developer ownership model required by Allervision Tech.",
+      },
+      directComparison: {
+        relevantSections: [
+          "**Summary:** Clearly positions as 'Senior Full Stack Engineer' with 4 years combined Flutter and Python experience, directly matching the target role.",
+          "**Technical Skills:** Lists Flutter/Dart, Python, FastAPI, REST APIs, Azure (App Service, Functions, Cosmos DB), MongoDB, and Docker — covering all must-have and should-have requirements.",
+          "**Experience — Senior Software Engineer (Infosys):** Built cross-platform Flutter app with 50K+ iOS users, designed FastAPI backends handling 30K req/min with MongoDB, managed Azure infrastructure. Directly maps to primary job responsibilities.",
+          "**Experience — Software Developer (Wipro):** Earlier role shows progressive growth from backend Python to full-stack — validates depth of experience rather than surface-level familiarity.",
+          "**Projects:** Personal Flutter apps published to App Store demonstrate initiative and iOS ecosystem familiarity — relevant to the near-term iOS focus.",
+          "**Certifications:** Azure Fundamentals (AZ-900) confirms baseline cloud knowledge, though not architect-level.",
+        ],
+        missingRequirements: [
+          "Test-Driven Development is not mentioned anywhere in the resume — no references to TDD, pytest, or Flutter widget testing frameworks. This is a nice-to-have but notable gap.",
+          "AI/ML integration is mentioned briefly in one project context but lacks depth — the resume doesn't demonstrate the 'integrate, test/validate, and performance-optimize AI/ML workflows' the JD emphasizes.",
+        ],
+      },
+      backgroundAnalysis: {
+        industryContext: "Rahul's experience spans enterprise IT services (Infosys, Wipro) building consumer-facing mobile apps and SaaS backends. While not startup experience, his work on high-traffic consumer apps (50K+ users) demonstrates product-oriented thinking beyond typical IT services work.",
+        companyBackground: "Infosys is a Tier 1 Indian IT services company. Candidates from Infosys's product engineering division (vs. staff augmentation) tend to have stronger independent ownership skills. Rahul's role building full-stack products internally suggests the former.",
+        relevance: "Highly relevant. The candidate has been operating as a de facto full-stack owner at Infosys — building Flutter frontends, Python APIs, and managing Azure infrastructure. This maps directly to the sole-developer model at Allervision Tech. The transition from large enterprise to early-stage startup is the primary risk factor.",
+      },
+      roleFitAnalysis: {
+        jobTitleMatch: "Strong match. Current title 'Senior Software Engineer' with demonstrated full-stack responsibilities aligns well with 'Senior Full Stack Engineer' target. Career progression from Software Developer → Senior Software Engineer shows growth trajectory.",
+        experienceLevel: "4 years total experience (2 years at Infosys, 2 years at Wipro). Falls within the 2-4 year requirement. The seniority of his Infosys work (architecture decisions, independent ownership) suggests he operates above his YOE level.",
+        keySkills: ["Flutter/Dart", "Python", "FastAPI", "REST APIs", "Azure App Service", "Azure Functions", "Cosmos DB", "MongoDB", "Docker", "iOS Development", "BLoC Pattern", "Git", "CI/CD"],
+        missingSkills: ["Test-Driven Development", "AI/ML Integration (depth)"],
+      },
+      gapsAndImprovements: {
+        missingSkills: ["Test-Driven Development", "AI/ML Integration (depth)"],
+      },
+      hiringSignals: {
+        resumeQuality: "High quality. Well-structured with clear quantifiable achievements (50K+ users, 30K req/min, 99.5% uptime). Uses specific technical terminology correctly. Avoids vague claims — each skill is backed by a concrete project or metric.",
+        careerTrajectory: "Strong upward trajectory. Moved from backend-focused Python role at Wipro to full-stack ownership at Infosys within 2 years. Took on architecture decisions and infrastructure management — progressive responsibility increase consistent with senior-level growth.",
+        prestigeFactors: "IIIT Hyderabad (Tier 1 CS institution, ~2% acceptance rate). Infosys product engineering division. Azure Fundamentals certification. Open-source contributions on GitHub with meaningful star counts.",
+        transitionEase: "Moderate-to-high. Technical stack is a near-perfect match. Primary risk is enterprise → startup culture transition. However, resume emphasizes 'independent ownership' and 'end-to-end delivery' which suggests startup-compatible working style. 30-day notice period is within acceptable range.",
+      },
+    }],
+    githubAnalysis: {
+      username: "rahul-kumar-dev",
+      totalRepos: 42,
+      totalCommits: 1240,
+      accountAge: "6 years",
+      topLanguages: ["Dart", "Python", "Swift", "JavaScript"],
+      skillVerification: [
+        { skill: "Flutter/Dart", status: "strong", repos: 10, commits: 280, latest: "3 days ago", detail: "Production-grade cross-platform apps using BLoC pattern. Clean architecture with separate data/domain/presentation layers." },
+        { skill: "Python", status: "strong", repos: 8, commits: 190, latest: "1 week ago", detail: "FastAPI + Flask backends with async patterns. Well-structured project layouts, proper dependency management." },
+        { skill: "REST APIs", status: "moderate", repos: 6, commits: null, latest: null, detail: "OpenAPI specs in 4 repos. Versioned API design with pagination and error handling." },
+        { skill: "Azure", status: "moderate", repos: 3, commits: null, latest: null, detail: "Azure Functions + Blob Storage usage. ARM templates for infrastructure-as-code." },
+        { skill: "MongoDB", status: "moderate", repos: 5, commits: null, latest: null, detail: "Mongoose ODM usage, aggregation pipelines in backend projects." },
+        { skill: "AI/ML Integration", status: "weak", repos: 2, commits: 25, latest: "1 month ago", detail: "TensorFlow Lite integration for on-device inference in Flutter app." },
+        { skill: "iOS Development", status: "moderate", repos: 3, commits: 60, latest: "2 weeks ago", detail: "Swift + SwiftUI side projects. 2 published to App Store." },
+        { skill: "Docker", status: "moderate", repos: 4, commits: null, latest: null, detail: "Dockerfiles for Python APIs. Multi-stage builds." },
+        { skill: "CI/CD", status: "discovered", repos: 7, commits: null, latest: null, detail: "GitHub Actions workflows in 7 repos — not listed on resume." },
+        { skill: "Test-Driven Development", status: "weak", repos: 3, commits: null, latest: null, detail: "pytest in 3 repos, Flutter widget tests. Coverage is inconsistent." },
+      ],
+      discoveries: [
+        { skill: "GitHub Actions", detail: "CI/CD pipelines in 7 repos — candidate didn't list on resume", relevant: true },
+        { skill: "Firebase", detail: "Push notifications + analytics in 3 repos", relevant: true },
+        { skill: "GraphQL", detail: "Used in 2 Flutter projects for API layer", relevant: false },
+      ],
+      overallAssessment: "Active developer with consistent commit history across 6 years. Code quality is above average — clean project structures, meaningful commit messages, and proper .gitignore usage. Flutter and Python repos show production-level maturity. GitHub Actions discovery is a strong positive signal for the sole-developer model.",
+      overallScore: 82,
+      codeQuality: {
+        hasTests: true,
+        hasCiCd: true,
+        hasDocs: true,
+        usesLinting: true,
+        avgCommitSize: "small",
+        commitMessageQuality: "good",
+      },
+      contributionPatterns: {
+        avgCommitsPerWeek: 4.0,
+        activeDaysPerWeek: 5.2,
+        consistencyScore: 78,
+        growthTrajectory: "steady",
+        peakActivityPeriod: "Weekday evenings (IST)",
+      },
+      languageStats: [
+        { language: "Dart", percentage: 38, reposUsedIn: 12, frameworksDetected: ["Flutter", "BLoC", "Riverpod"] },
+        { language: "Python", percentage: 30, reposUsedIn: 10, frameworksDetected: ["FastAPI", "Flask", "pytest"] },
+        { language: "Swift", percentage: 14, reposUsedIn: 4, frameworksDetected: ["SwiftUI", "Combine"] },
+        { language: "JavaScript", percentage: 12, reposUsedIn: 8, frameworksDetected: ["Node.js", "Express"] },
+        { language: "Other", percentage: 6, reposUsedIn: 8, frameworksDetected: [] },
+      ],
+      insights: {
+        strengths: [
+          { icon: "check", headline: "Consistent contributor", detail: "Active 5.2 days/week over 6 years — top 15% of developers" },
+          { icon: "check", headline: "Clean code practices", detail: "Tests in 72% of repos, CI/CD in 7 repos, linting configured" },
+          { icon: "check", headline: "Production Flutter experience", detail: "10 Flutter repos with BLoC + Riverpod patterns — well beyond tutorial level" },
+          { icon: "check", headline: "CI/CD autodidact", detail: "GitHub Actions in 7 repos without listing it on resume — shows initiative" },
+        ],
+        concerns: [
+          { icon: "warn", headline: "AI/ML depth is shallow", detail: "Only 2 repos with 25 commits — TensorFlow Lite integration, no model training" },
+          { icon: "warn", headline: "Testing coverage inconsistent", detail: "pytest/widget tests present but not in all repos — not strict TDD" },
+        ],
+      },
+    },
+  },
+  {
+    id: "app-2",
+    stage: "candidate_onboard",
+    created_date: "2026-01-20T10:13:43Z",
+    created_by: { name: "Elexis AI" },
+    candidate: {
+      id: "cand-2",
+      name: "Priya Sharma",
+      email: "priyasharma.dev@outlook.com",
+      phone_number: "+91 98765 43211",
+    },
+    ai_evaluations: [{
+      id: "eval-2",
+      roleFitScore: 72,
+      recommendation: {
+        overallRecommendation: "Recommended with reservations — Strong Python and REST API skills. Flutter experience exists but is limited to 1 year at Accenture with basic state management — not at the Advanced+ level this role demands. Azure exposure is introductory (AZ-900 certified, basic App Service usage). Backend is the strongest dimension; frontend ownership and cloud architecture need significant growth.",
+      },
+      directComparison: {
+        relevantSections: [
+          "**Technical Skills:** Lists Python, FastAPI, Django, REST APIs, MongoDB, Flutter/Dart, and Azure — covers all must-have categories, though Flutter and Azure are listed at intermediate level.",
+          "**Experience — Full Stack Developer (TCS):** 3 years building Python microservices and REST APIs for e-commerce platform. Also contributed to an internal Flutter mobile app for warehouse management.",
+          "**Experience — Junior Developer (Accenture):** Earlier full-stack role with Flutter mobile development for a client project — 1 year building cross-platform dashboards. Also gained basic Azure App Service exposure during deployment.",
+        ],
+        missingRequirements: [
+          "Flutter/Dart proficiency is Intermediate, not Advanced+ — built basic CRUD apps but hasn't handled complex state management (BLoC/Riverpod), performance optimization, or App Store submissions independently.",
+          "Azure experience is introductory — AZ-900 certified, used App Service for deployment, but hasn't managed Functions, Cosmos DB, or infrastructure-as-code.",
+          "No mention of AI/ML integration in any capacity.",
+        ],
+      },
+      backgroundAnalysis: {
+        industryContext: "Experience centered in e-commerce and enterprise consulting. Backend-heavy profile with growing mobile frontend experience.",
+        companyBackground: "TCS and Accenture are large IT services companies. Backend-focused roles with some cross-functional mobile exposure through internal projects.",
+        relevance: "Moderately relevant. Strong backend skills align well. Flutter experience exists but is not at the depth required for sole-developer ownership. Azure is introductory.",
+      },
+      roleFitAnalysis: {
+        jobTitleMatch: "Moderate match. 'Full Stack Developer' at TCS with Flutter + Python experience aligns directionally, but depth on Flutter frontend is below target seniority.",
+        experienceLevel: "4 years total (3 at TCS, 1 at Accenture). Within range. ~1 year of Flutter experience and 3+ years of Python backend.",
+        keySkills: ["Python", "FastAPI", "Django", "REST APIs", "MongoDB", "Flutter/Dart", "Azure (basic)", "Docker", "Git", "PostgreSQL"],
+        missingSkills: ["Flutter/Dart (Advanced+)", "Azure (Intermediate+)", "AI/ML Integration", "iOS Development"],
+      },
+      gapsAndImprovements: {
+        missingSkills: ["Flutter/Dart (Advanced+)", "Azure (Intermediate+)", "AI/ML Integration", "iOS Development"],
+      },
+      hiringSignals: {
+        resumeQuality: "Good quality. Clear structure with metrics (API response times, uptime numbers). Backend accomplishments are well-documented. Flutter section is thinner.",
+        careerTrajectory: "Steady growth from junior full-stack to backend specialist with recent cross-functional Flutter work. Broadening into mobile — encouraging trajectory.",
+        prestigeFactors: "NIT Trichy (Tier 1 institution). TCS Digital division. AWS Solutions Architect Associate + Azure Fundamentals (AZ-900) certifications.",
+        transitionEase: "Moderate. Backend skills transfer directly. Flutter experience exists but needs to deepen from intermediate to advanced. Azure needs ramp-up from basic to intermediate. 6-8 week mentoring runway for the frontend and cloud gaps.",
+      },
+    }],
+    githubAnalysis: {
+      username: "priya-s-dev",
+      totalRepos: 31,
+      totalCommits: 740,
+      accountAge: "4 years",
+      topLanguages: ["Python", "Dart", "JavaScript", "TypeScript"],
+      skillVerification: [
+        { skill: "Flutter/Dart", status: "weak", repos: 3, commits: 65, latest: "3 weeks ago", detail: "3 Flutter repos — basic CRUD apps with Provider state management. No BLoC/Riverpod, no complex navigation, no App Store submissions." },
+        { skill: "Python", status: "strong", repos: 12, commits: 340, latest: "5 days ago", detail: "FastAPI and Django backends. Clean async patterns, proper typing." },
+        { skill: "REST APIs", status: "strong", repos: 8, commits: null, latest: null, detail: "Well-documented APIs with OpenAPI specs. Rate limiting, auth middleware." },
+        { skill: "Azure", status: "weak", repos: 1, commits: 12, latest: "2 months ago", detail: "Single repo with Azure App Service deployment config. Basic ARM template. No Functions or Cosmos DB." },
+        { skill: "MongoDB", status: "moderate", repos: 4, commits: null, latest: null, detail: "Mongoose ODM in e-commerce projects. Aggregation pipelines." },
+        { skill: "AI/ML Integration", status: "not_found", repos: 0, commits: 0, latest: null, detail: "No AI/ML related code found." },
+      ],
+      discoveries: [
+        { skill: "AWS Lambda", detail: "Serverless functions in 5 repos — strong cloud backend skills", relevant: true },
+        { skill: "React Native", detail: "2 repos with React Native mobile apps — earlier mobile experience", relevant: true },
+      ],
+      overallAssessment: "Strong backend developer with growing Flutter skills. Python and API repos show production-level maturity. Flutter repos exist but are intermediate — CRUD apps with basic state management, not the advanced patterns (BLoC, Riverpod, complex navigation) this role requires. Azure presence is minimal.",
+      overallScore: 58,
+      codeQuality: {
+        hasTests: true,
+        hasCiCd: false,
+        hasDocs: true,
+        usesLinting: true,
+        avgCommitSize: "medium",
+        commitMessageQuality: "good",
+      },
+      contributionPatterns: {
+        avgCommitsPerWeek: 3.3,
+        activeDaysPerWeek: 4.1,
+        consistencyScore: 65,
+        growthTrajectory: "steady",
+        peakActivityPeriod: "Weekday mornings (IST)",
+      },
+      languageStats: [
+        { language: "Python", percentage: 48, reposUsedIn: 14, frameworksDetected: ["FastAPI", "Django", "pytest", "SQLAlchemy"] },
+        { language: "Dart", percentage: 14, reposUsedIn: 3, frameworksDetected: ["Flutter", "Provider"] },
+        { language: "JavaScript", percentage: 20, reposUsedIn: 6, frameworksDetected: ["React Native", "Express"] },
+        { language: "TypeScript", percentage: 12, reposUsedIn: 5, frameworksDetected: ["NestJS"] },
+        { language: "Other", percentage: 6, reposUsedIn: 3, frameworksDetected: [] },
+      ],
+      insights: {
+        strengths: [
+          { icon: "check", headline: "Strong Python backend", detail: "12 repos, 340 commits — FastAPI and Django with async patterns and proper typing" },
+          { icon: "check", headline: "Well-documented APIs", detail: "OpenAPI specs, rate limiting, and auth middleware across 8 repos" },
+          { icon: "check", headline: "Growing Flutter skills", detail: "3 Flutter repos with 65 commits — showing active investment in mobile development" },
+        ],
+        concerns: [
+          { icon: "warn", headline: "Flutter is intermediate-level", detail: "Basic CRUD apps with Provider — no BLoC/Riverpod, no complex architecture, no production deployments" },
+          { icon: "warn", headline: "Azure experience is minimal", detail: "1 repo with basic App Service config — no Functions, Cosmos DB, or infrastructure-as-code" },
+          { icon: "warn", headline: "No CI/CD pipelines", detail: "No GitHub Actions or CI configuration found in any repo" },
+        ],
+      },
+    },
+  },
+  {
+    id: "app-3",
+    stage: "candidate_onboard",
+    created_date: "2026-01-20T10:13:34Z",
+    created_by: { name: "Elexis AI" },
+    candidate: {
+      id: "cand-3",
+      name: "Amit Patel",
+      email: "amitpatel.code@gmail.com",
+      phone_number: "+91 98765 43212",
+    },
+    ai_evaluations: [{
+      id: "eval-3",
+      roleFitScore: 44,
+      recommendation: {
+        overallRecommendation: "Not Recommended — Flutter is hobby-level only (todo app, weather app), not production-ready. Azure is completely absent — all cloud experience is GCP. Missing 2 of 4 must-have knockout criteria at required proficiency. Solid Python backend but cannot independently own the Flutter + Azure stack this role demands.",
+      },
+      directComparison: {
+        relevantSections: [
+          "**Technical Skills:** Python, Flask, MongoDB, REST APIs listed prominently. Flutter listed under 'Learning/Side Projects.'",
+          "**Experience — Sr. Engineer (Wipro):** 3 years building Python microservices with MongoDB. Solid backend foundation.",
+          "**Projects:** Two Flutter side projects on GitHub — a todo app and a weather app. Shows interest but not production-level.",
+        ],
+        missingRequirements: [
+          "Flutter/Dart experience is personal-project level only — no production deployment, no App Store submission, no large-scale state management.",
+          "Azure experience is absent — cloud work is entirely GCP (Cloud Run, Firestore).",
+          "AI/ML integration not mentioned in any context.",
+          "No iOS-specific experience beyond what Flutter provides cross-platform.",
+        ],
+      },
+      backgroundAnalysis: {
+        industryContext: "Enterprise IT services background building internal tools and microservices. Limited consumer-facing product experience.",
+        companyBackground: "Wipro IT services. Enterprise project delivery model — structured teams with defined roles rather than independent ownership.",
+        relevance: "Moderate. Backend skills transfer well but the profile lacks the full-stack ownership and consumer app experience the role demands.",
+      },
+      roleFitAnalysis: {
+        jobTitleMatch: "Partial. 'Sr. Engineer' with backend focus doesn't align with full-stack developer expectations. Mobile is a hobby, not a profession.",
+        experienceLevel: "3.5 years total. Within range but Flutter experience is effectively 0 years professionally.",
+        keySkills: ["Python", "Flask", "MongoDB", "REST APIs", "GCP", "Docker", "PostgreSQL", "Git", "Redis"],
+        missingSkills: ["Flutter/Dart (production)", "Azure", "AI/ML Integration", "iOS Development"],
+      },
+      gapsAndImprovements: {
+        missingSkills: ["Flutter/Dart (production)", "Azure", "AI/ML Integration", "iOS Development"],
+      },
+      hiringSignals: {
+        resumeQuality: "Adequate. Technical skills are listed but accomplishments lack quantifiable metrics. Project descriptions are task-focused rather than outcome-focused.",
+        careerTrajectory: "Stable growth within backend engineering. Flutter side projects suggest interest in broadening but no professional commitment yet.",
+        prestigeFactors: "BITS Pilani (Tier 1 institution). Wipro's cloud engineering division.",
+        transitionEase: "Low. Would need substantial ramp-up on Flutter (from hobby to production-level), Azure (new cloud platform), and consumer app development patterns. High mentoring overhead for an early-stage startup.",
+      },
+    }],
+    githubAnalysis: {
+      username: "amitpatel-code",
+      totalRepos: 22,
+      totalCommits: 450,
+      accountAge: "3 years",
+      topLanguages: ["Python", "Dart", "Go"],
+      skillVerification: [
+        { skill: "Flutter/Dart", status: "weak", repos: 2, commits: 35, latest: "3 months ago", detail: "Todo app and weather app — tutorial-level projects. No state management patterns, no production architecture." },
+        { skill: "Python", status: "strong", repos: 9, commits: 220, latest: "1 week ago", detail: "Flask microservices with proper project structure. Testing present in some repos." },
+        { skill: "REST APIs", status: "moderate", repos: 5, commits: null, latest: null, detail: "Flask-based REST endpoints. Basic CRUD patterns." },
+        { skill: "Azure", status: "not_found", repos: 0, commits: 0, latest: null, detail: "No Azure code. All cloud work is GCP (Cloud Run, Firestore)." },
+        { skill: "MongoDB", status: "moderate", repos: 4, commits: null, latest: null, detail: "Mongoose ODM usage. Basic aggregation." },
+        { skill: "AI/ML Integration", status: "not_found", repos: 0, commits: 0, latest: null, detail: "No AI/ML code found." },
+      ],
+      discoveries: [
+        { skill: "Go", detail: "3 repos with Go microservices — not on resume", relevant: false },
+        { skill: "Redis", detail: "Caching layer in 2 Python projects", relevant: true },
+      ],
+      overallAssessment: "Backend-focused developer. Flutter repos confirm resume assessment — hobby-level only, with tutorial-style code that wouldn't survive a production environment. Python repos are solid but limited to Flask (no FastAPI/async patterns).",
+      overallScore: 48,
+      codeQuality: {
+        hasTests: false,
+        hasCiCd: false,
+        hasDocs: false,
+        usesLinting: true,
+        avgCommitSize: "large",
+        commitMessageQuality: "fair",
+      },
+      contributionPatterns: {
+        avgCommitsPerWeek: 2.9,
+        activeDaysPerWeek: 3.4,
+        consistencyScore: 52,
+        growthTrajectory: "steady",
+        peakActivityPeriod: "Weekends (IST)",
+      },
+      languageStats: [
+        { language: "Python", percentage: 48, reposUsedIn: 11, frameworksDetected: ["Flask", "SQLAlchemy", "Celery"] },
+        { language: "Dart", percentage: 16, reposUsedIn: 2, frameworksDetected: ["Flutter"] },
+        { language: "Go", percentage: 20, reposUsedIn: 3, frameworksDetected: ["Gin", "GORM"] },
+        { language: "Other", percentage: 16, reposUsedIn: 6, frameworksDetected: [] },
+      ],
+      insights: {
+        strengths: [
+          { icon: "check", headline: "Solid Python backend", detail: "9 repos with Flask microservices — proper project structure and dependency management" },
+          { icon: "check", headline: "Go exploration", detail: "3 Go microservice repos not on resume — shows curiosity and backend breadth" },
+        ],
+        concerns: [
+          { icon: "alert", headline: "Flutter is tutorial-level", detail: "2 repos (todo + weather app) with 35 commits — no state management, no architecture" },
+          { icon: "alert", headline: "No tests or CI/CD", detail: "Zero test files and no CI configuration across all 22 repos" },
+          { icon: "warn", headline: "Large, infrequent commits", detail: "Average commit size is large with weekend-heavy activity — suggests batch coding" },
+          { icon: "warn", headline: "No documentation", detail: "No READMEs or inline docs in any repo" },
+        ],
+      },
+    },
+  },
+  {
+    id: "app-4",
+    stage: "candidate_onboard",
+    created_date: "2026-01-20T10:13:27Z",
+    created_by: { name: "Elexis AI" },
+    candidate: {
+      id: "cand-4",
+      name: "Sneha Iyer",
+      email: "sneha.iyer23@yahoo.co.in",
+      phone_number: "+91 98765 43213",
+    },
+    ai_evaluations: [{
+      id: "eval-4",
+      roleFitScore: 35,
+      recommendation: {
+        overallRecommendation: "Not Recommended — Missing 3 of 4 must-have knockout criteria. Python is entry-level (listed as 'Familiar With'), no REST API design experience, no Azure or cloud infrastructure. Strong iOS/mobile skills are relevant to only one dimension of this full-stack role. Would need 3-6 months ramp-up — too much for a sole-developer position.",
+      },
+      directComparison: {
+        relevantSections: [
+          "**Technical Skills:** Swift, SwiftUI, Flutter/Dart listed. Python listed under 'Familiar With' rather than primary skills.",
+          "**Experience — Software Engineer (Zoho):** 2 years building iOS apps in Swift. Recently started a Flutter project — shows initiative.",
+          "**Projects:** Published 2 iOS apps to App Store. One Flutter project in progress.",
+        ],
+        missingRequirements: [
+          "Python experience is entry-level — listed as 'Familiar With' rather than a core skill. Cannot independently own a Python REST API backend.",
+          "REST API development experience is limited to consuming APIs from mobile, not designing/building them.",
+          "Azure and cloud infrastructure experience is absent entirely.",
+          "MongoDB experience is absent — all database work is Core Data (iOS local) and some Firebase.",
+        ],
+      },
+      backgroundAnalysis: {
+        industryContext: "SaaS/productivity tools background at Zoho. Mobile-first developer with iOS specialization.",
+        companyBackground: "Zoho is a respected Indian SaaS company. Mobile team experience but within a large team structure — not independent ownership.",
+        relevance: "Limited. Strong mobile skills are relevant to the frontend portion, but the backend and infrastructure ownership — which is half the job — is a critical gap.",
+      },
+      roleFitAnalysis: {
+        jobTitleMatch: "Weak match. 'Software Engineer' focused on mobile/iOS doesn't align with full-stack developer expectations. Backend is a secondary skill at best.",
+        experienceLevel: "2.5 years total. Within range for YOE but effectively junior-level on backend, which the role requires at senior level.",
+        keySkills: ["Swift", "SwiftUI", "Flutter/Dart", "iOS Development", "Firebase", "Core Data", "Git", "Xcode"],
+        missingSkills: ["Python (production)", "REST API Design", "Azure", "MongoDB", "Docker", "CI/CD"],
+      },
+      gapsAndImprovements: {
+        missingSkills: ["Python (production)", "REST API Design", "Azure", "MongoDB", "Docker", "CI/CD"],
+      },
+      hiringSignals: {
+        resumeQuality: "Good quality for a mobile-focused resume. App Store publications are strong signals. But backend section is thin.",
+        careerTrajectory: "Growing mobile developer with expanding into cross-platform (Flutter). Not yet showing backend growth trajectory.",
+        prestigeFactors: "VIT Vellore (Tier 2 institution). Zoho's mobile division. Published App Store apps.",
+        transitionEase: "Very low. Would need 3-6 months to ramp up on Python backend, REST API design, Azure infrastructure, and MongoDB. Too much mentoring overhead for a sole-developer role at an early-stage startup.",
+      },
+    }],
+    githubAnalysis: {
+      username: "sneha-iyer-ios",
+      totalRepos: 18,
+      totalCommits: 320,
+      accountAge: "2.5 years",
+      topLanguages: ["Swift", "Dart", "Python"],
+      skillVerification: [
+        { skill: "Flutter/Dart", status: "weak", repos: 1, commits: 18, latest: "1 month ago", detail: "Single Flutter project in progress. Basic widget structure, no state management." },
+        { skill: "Python", status: "weak", repos: 2, commits: 15, latest: "4 months ago", detail: "Basic Python scripts. No web framework usage, no API code." },
+        { skill: "REST APIs", status: "not_found", repos: 0, commits: 0, latest: null, detail: "No API server code. Only client-side API consumption in iOS apps." },
+        { skill: "Azure", status: "not_found", repos: 0, commits: 0, latest: null, detail: "No Azure-related code found." },
+        { skill: "iOS Development", status: "strong", repos: 8, commits: 200, latest: "1 week ago", detail: "Swift + SwiftUI apps. Clean MVVM architecture, proper use of Combine framework." },
+      ],
+      discoveries: [
+        { skill: "SwiftUI", detail: "Advanced SwiftUI patterns in 4 repos — strong iOS architecture skills", relevant: true },
+        { skill: "Core Data", detail: "Local persistence in 3 apps", relevant: false },
+      ],
+      overallAssessment: "Strong iOS developer. GitHub confirms the resume: excellent mobile skills but near-zero backend presence. The single Flutter repo is early-stage. Python repos are basic scripting, not production API development.",
+      overallScore: 41,
+      codeQuality: {
+        hasTests: true,
+        hasCiCd: false,
+        hasDocs: true,
+        usesLinting: false,
+        avgCommitSize: "small",
+        commitMessageQuality: "good",
+      },
+      contributionPatterns: {
+        avgCommitsPerWeek: 2.5,
+        activeDaysPerWeek: 3.8,
+        consistencyScore: 58,
+        growthTrajectory: "rapid",
+        peakActivityPeriod: "Evenings + weekends (IST)",
+      },
+      languageStats: [
+        { language: "Swift", percentage: 62, reposUsedIn: 10, frameworksDetected: ["SwiftUI", "Combine", "UIKit"] },
+        { language: "Dart", percentage: 12, reposUsedIn: 1, frameworksDetected: ["Flutter"] },
+        { language: "Python", percentage: 8, reposUsedIn: 2, frameworksDetected: [] },
+        { language: "Other", percentage: 18, reposUsedIn: 5, frameworksDetected: [] },
+      ],
+      insights: {
+        strengths: [
+          { icon: "check", headline: "Excellent iOS architecture", detail: "8 repos with clean MVVM, Combine, and SwiftUI — published apps on App Store" },
+          { icon: "check", headline: "Rapid growth trajectory", detail: "Commit frequency increasing quarter-over-quarter — active learner" },
+          { icon: "check", headline: "Good commit hygiene", detail: "Small, focused commits with descriptive messages" },
+        ],
+        concerns: [
+          { icon: "alert", headline: "Near-zero backend presence", detail: "2 Python repos with basic scripts — no web frameworks, no API code" },
+          { icon: "alert", headline: "Flutter is early-stage", detail: "Single repo, 18 commits, 1 month old — basic widgets, no state management" },
+          { icon: "warn", headline: "No cloud infrastructure", detail: "Zero Azure, AWS, or GCP code in any repository" },
+        ],
+      },
+    },
+  },
+  {
+    id: "app-5",
+    stage: "candidate_onboard",
+    created_date: "2026-01-20T10:13:20Z",
+    created_by: { name: "Elexis AI" },
+    candidate: {
+      id: "cand-5",
+      name: "Kunal Doshi",
+      email: "kunal.doshi@gmail.com",
+      phone_number: "+91 95674 88900",
+    },
+    ai_evaluations: [{
+      id: "eval-5",
+      roleFitScore: 28,
+      recommendation: {
+        overallRecommendation: "Not Recommended — Junior developer (1.5 years) missing 3 of 4 must-have knockout criteria. No production Python, no REST API design, no Azure, no MongoDB. Flutter is the only must-have present but at intermediate level. Below minimum experience requirement (2-4 years). Not viable for a sole-developer senior role.",
+      },
+      directComparison: {
+        relevantSections: [
+          "**Technical Skills:** Flutter/Dart listed as primary skill. Basic Python and Firebase experience.",
+          "**Experience — Junior Developer (Startup):** 1.5 years building Flutter apps at a seed-stage startup. Some backend exposure with Firebase Cloud Functions.",
+        ],
+        missingRequirements: [
+          "Only 1.5 years experience — below the 2-4 year minimum requirement.",
+          "Python experience is basic scripting level, not production REST API development.",
+          "No Azure or cloud infrastructure management experience.",
+          "No MongoDB experience — only Firebase/Firestore.",
+          "No AI/ML integration experience.",
+        ],
+      },
+      backgroundAnalysis: {
+        industryContext: "Seed-stage startup experience is culturally relevant, but the scope of technical work was limited to frontend Flutter development.",
+        companyBackground: "Small startup (< 10 people). Flutter frontend role with limited backend exposure through Firebase Cloud Functions.",
+        relevance: "Low. While startup experience is a cultural fit, the technical depth is insufficient for the independent full-stack ownership this role requires.",
+      },
+      roleFitAnalysis: {
+        jobTitleMatch: "Weak. 'Junior Developer' is 2 levels below the target 'Senior Full Stack Engineer.' The gap is significant.",
+        experienceLevel: "1.5 years — below the minimum 2-year requirement. Experience is narrow (Flutter frontend only).",
+        keySkills: ["Flutter/Dart", "Firebase", "Firestore", "Git", "Basic Python"],
+        missingSkills: ["Python (production APIs)", "REST API Design", "Azure", "MongoDB", "Docker", "CI/CD", "iOS Native", "AI/ML"],
+      },
+      gapsAndImprovements: {
+        missingSkills: ["Python (production APIs)", "REST API Design", "Azure", "MongoDB", "Docker", "CI/CD", "iOS Native", "AI/ML"],
+      },
+      hiringSignals: {
+        resumeQuality: "Below average. Lacks quantifiable metrics. Project descriptions are vague. Skills section doesn't differentiate proficiency levels.",
+        careerTrajectory: "Early career — shows promise in Flutter but hasn't demonstrated growth into full-stack or senior responsibilities.",
+        prestigeFactors: "Mumbai University (Tier 3). Startup experience. No certifications.",
+        transitionEase: "Very low. Would need extensive mentoring across Python, REST APIs, Azure, MongoDB, and production engineering practices. Not suitable for a sole-developer role.",
+      },
+    }],
+    githubAnalysis: {
+      username: "kunal-doshi",
+      totalRepos: 12,
+      totalCommits: 180,
+      accountAge: "1.5 years",
+      topLanguages: ["Dart", "JavaScript"],
+      skillVerification: [
+        { skill: "Flutter/Dart", status: "moderate", repos: 5, commits: 120, latest: "2 weeks ago", detail: "Flutter apps with basic state management. No complex architecture patterns. Mostly UI-focused." },
+        { skill: "Python", status: "weak", repos: 1, commits: 8, latest: "6 months ago", detail: "Single repo with basic Python scripts. No web framework or API code." },
+        { skill: "REST APIs", status: "not_found", repos: 0, commits: 0, latest: null, detail: "No API server code found." },
+        { skill: "Azure", status: "not_found", repos: 0, commits: 0, latest: null, detail: "No cloud infrastructure code." },
+      ],
+      discoveries: [],
+      overallAssessment: "Junior developer profile confirmed. Flutter repos show growing competence but remain at intermediate level. No backend, cloud, or DevOps presence. Account is young with limited activity outside Flutter.",
+      overallScore: 32,
+      codeQuality: {
+        hasTests: false,
+        hasCiCd: false,
+        hasDocs: false,
+        usesLinting: false,
+        avgCommitSize: "large",
+        commitMessageQuality: "poor",
+      },
+      contributionPatterns: {
+        avgCommitsPerWeek: 2.3,
+        activeDaysPerWeek: 2.8,
+        consistencyScore: 35,
+        growthTrajectory: "steady",
+        peakActivityPeriod: "Sporadic",
+      },
+      languageStats: [
+        { language: "Dart", percentage: 72, reposUsedIn: 6, frameworksDetected: ["Flutter", "Provider"] },
+        { language: "JavaScript", percentage: 20, reposUsedIn: 4, frameworksDetected: ["Firebase Cloud Functions"] },
+        { language: "Other", percentage: 8, reposUsedIn: 2, frameworksDetected: [] },
+      ],
+      insights: {
+        strengths: [
+          { icon: "check", headline: "Flutter-focused", detail: "5 Flutter repos — growing competence with Provider state management" },
+        ],
+        concerns: [
+          { icon: "alert", headline: "No backend code", detail: "Zero Python API, REST server, or backend framework code found" },
+          { icon: "alert", headline: "No tests or CI/CD", detail: "No test files or CI configuration in any repo" },
+          { icon: "alert", headline: "No documentation", detail: "No READMEs, no inline comments, no API docs" },
+          { icon: "warn", headline: "Poor commit practices", detail: "Large commits with vague messages ('fix', 'update', 'wip') — suggests junior habits" },
+          { icon: "warn", headline: "Low consistency", detail: "Active only 2.8 days/week with sporadic patterns — inconsistent contributor" },
+        ],
+      },
+    },
+  },
+];
+
+// ── Suggested Candidates — Rediscovered from other job pipelines ──
+// These are candidates who applied for OTHER jobs but may be a great fit for this role.
+export const suggestedCandidates = [
+  {
+    id: "sc-1",
+    name: "Vikram Menon",
+    initials: "VM",
+    currentRole: "Full Stack Developer",
+    company: "Freshworks",
+    email: "vikram.menon92@gmail.com",
+    phone: "+91 99012 34567",
+    roleFitScore: 79,
+    recommendation: "Strong cross-over candidate — Applied for AccountingBaba Backend Engineer role but resume shows 3 years of Flutter + Python full-stack work. Azure App Service and MongoDB experience confirmed. Would be a better fit here than the role he applied for.",
+    sourceJob: "Backend Engineer — AccountingBaba",
+    sourceJobId: "demo-2",
+    matchedSkills: ["Flutter/Dart", "Python", "REST APIs", "MongoDB", "Azure"],
+    missingRequirements: ["AI/ML Integration (no mention)"],
+    appliedDate: "2026-01-10",
+  },
+  {
+    id: "sc-2",
+    name: "Meera Krishnan",
+    initials: "MK",
+    currentRole: "Mobile Engineer",
+    company: "PhonePe",
+    email: "meerakrishnan@hotmail.com",
+    phone: "+91 98234 56789",
+    roleFitScore: 74,
+    recommendation: "Strong mobile-first profile — Applied for Sahas Engineering Corp. React Native role but has 2 years of Flutter production experience alongside Python FastAPI backends. Cloud experience is AWS not Azure, but transferable.",
+    sourceJob: "React Native Developer — Sahas Engineering Corp.",
+    sourceJobId: "demo-3",
+    matchedSkills: ["Flutter/Dart", "Python", "FastAPI", "REST APIs", "iOS Development"],
+    missingRequirements: ["Azure (AWS only)", "MongoDB (PostgreSQL background)"],
+    appliedDate: "2025-12-30",
+  },
+  {
+    id: "sc-3",
+    name: "Arjun Desai",
+    initials: "AD",
+    currentRole: "Software Engineer II",
+    company: "Razorpay",
+    email: "arjund.dev@gmail.com",
+    phone: "+91 97654 32100",
+    roleFitScore: 71,
+    recommendation: "Interesting backend-heavy profile — Applied for Soltech Techservices DevOps role but deeper look reveals Flutter side projects and strong Python API experience. Azure certified (AZ-204). DevOps skills are a bonus for the sole-developer model.",
+    sourceJob: "DevOps Engineer — Soltech Techservices",
+    sourceJobId: "demo-4",
+    matchedSkills: ["Python", "REST APIs", "Azure", "Docker", "CI/CD"],
+    missingRequirements: ["Flutter/Dart (side projects only)", "MongoDB (Redis/PostgreSQL)"],
+    appliedDate: "2025-12-22",
+  },
+  {
+    id: "sc-4",
+    name: "Nisha Gupta",
+    initials: "NG",
+    currentRole: "Flutter Developer",
+    company: "Swiggy",
+    email: "nishagupta.flutter@gmail.com",
+    phone: "+91 96543 21098",
+    roleFitScore: 68,
+    recommendation: "Flutter specialist — Applied for AccountingBaba Backend role (poor fit there) but has 2.5 years building Flutter consumer apps at scale. Python experience is limited to scripting. Strong mobile skills but backend gap is a concern for sole-developer ownership.",
+    sourceJob: "Backend Engineer — AccountingBaba",
+    sourceJobId: "demo-2",
+    matchedSkills: ["Flutter/Dart", "iOS Development", "Firebase", "REST APIs"],
+    missingRequirements: ["Python (scripting only)", "Azure (no experience)", "MongoDB (Firestore only)"],
+    appliedDate: "2026-01-12",
+  },
+];
+
+// ── Shortlisted Candidates — For the Candidates section ──
+// These are candidates who have been shortlisted from jobs and may or may not have completed AI interviews.
+export const demoShortlistedCandidates = [
+  {
+    id: "sc-rahul",
+    name: "Rahul Kumar",
+    initials: "RK",
+    email: "rahul.k94@gmail.com",
+    phone: "+91 98765 43210",
+    currentRole: "Senior Software Engineer",
+    company: "Infosys",
+    location: "Bangalore, India",
+    availability: "30 days notice",
+    searchStatus: "Actively Looking",
+    source: "Saarthi",
+    jobId: "demo-1",
+    jobName: "Senior Full Stack Engineer",
+    jobClient: "Allervision Tech",
+    roleFitScore: 87,
+    growthPotential: 89,
+    interviewStatus: "completed",
+    interviewDate: "2026-02-03T14:00:00Z",
+    interviewScores: [
+      { area: "Technical Depth", score: 9, max: 10 },
+      { area: "System Design", score: 8, max: 10 },
+      { area: "Communication", score: 9, max: 10 },
+      { area: "Problem Solving", score: 8, max: 10 },
+      { area: "Culture Fit", score: 8, max: 10 },
+    ],
+    interviewKeyFindings: [
+      "Built and shipped a Flutter app with 50K+ users on iOS — handled full lifecycle from architecture to App Store submission. Uses BLoC pattern for state management.",
+      "Strong Python backend experience — built FastAPI services handling 30K req/min with MongoDB. Understands async patterns and connection pooling.",
+      "Azure experience is solid but not architect-level — has managed App Service, Functions, and Cosmos DB. Needs guidance on cost optimization at scale.",
+      "AI/ML integration experience confirmed — integrated TensorFlow Lite for on-device inference and cloud APIs (OpenAI, Azure Cognitive Services) in production apps.",
+      "Available in 30 days. Strong startup mindset — previously worked at a 5-person team, comfortable owning full stack independently.",
+    ],
+    interviewRecommendation: "STRONG FIT",
+    rubricMatch: rubricMatch,
+    githubDiscoveries: githubDiscoveries,
+  },
+  {
+    id: "sc-priya",
+    name: "Priya Sharma",
+    initials: "PS",
+    email: "priyasharma.dev@outlook.com",
+    phone: "+91 98765 43211",
+    currentRole: "Backend Developer",
+    company: "TCS",
+    location: "Pune, India",
+    availability: "60 days notice",
+    searchStatus: "Open to Opportunities",
+    source: "LinkedIn",
+    jobId: "demo-1",
+    jobName: "Senior Full Stack Engineer",
+    jobClient: "Allervision Tech",
+    roleFitScore: 72,
+    growthPotential: 68,
+    interviewStatus: "scheduled",
+    interviewDate: "2026-02-10T11:00:00Z",
+    interviewScores: null,
+    interviewKeyFindings: null,
+    interviewRecommendation: null,
+    rubricMatch: {
+      mustHave: [
+        {
+          skill: "Flutter / Dart",
+          resumeSections: ["Skills", "Experience"],
+          github: { status: "weak", repos: 3, commits: 65, latest: "3 weeks ago", detail: "Basic CRUD apps with Provider. No BLoC/Riverpod or complex architecture." },
+          interview: null,
+          confidence: "medium",
+          rubricWeight: 10,
+          score: 5,
+        },
+        {
+          skill: "Python",
+          resumeSections: ["Skills", "Experience"],
+          github: { status: "strong", repos: 12, commits: 340, latest: "5 days ago", detail: "FastAPI and Django backends with async patterns." },
+          interview: null,
+          confidence: "high",
+          rubricWeight: 9,
+          score: 9,
+        },
+        {
+          skill: "REST APIs",
+          resumeSections: ["Skills", "Experience"],
+          github: { status: "strong", repos: 8, commits: null, latest: null, detail: "Well-documented APIs with OpenAPI specs." },
+          interview: null,
+          confidence: "high",
+          rubricWeight: 8,
+          score: 8,
+        },
+        {
+          skill: "Azure",
+          resumeSections: ["Skills"],
+          github: { status: "weak", repos: 1, commits: 12, latest: "2 months ago", detail: "Basic App Service deployment config. No Functions or Cosmos DB." },
+          interview: null,
+          confidence: "low",
+          rubricWeight: 8,
+          score: 3,
+        },
+      ],
+      shouldHave: [
+        {
+          skill: "MongoDB",
+          resumeSections: ["Skills", "Experience"],
+          github: { status: "moderate", repos: 4, commits: null, latest: null, detail: "Mongoose ODM in e-commerce projects." },
+          interview: null,
+          confidence: "medium",
+          rubricWeight: 6,
+          score: 5,
+        },
+        {
+          skill: "AI/ML Integration",
+          resumeSections: [],
+          github: { status: "not_found", repos: 0, commits: 0, latest: null, detail: "No AI/ML code found." },
+          interview: null,
+          confidence: "low",
+          rubricWeight: 5,
+          score: 0,
+        },
+      ],
+      niceToHave: [
+        {
+          skill: "iOS Development",
+          resumeSections: [],
+          github: { status: "not_found", repos: 0, commits: 0, latest: null, detail: "No iOS code." },
+          interview: null,
+          confidence: "low",
+          rubricWeight: 3,
+          score: 0,
+        },
+        {
+          skill: "CI/CD",
+          resumeSections: [],
+          github: { status: "not_found", repos: 0, commits: 0, latest: null, detail: "No CI/CD configuration found." },
+          interview: null,
+          confidence: "low",
+          rubricWeight: 2,
+          score: 0,
+        },
+        {
+          skill: "Docker",
+          resumeSections: ["Skills"],
+          github: { status: "moderate", repos: 3, commits: null, latest: null, detail: "Dockerfiles in Python projects." },
+          interview: null,
+          confidence: "medium",
+          rubricWeight: 2,
+          score: 2,
+        },
+        {
+          skill: "Test-Driven Development",
+          resumeSections: ["Skills"],
+          github: { status: "moderate", repos: 5, commits: null, latest: null, detail: "pytest in 5 repos with good coverage." },
+          interview: null,
+          confidence: "medium",
+          rubricWeight: 2,
+          score: 2,
+        },
+      ],
+    },
+    githubDiscoveries: [
+      { skill: "AWS Lambda", detail: "Serverless functions in 5 repos — strong cloud backend skills", relevant: true },
+      { skill: "React Native", detail: "2 repos with React Native mobile apps — earlier mobile experience", relevant: true },
+    ],
+  },
+];
+
+// ── Interview Detailed Summary — Rahul Kumar ──
+export const interviewDetailedSummary = {
+  skills: {
+    frontend: [
+      { name: "Flutter/Dart", level: 5 },
+      { name: "BLoC Pattern", level: 5 },
+      { name: "Riverpod", level: 4 },
+      { name: "Material Design", level: 5 },
+      { name: "React Native", level: 3 },
+    ],
+    backend: [
+      { name: "Python", level: 5 },
+      { name: "FastAPI", level: 5 },
+      { name: "REST APIs", level: 5 },
+      { name: "Django", level: 4 },
+      { name: "Node.js", level: 3 },
+    ],
+    databases: [
+      { name: "MongoDB", level: 5 },
+      { name: "Cosmos DB", level: 4 },
+      { name: "PostgreSQL", level: 4 },
+    ],
+    devopsCloud: [
+      { name: "Azure", level: 4 },
+      { name: "Docker", level: 5 },
+      { name: "CI/CD", level: 4 },
+      { name: "App Service", level: 4 },
+      { name: "Azure Functions", level: 3 },
+    ],
+    softSkills: [
+      { name: "Communication", level: 5 },
+      { name: "Problem Solving", level: 5 },
+      { name: "System Thinking", level: 4 },
+      { name: "Leadership", level: 4 },
+      { name: "Growth Mindset", level: 5 },
+    ],
+  },
+  overallImpression: [
+    "Rahul presents as a highly capable full-stack engineer with 5+ years of experience, specializing in building production-grade Flutter mobile applications and Python backend services.",
+    "He has a proven track record of shipping high-impact products — his Flutter app serves 50K+ users on iOS, and his FastAPI services handle 30K req/min in production.",
+    "Rahul demonstrates strong architectural thinking, explaining BLoC pattern decisions, async Python patterns, and Azure service selection with clear reasoning tied to business requirements.",
+    "He exudes a startup mindset with a growth trajectory from Infosys to independent full-stack ownership, making him well-suited for the sole-developer model at Allervision Tech.",
+  ],
+  strengths: [
+    {
+      title: "Flutter Architecture & Mobile Expertise",
+      bullets: [
+        "This was his strongest area. He didn't just mention Flutter experience; he walked through his architectural decisions — choosing BLoC over Riverpod for the 50K+ user app because of testability requirements and team familiarity.",
+        "He demonstrated deep knowledge of platform-specific concerns, explaining how he handled iOS App Store review processes, push notification edge cases, and performance profiling for list views with 10K+ items.",
+        "His understanding of state management trade-offs was exceptional — he articulated when to use BLoC vs Provider vs simple setState, with concrete examples from production.",
+      ],
+      rating: 5,
+      maxRating: 5,
+    },
+    {
+      title: "Full-Stack Backend & API Design",
+      bullets: [
+        "Rahul provided detailed examples of his FastAPI services — authentication middleware, rate limiting, connection pooling with MongoDB, and async request handling patterns.",
+        "His API design philosophy was well-articulated: he emphasized contract-first development with OpenAPI specs, versioning strategy, and error response standardization.",
+        "He also demonstrated awareness of operational concerns — monitoring with Azure Application Insights, structured logging, and graceful degradation when downstream services fail.",
+      ],
+      rating: 4,
+      maxRating: 5,
+    },
+    {
+      title: "Independent Ownership & Startup Readiness",
+      bullets: [
+        "He spoke compellingly about his experience at a 5-person startup where he owned the entire mobile stack — from wireframe to App Store submission — with no other developer to lean on.",
+        "His discussion of making trade-offs under time pressure was realistic: he described choosing a simpler caching strategy to hit a deadline, then iterating to a more robust solution in the next sprint.",
+        "He emphasized his comfort with ambiguity, explaining how he scoped technical requirements from vague product briefs and pushed back on unrealistic timelines with data.",
+      ],
+      rating: 4,
+      maxRating: 5,
+    },
+  ],
+  areasForImprovement: [
+    {
+      title: "Azure Architecture at Scale",
+      description: "When pressed on Azure architecture specifics, Rahul's answers were competent but not architect-level. He has used App Service, Functions, and Cosmos DB, but hasn't designed multi-region failover, managed cost optimization at scale, or implemented infrastructure-as-code with Bicep/Terraform.",
+      followUpQuestion: "You need to design a multi-region deployment for Allervision's mobile backend that handles 100K concurrent users across India and SEA. Walk us through your Azure architecture, focusing on data residency, latency optimization, and cost management.",
+    },
+    {
+      title: "AI/ML Integration Depth",
+      description: "His AI/ML integration experience is real but narrow — TensorFlow Lite for on-device inference and calling cloud APIs (OpenAI, Azure Cognitive Services). He hasn't trained models, managed ML pipelines, or handled model versioning. For the Allervision role's AI component, he would need mentoring on MLOps fundamentals.",
+      followUpQuestion: "Allervision wants to add real-time image classification to the mobile app. Describe your approach for model selection, on-device vs cloud inference trade-offs, and how you'd handle model updates without breaking the user experience.",
+    },
+    {
+      title: "Database Scalability & Advanced Patterns",
+      description: "While he spoke confidently about MongoDB at 30K req/min, his knowledge of horizontal scaling patterns was theoretical. He hasn't implemented sharding, managed replica sets in production, or dealt with data migration at scale. His Cosmos DB experience is limited to basic CRUD operations.",
+      followUpQuestion: "Your MongoDB instance is hitting 80% capacity and read latency is climbing. Walk through your strategy for scaling — when would you shard vs add read replicas vs migrate to Cosmos DB? What are the trade-offs?",
+    },
+  ],
+  finalRecommendation: [
+    "Rahul has an ideal profile for the Senior Full Stack Engineer role at Allervision Tech. He is a true end-to-end engineer who proves he can build, ship, and maintain mobile + backend systems independently.",
+    "We strongly recommend moving forward with him. His Flutter expertise (BLoC, 50K+ user production app, App Store experience) and Python backend depth (FastAPI, 30K req/min) are exactly what this sole-developer role demands.",
+    "Key differentiators are his quantifiable impact (50K+ users, 30K req/min, 99.2% uptime), proven startup experience at a 5-person team, and clear L5 maturity shown by his architectural decision-making.",
+    "The technical deep-dive should focus on Azure architecture at scale and AI/ML integration depth — these are his two growth areas. A 4-6 week onboarding runway with mentoring on these dimensions would set him up for full independence.",
+  ],
+};
+
+// ── Interview Transcript — Rahul Kumar ──
+export const interviewTranscript = [
+  {
+    speaker: "ai",
+    text: "Welcome, Rahul. Thanks for joining this AI screening interview for the Senior Full Stack Engineer position at Allervision Tech. This will take about 20-25 minutes. I'll ask you questions across technical skills, system design, and cultural fit — all mapped to the hiring rubric. Ready to begin?",
+  },
+  {
+    speaker: "candidate",
+    text: "Yes, absolutely. Looking forward to it.",
+  },
+  {
+    speaker: "ai",
+    text: "Great. Let's start with Flutter. Your resume mentions a Flutter app with 50K+ users. Can you walk me through the architecture of that application — specifically your state management approach and why you chose it?",
+  },
+  {
+    speaker: "candidate",
+    text: "Sure. The app is a consumer-facing product for a logistics company — delivery tracking, real-time status updates, push notifications. I chose BLoC as the state management pattern over Riverpod or Provider for a few reasons. First, the app had complex business logic around order state machines — pending, dispatched, in-transit, delivered, returned — and BLoC's event-driven model mapped really cleanly to those transitions. Second, we had a team of 3 Flutter developers and BLoC's boilerplate actually helped with code consistency — everyone followed the same pattern. Third, testability was critical since we had 85% test coverage on the business logic layer, and BLoC's separation of events and states made unit testing straightforward. The architecture was feature-based — each feature module (orders, tracking, profile, notifications) had its own BLoC, repository layer, and data sources. We used get_it for dependency injection and go_router for declarative navigation.",
+  },
+  {
+    speaker: "ai",
+    text: "Solid architectural reasoning. How did you handle performance optimization? With 50K+ users, you must have encountered performance challenges.",
+  },
+  {
+    speaker: "candidate",
+    text: "Yes, the biggest performance challenge was the order list screen. Some power users had 500+ historical orders, and the initial implementation was rendering all of them in a ListView, which caused significant jank on mid-range Android devices. I solved this in three ways: First, I implemented pagination with a cursor-based approach — loading 20 orders at a time with infinite scroll. Second, I used ListView.builder instead of ListView for lazy rendering, and added a custom SliverList for the complex header section. Third, I profiled the app using Flutter DevTools and found that our order status widgets were rebuilding unnecessarily — I wrapped them in BlocSelector to only rebuild when the specific order status changed, not when the entire order list state changed. That brought frame rendering from ~25ms average to under 8ms on the same test device.",
+  },
+  {
+    speaker: "ai",
+    text: "Excellent detail. Now let's move to the backend. You mention FastAPI services handling 30K req/min. Tell me about the architecture and how you achieved that throughput.",
+  },
+  {
+    speaker: "candidate",
+    text: "The backend was a set of 4 FastAPI microservices — auth, orders, notifications, and analytics. They all communicated through REST APIs internally, with the orders service also consuming events from a RabbitMQ queue for real-time tracking updates. For the 30K req/min throughput, the key optimizations were: async everywhere — FastAPI's ASGI foundation with uvicorn workers meant we could handle concurrent requests efficiently. I used motor for async MongoDB access and aiohttp for downstream service calls. Connection pooling was critical — I configured motor's connection pool with min/max sizes tuned to our load patterns, and added connection retry logic with exponential backoff. Caching was the biggest win — I added Redis caching for frequently accessed data like user profiles and active order summaries, with a 30-second TTL. That alone reduced MongoDB load by 60%. We ran this on Azure App Service with 4 instances behind Azure Front Door for load balancing.",
+  },
+  {
+    speaker: "ai",
+    text: "How do you approach API design? If you were designing the Allervision Tech API from scratch, what principles would you follow?",
+  },
+  {
+    speaker: "candidate",
+    text: "I'm a strong believer in contract-first API design. Before writing any code, I'd define the OpenAPI 3.0 spec — endpoints, request/response schemas, error codes, pagination format. This serves as the single source of truth between mobile and backend. Key principles I follow: versioning from day one — I use URL-based versioning like /v1/ because it's explicit and easy to route. Consistent error responses — every error returns a structured JSON with error code, message, and optional details array. Idempotency keys for mutation operations — especially important for payment or state-change endpoints. Rate limiting per client with graduated backoff. And proper HTTP semantics — POST for creation, PUT for full update, PATCH for partial, DELETE with soft-delete behavior. For Allervision specifically, since it's a mobile-first product, I'd also add: GraphQL or field selection for reducing payload sizes on mobile, request compression with gzip, and ETag-based caching headers for list endpoints.",
+  },
+  {
+    speaker: "ai",
+    text: "Good. Let's discuss Azure. You've used App Service, Functions, and Cosmos DB. If Allervision needed to scale from 10K to 100K users, how would you architect the Azure infrastructure?",
+  },
+  {
+    speaker: "candidate",
+    text: "Honestly, I'll be transparent — my Azure experience is solid for a single-region setup, but I haven't done multi-region architecture. For the 10K to 100K scale, here's what I'd do: Start with Azure App Service on a Standard tier with auto-scaling rules based on CPU and request count. Use Azure Front Door for global load balancing and CDN for static assets. MongoDB on Atlas with a replica set for read scaling, or migrate to Cosmos DB with eventual consistency for the read-heavy endpoints. Azure Functions for background jobs — sending notifications, generating reports, processing images. Azure Blob Storage for user-uploaded files with a CDN endpoint. For CI/CD, GitHub Actions deploying to staging and production App Service slots. What I'd need to learn more about is cost optimization at scale — I haven't managed Azure budgets above ₹2L/month, and infrastructure-as-code with Bicep or Terraform. I've been doing ARM templates which work but aren't ideal for complex setups.",
+  },
+  {
+    speaker: "ai",
+    text: "I appreciate the honesty. Let's shift to AI/ML integration. Your resume mentions TensorFlow Lite and cloud AI APIs. Can you describe a specific implementation?",
+  },
+  {
+    speaker: "candidate",
+    text: "Yes. In the logistics app, we needed to add a feature where delivery agents could photograph the delivered package and the app would verify it was at the correct address by reading the address label. I implemented this in two parts: on-device, I used TensorFlow Lite with a pre-trained text detection model (EAST detector) to identify text regions in the image. This ran on-device to give instant feedback — 'text detected' or 'move closer'. Then the cropped image was sent to Azure Cognitive Services OCR API for accurate text extraction. The extracted text was fuzzy-matched against the delivery address using a Levenshtein distance threshold. The tricky part was handling Indian addresses — multiple formats, regional languages, abbreviations. I built a normalization layer that expanded common abbreviations (Rd→Road, Blk→Block) and used transliteration for Hindi text. The end-to-end accuracy was about 87%, which was good enough for a confidence flag — agents still made the final decision but the AI surfaced mismatches proactively.",
+  },
+  {
+    speaker: "ai",
+    text: "Interesting use case. Now let's talk about the sole-developer aspect. This role requires owning the full stack independently without another engineer. How comfortable are you with that, and what's your experience working solo?",
+  },
+  {
+    speaker: "candidate",
+    text: "Very comfortable. Before Infosys, I worked at a seed-stage startup — just 5 people total, and I was the only engineer. I owned everything: the Flutter mobile app, the Python FastAPI backend, the MongoDB database, deployment on AWS (at the time), and even the CI/CD pipeline with GitHub Actions. I learned some important lessons in that role. First, you have to be disciplined about technical debt — no one is coming behind you to clean up, so I adopted a 'boy scout rule' of leaving code cleaner than I found it. Second, you need strong automated testing because there's no code reviewer to catch your mistakes. I maintained 80%+ test coverage as a personal rule. Third, communication with the product side is critical — I had weekly syncs with the founder to demo progress and flag technical trade-offs early. What I'd bring to Allervision is that same ownership mindset, but now with 5 years of additional experience and much stronger architectural judgment. I'm genuinely excited about the sole-developer model because it means I can move fast and make cohesive technical decisions without coordination overhead.",
+  },
+  {
+    speaker: "ai",
+    text: "Last question. What's your availability and notice period situation?",
+  },
+  {
+    speaker: "candidate",
+    text: "I'm on a 30-day notice period at Infosys, and I'm actively looking — so I can start the notice process as soon as I have an offer. Realistically, I'd be available to start in about 5 weeks from an offer date, accounting for the notice period and a few days of transition. I'm also open to a pre-joining arrangement where I could do some onboarding or architecture planning in the evenings during the notice period, if Allervision finds that helpful.",
+  },
+  {
+    speaker: "ai",
+    text: "That's very flexible. Thank you, Rahul. This concludes the AI screening interview. You've demonstrated strong technical depth across Flutter, Python, and cloud technologies, with a particularly impressive track record of independent ownership. We'll compile these insights into a comprehensive assessment. You should hear back from the team within a few days.",
+  },
+  {
+    speaker: "candidate",
+    text: "Thank you. I really enjoyed the conversation — the questions were thoughtful and relevant. Looking forward to hearing back.",
+  },
+];
