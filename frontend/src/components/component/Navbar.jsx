@@ -43,7 +43,7 @@ const Navbar = () => {
               ) :
                 <h1 className="text-xl font-bold">Candidates</h1>
             }
-            <ManageJobs onJobCreated={fetchJobs}>
+            <ManageJobs onJobCreated={fetchJobs} isDemo={isDemo}>
               <Button className='bg-red-700 shadow-2xl rounded-full'><Plus /> Create Job</Button>
             </ManageJobs>
           </JobsProvider>

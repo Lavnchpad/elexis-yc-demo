@@ -51,7 +51,7 @@ const jobSchema = z.object({
 const lastPage = 3; // Total number of pages in the form
 const firstPage = 1;
 
-const ManageJobs = ({ onJobCreated, children }) => {
+const ManageJobs = ({ onJobCreated, children, isDemo = false }) => {
   const [questions, setQuestions] = useState([]);
   const [selectedLanguages, setSelectedLanguages] = useState(['english']);
   const [loading, setLoading] = useState(false);
@@ -88,10 +88,16 @@ const ManageJobs = ({ onJobCreated, children }) => {
   // Check permissions from localStorage
   // TODO : call the API and get the response
   const authUser = JSON.parse(localStorage.getItem("user"));
-  const canManageJobs = authUser?.can_manage_jobs || authUser?.is_admin;
+  const canManageJobs = isDemo || authUser?.can_manage_jobs || authUser?.is_admin;
   const onSubmit = async (data) => {
     if (!canManageJobs) {
       alert("You do not have permission to manage jobs.");
+      return;
+    }
+    if (isDemo) {
+      alert("Demo: Job created successfully!");
+      form.reset();
+      setOpen(false);
       return;
     }
     setLoading(true);
@@ -341,14 +347,18 @@ const ManageJobs = ({ onJobCreated, children }) => {
                   }
                   <DialogFooter>
                     <div className="space-x-2">
-                      <Button type="button" className={`${pageNumber === firstPage ? 'hidden' : ''}`} disabled={pageNumber === firstPage} onClick={() => setpageNumber(prev => prev - 1)} variant="outline">
-                        Previous Page
-                      </Button>
-                      <Button type="button" className={`${pageNumber === lastPage ? 'hidden' : ''}`} disabled={pageNumber === lastPage} onClick={() => setpageNumber(prev => prev + 1)}>
-                        Next Page
-                      </Button>
+                      {!isDemo && (
+                        <>
+                          <Button type="button" className={`${pageNumber === firstPage ? 'hidden' : ''}`} disabled={pageNumber === firstPage} onClick={() => setpageNumber(prev => prev - 1)} variant="outline">
+                            Previous Page
+                          </Button>
+                          <Button type="button" className={`${pageNumber === lastPage ? 'hidden' : ''}`} disabled={pageNumber === lastPage} onClick={() => setpageNumber(prev => prev + 1)}>
+                            Next Page
+                          </Button>
+                        </>
+                      )}
 
-                      <Button type="submit" className={`${pageNumber !== lastPage ? 'hidden' : ''}`} disabled={loading || pageNumber !== lastPage}>
+                      <Button type="submit" className={`${!isDemo && pageNumber !== lastPage ? 'hidden' : ''}`} disabled={loading || (!isDemo && pageNumber !== lastPage)}>
                         {loading ? (
                           <Loader className="animate-spin mr-2" size={16} />
                         ) : (

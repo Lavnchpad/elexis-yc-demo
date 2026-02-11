@@ -12,6 +12,7 @@ import DemoResumeCard from "./DemoResumeCard";
 import DemoGithubCard from "./DemoGithubCard";
 import { Input } from "@/components/ui/input";
 import { rubricData, suggestedCandidates, demoApplications } from "@/lib/demo-data";
+import AddCandidate from "@/components/component/candidate/AddCandidateEnhanced";
 
 const demoInterviewQuestions = [
   "You'll be the sole full-stack developer owning both the Flutter frontend and Python backend. Walk me through how you'd architect a new feature end-to-end — from Flutter UI to REST API to Azure deployment. What decisions do you make at each layer?",
@@ -161,12 +162,11 @@ const DemoJobDetail = () => {
                 Suggested Candidates
               </TabsTrigger>
             </TabsList>
-            <Button
-              className="bg-red-700 shadow-2xl rounded-full m-1"
-              onClick={() => navigate("/demo/candidate")}
-            >
-              View Matched Candidate
-            </Button>
+            <AddCandidate jobData={{ id: "demo", job_name: rubricData.role }} onCloseCb={() => {}}>
+              <Button className="bg-red-700 shadow-2xl rounded-full m-1">
+                + Add Candidate
+              </Button>
+            </AddCandidate>
           </div>
 
           {/* ── HIRING RUBRIC TAB ── */}
@@ -581,7 +581,53 @@ const DemoJobDetail = () => {
 
           <TabsContent className="mt-0" value="job-interviews">
             <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
-              <p className="text-gray-500">Scheduled interviews will appear here.</p>
+              <h2 className="font-semibold text-lg mb-4">Scheduled Interviews</h2>
+              <Table className="overflow-x-auto w-full">
+                <TableCaption>Interviews for this job</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-center">Name</TableHead>
+                    <TableHead className="text-center">Email</TableHead>
+                    <TableHead className="text-center">Date</TableHead>
+                    <TableHead className="text-center">Time</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-center">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="text-center font-medium">Rahul Kumar</TableCell>
+                    <TableCell className="text-center">rahul.k94@gmail.com</TableCell>
+                    <TableCell className="text-center">2026-02-03</TableCell>
+                    <TableCell className="text-center">00:22:00</TableCell>
+                    <TableCell className="text-center">
+                      <span className="bg-green-100 text-green-800 px-2.5 py-1 rounded-full text-xs font-semibold">COMPLETED</span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="text-primary"
+                        onClick={() => navigate("/demo/candidate")}
+                      >
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="text-center font-medium">Priya Sharma</TableCell>
+                    <TableCell className="text-center">priyasharma.dev@outlook.com</TableCell>
+                    <TableCell className="text-center">2026-02-10</TableCell>
+                    <TableCell className="text-center">00:30:00</TableCell>
+                    <TableCell className="text-center">
+                      <span className="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-xs font-semibold">NOT JOINED</span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span className="text-sm text-gray-400">—</span>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
           </TabsContent>
 

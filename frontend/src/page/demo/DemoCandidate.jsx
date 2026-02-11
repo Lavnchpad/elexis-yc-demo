@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Mail, Phone, Search, ListFilter, CheckCircle } from "lucide-react";
+import { Mail, Phone, Search, ListFilter, CheckCircle, Printer, Settings, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,6 +20,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   demoShortlistedCandidates,
   demoJobs,
@@ -118,6 +132,55 @@ function SkillScoreRow({ item, showInterview }) {
   );
 }
 
+// ── Demo Interview Questions Dialog ──
+
+const demoQuestions = [
+  "Can you walk me through your experience with Flutter and how you've used it in production?",
+  "Describe a complex state management challenge you faced and how you solved it.",
+  "How do you approach writing clean, maintainable code in a fast-paced startup environment?",
+  "Tell me about your experience with Python backend development and API design.",
+  "How do you handle CI/CD pipelines and deployment workflows?",
+  "Describe your experience with cloud services (AWS/GCP) and infrastructure management.",
+  "How do you approach testing in mobile and web applications?",
+  "Tell me about a time you had to debug a complex production issue under pressure.",
+  "How do you stay current with emerging technologies and best practices?",
+  "What's your approach to collaborating with cross-functional teams (design, product, QA)?",
+];
+
+function DemoInterviewQsns({ candidate }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mb-4">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => setOpen(true)}>
+          <Settings className="w-4 h-4" /> Manage Interview Questions
+        </Button>
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Interview Questions</DialogTitle>
+            <DialogDescription>
+              Questions for {candidate.jobName} — {candidate.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {demoQuestions.map((q, i) => (
+              <div key={i} className="flex gap-3 items-start p-3 rounded-lg bg-gray-50 border border-gray-200">
+                <span className="text-xs font-bold text-gray-400 font-mono mt-0.5 shrink-0">{String(i + 1).padStart(2, "0")}</span>
+                <p className="text-sm text-gray-700 leading-relaxed">{q}</p>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 // ── Candidate Detail Panel ──
 
 function CandidateDetail({ candidate }) {
@@ -181,6 +244,46 @@ function CandidateDetail({ candidate }) {
           </div>
         </div>
       </div>
+
+      {/* Action buttons row */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <Select defaultValue="preselected">
+          <SelectTrigger className="w-[220px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="preselected">{candidate.jobName} (Preselected)</SelectItem>
+          </SelectContent>
+        </Select>
+        <a href={`mailto:${candidate.email}`}>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Mail className="w-4 h-4" /> Send Email
+          </Button>
+        </a>
+        <a href={candidate.resumeUrl || "#"} target="_blank" rel="noopener noreferrer">
+          <Button variant="outline" size="sm" className="gap-2">
+            <Eye className="w-4 h-4" /> View Resume
+          </Button>
+        </a>
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => window.print()}>
+          <Printer className="w-4 h-4" /> Print
+        </Button>
+        {isInterviewCompleted && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm">Actions</Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto">
+              <div className="flex gap-2">
+                <Button variant="link" onClick={() => alert("Candidate accepted for " + candidate.jobName)}>Accept</Button>
+                <Button variant="link" onClick={() => alert("Candidate rejected for " + candidate.jobName)}>Reject</Button>
+                <Button variant="link" onClick={() => alert("Candidate put on hold for " + candidate.jobName)}>Hold</Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+      <DemoInterviewQsns candidate={candidate} />
 
       {/* Job context banner */}
       <div className="bg-teal-50 border border-teal-200 rounded-lg px-5 py-3 mb-4 flex items-center justify-between">
