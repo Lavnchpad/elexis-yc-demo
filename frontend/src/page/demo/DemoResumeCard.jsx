@@ -152,6 +152,62 @@ const signalColors = {
   low: "bg-red-500",
 };
 
+const matchBadgeStyles = {
+  high: "bg-green-50 text-green-800 border-green-200",
+  mid: "bg-amber-50 text-amber-800 border-amber-200",
+  low: "bg-red-50 text-red-800 border-red-200",
+};
+
+const matchBadgeLabels = {
+  high: "Strong Match",
+  mid: "Partial Match",
+  low: "Weak Match",
+};
+
+function MatchBadge({ text }) {
+  const level = signalLevel(text);
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold ${matchBadgeStyles[level]}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${signalColors[level]}`} />
+      {matchBadgeLabels[level]}
+    </span>
+  );
+}
+
+// Highlight key phrases in analysis text
+function HighlightedText({ text }) {
+  // Patterns to highlight in green
+  const greenPatterns = /\b(strong match|highly relevant|strong|solid|excellent|well-aligned|aligns well|tier 1|high-traffic|50K\+|99\.2%|production|independent ownership)\b/gi;
+  // Patterns to highlight in amber
+  const amberPatterns = /\b(partial|moderate|adequate|basic|primary risk|risk factor|not startup)\b/gi;
+  // Patterns to highlight in red
+  const redPatterns = /\b(missing|weak|gap|not found|no evidence|concern)\b/gi;
+
+  // Split by all patterns, keeping delimiters
+  const allPattern = /\b(strong match|highly relevant|strong|solid|excellent|well-aligned|aligns well|tier 1|high-traffic|50K\+|99\.2%|production|independent ownership|partial|moderate|adequate|basic|primary risk|risk factor|not startup|missing|weak|gap|not found|no evidence|concern)\b/gi;
+
+  const parts = text.split(allPattern);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (greenPatterns.test(part)) {
+          greenPatterns.lastIndex = 0;
+          return <span key={i} className="text-green-700 font-medium">{part}</span>;
+        }
+        if (amberPatterns.test(part)) {
+          amberPatterns.lastIndex = 0;
+          return <span key={i} className="text-amber-700 font-medium">{part}</span>;
+        }
+        if (redPatterns.test(part)) {
+          redPatterns.lastIndex = 0;
+          return <span key={i} className="text-red-700 font-medium">{part}</span>;
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
+}
+
 function SignalRow({ label, text }) {
   const level = signalLevel(text);
   // Extract first sentence as summary
@@ -386,33 +442,40 @@ export default function DemoResumeCard({ applicant, isTopCandidate }) {
                 defaultOpen={isTopCandidate}
               >
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                      Industry Context
-                    </h4>
-                    <p className="text-sm text-foreground">
-                      {eval_.backgroundAnalysis.industryContext}
+                  <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide">
+                        Industry Context
+                      </h4>
+                      <MatchBadge text={eval_.backgroundAnalysis.industryContext} />
+                    </div>
+                    <p className="text-sm text-foreground leading-relaxed">
+                      <HighlightedText text={eval_.backgroundAnalysis.industryContext} />
                     </p>
                   </div>
-                  <div>
-                    <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                      Company Background
-                    </h4>
-                    <p className="text-sm text-foreground">
-                      {eval_.backgroundAnalysis.companyBackground}
+                  <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide">
+                        Company Background
+                      </h4>
+                      <MatchBadge text={eval_.backgroundAnalysis.companyBackground} />
+                    </div>
+                    <p className="text-sm text-foreground leading-relaxed">
+                      <HighlightedText text={eval_.backgroundAnalysis.companyBackground} />
                     </p>
                   </div>
                 </div>
                 {/* Relevance callout — the key takeaway */}
-                <div className="mt-3 p-3 rounded-md bg-primary/5 border border-primary/15">
+                <div className="mt-3 p-3 rounded-md bg-green-50 border border-green-200">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <Target className="h-3.5 w-3.5 text-primary" />
-                    <h4 className="font-semibold text-xs text-primary uppercase tracking-wide">
+                    <Target className="h-3.5 w-3.5 text-green-700" />
+                    <h4 className="font-semibold text-xs text-green-700 uppercase tracking-wide">
                       Rubric Relevance
                     </h4>
+                    <MatchBadge text={eval_.backgroundAnalysis.relevance} />
                   </div>
                   <p className="text-sm text-foreground leading-relaxed">
-                    {eval_.backgroundAnalysis.relevance}
+                    <HighlightedText text={eval_.backgroundAnalysis.relevance} />
                   </p>
                 </div>
               </AnalysisSection>
@@ -422,20 +485,26 @@ export default function DemoResumeCard({ applicant, isTopCandidate }) {
                 title="Role Fit Analysis"
                 defaultOpen={isTopCandidate}
               >
-                <div>
-                  <h4 className="font-medium text-sm mb-1 text-foreground">
-                    Job Title Match
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {eval_.roleFitAnalysis.jobTitleMatch}
+                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-sm text-foreground">
+                      Job Title Match
+                    </h4>
+                    <MatchBadge text={eval_.roleFitAnalysis.jobTitleMatch} />
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    <HighlightedText text={eval_.roleFitAnalysis.jobTitleMatch} />
                   </p>
                 </div>
-                <div>
-                  <h4 className="font-medium text-sm mb-1 text-foreground">
-                    Experience Level
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {eval_.roleFitAnalysis.experienceLevel}
+                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-sm text-foreground">
+                      Experience Level
+                    </h4>
+                    <MatchBadge text={eval_.roleFitAnalysis.experienceLevel} />
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    <HighlightedText text={eval_.roleFitAnalysis.experienceLevel} />
                   </p>
                 </div>
               </AnalysisSection>

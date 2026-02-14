@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CircleArrowLeft, Check, ChevronDown, CheckCircle, XCircle, ArrowRight } from "lucide-react";
+import { CircleArrowLeft, Check, ChevronDown, ChevronRight, CheckCircle, XCircle, ArrowRight, Sparkles, Pencil, X, PlusCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,32 +43,59 @@ function ProficiencyBadge({ level }) {
   );
 }
 
-function SkillRow({ skill, proficiency, checked, tierColor }) {
-  const [isChecked, setIsChecked] = useState(checked);
+function SkillRow({ skill, proficiency, checked, tierColor, editMode, onSkillChange, onProficiencyChange, onToggle, onRemove }) {
   return (
     <div
-      className={`flex items-center justify-between p-3 rounded-lg border border-gray-100 mb-1.5 transition-all ${
-        isChecked ? "bg-white" : "bg-gray-50 opacity-45"
+      className={`flex items-center justify-between p-3 rounded-lg border mb-1.5 transition-all ${
+        editMode ? "border-dashed border-gray-300 bg-white" : checked ? "border-gray-100 bg-white" : "border-gray-100 bg-gray-50 opacity-45"
       }`}
     >
       <div className="flex items-center gap-3">
         <div
-          onClick={() => setIsChecked(!isChecked)}
+          onClick={onToggle}
           className={`w-[18px] h-[18px] rounded flex items-center justify-center cursor-pointer shrink-0 transition-all ${
-            isChecked ? "" : "border-2 border-gray-300"
+            checked ? "" : "border-2 border-gray-300"
           }`}
-          style={{ background: isChecked ? tierColor : "transparent" }}
+          style={{ background: checked ? tierColor : "transparent" }}
         >
-          {isChecked && <Check className="w-3 h-3 text-white" />}
+          {checked && <Check className="w-3 h-3 text-white" />}
         </div>
-        <span className="font-semibold text-[15px] text-gray-900">{skill}</span>
+        {editMode ? (
+          <input
+            className="font-semibold text-[15px] text-gray-900 bg-transparent border-b border-dashed border-gray-400 focus:border-gray-600 outline-none px-1 py-0"
+            value={skill}
+            onChange={(e) => onSkillChange?.(e.target.value)}
+          />
+        ) : (
+          <span className="font-semibold text-[15px] text-gray-900">{skill}</span>
+        )}
       </div>
-      <ProficiencyBadge level={proficiency} />
+      <div className="flex items-center gap-2">
+        {editMode ? (
+          <select
+            value={proficiency}
+            onChange={(e) => onProficiencyChange?.(e.target.value)}
+            className="text-xs font-semibold border rounded-md px-2 py-1.5 bg-white cursor-pointer"
+          >
+            <option value="Advanced+">Advanced+</option>
+            <option value="Intermediate+">Intermediate+</option>
+            <option value="Any experience">Any experience</option>
+            <option value="Any exposure">Any exposure</option>
+          </select>
+        ) : (
+          <ProficiencyBadge level={proficiency} />
+        )}
+        {editMode && (
+          <button onClick={onRemove} className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
 
-function TierSection({ title, subtitle, skills, tierColor, bgColor, borderColor }) {
+function TierSection({ title, subtitle, skills, tierColor, bgColor, borderColor, editMode, onAddSkill, onRemoveSkill, onSkillChange, onProficiencyChange, onToggle }) {
   return (
     <div className="rounded-xl border overflow-hidden mb-4" style={{ borderColor }}>
       <div className="px-5 py-3.5" style={{ background: bgColor, borderBottom: `1px solid ${borderColor}` }}>
@@ -78,9 +105,27 @@ function TierSection({ title, subtitle, skills, tierColor, bgColor, borderColor 
         <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
       </div>
       <div className="p-4 bg-white">
-        {skills.map((item) => (
-          <SkillRow key={item.skill} {...item} tierColor={tierColor} />
+        {skills.map((item, index) => (
+          <SkillRow
+            key={`${item.skill}-${index}`}
+            {...item}
+            tierColor={tierColor}
+            editMode={editMode}
+            onSkillChange={(val) => onSkillChange?.(index, val)}
+            onProficiencyChange={(val) => onProficiencyChange?.(index, val)}
+            onToggle={() => onToggle?.(index)}
+            onRemove={() => onRemoveSkill?.(index)}
+          />
         ))}
+        {editMode && (
+          <button
+            onClick={onAddSkill}
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 mt-2 px-3 py-2.5 rounded-lg border border-dashed border-gray-300 hover:border-gray-400 w-full justify-center transition-colors"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            Add Skill
+          </button>
+        )}
       </div>
     </div>
   );
@@ -89,10 +134,64 @@ function TierSection({ title, subtitle, skills, tierColor, bgColor, borderColor 
 const DemoJobDetail = () => {
   const navigate = useNavigate();
   const [legendOpen, setLegendOpen] = useState(false);
+  const [jdOpen, setJdOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [rubric, setRubric] = useState(() => JSON.parse(JSON.stringify(rubricData)));
   const [listView, setListView] = useState(true);
   const [questions, setQuestions] = useState([]);
   const [selectedQs, setSelectedQs] = useState(new Set());
   const [newQuestion, setNewQuestion] = useState("");
+
+  // Rubric edit helpers
+  const updateSkill = (tier, index, field, value) => {
+    setRubric((prev) => {
+      const next = { ...prev, [tier]: [...prev[tier]] };
+      next[tier][index] = { ...next[tier][index], [field]: value };
+      return next;
+    });
+  };
+  const removeSkill = (tier, index) => {
+    setRubric((prev) => ({ ...prev, [tier]: prev[tier].filter((_, i) => i !== index) }));
+  };
+  const addSkill = (tier) => {
+    setRubric((prev) => ({
+      ...prev,
+      [tier]: [...prev[tier], { skill: "New Skill", proficiency: "Any experience", checked: true }],
+    }));
+  };
+  const toggleSkill = (tier, index) => {
+    setRubric((prev) => {
+      const next = { ...prev, [tier]: [...prev[tier]] };
+      next[tier][index] = { ...next[tier][index], checked: !next[tier][index].checked };
+      return next;
+    });
+  };
+  const updateParam = (key, value) => {
+    setRubric((prev) => ({ ...prev, parameters: { ...prev.parameters, [key]: value } }));
+  };
+  const toggleCulture = (index) => {
+    setRubric((prev) => {
+      const next = { ...prev, culture: [...prev.culture] };
+      next.culture[index] = { ...next.culture[index], checked: !next.culture[index].checked };
+      return next;
+    });
+  };
+  const updateCultureLabel = (index, value) => {
+    setRubric((prev) => {
+      const next = { ...prev, culture: [...prev.culture] };
+      next.culture[index] = { ...next.culture[index], label: value };
+      return next;
+    });
+  };
+  const removeCulture = (index) => {
+    setRubric((prev) => ({ ...prev, culture: prev.culture.filter((_, i) => i !== index) }));
+  };
+  const addCulture = () => {
+    setRubric((prev) => ({
+      ...prev,
+      culture: [...prev.culture, { label: "New trait", checked: false }],
+    }));
+  };
 
   return (
     <>
@@ -172,6 +271,83 @@ const DemoJobDetail = () => {
           {/* ── HIRING RUBRIC TAB ── */}
           <TabsContent className="mt-0" value="hiring-rubric">
             <div className="border shadow-xl px-8 py-8 rounded-3xl rounded-tl-none">
+              {/* AI-Drafted + Client Approved badges + Edit button */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-200 text-teal-800 px-3 py-1.5 rounded-full text-xs font-semibold">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    AI-Drafted from JD
+                  </span>
+                  {!editMode && (
+                    <span className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-800 px-3 py-1.5 rounded-full text-xs font-semibold">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Client Reviewed & Approved
+                    </span>
+                  )}
+                  {editMode && (
+                    <span className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800 px-3 py-1.5 rounded-full text-xs font-semibold">
+                      <Pencil className="w-3.5 h-3.5" />
+                      Editing
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-400">Jan 15, 2026</span>
+                </div>
+                <Button
+                  variant={editMode ? "default" : "outline"}
+                  size="sm"
+                  className={`text-xs gap-1.5 ${editMode ? "bg-green-600 hover:bg-green-700 text-white" : ""}`}
+                  onClick={() => setEditMode(!editMode)}
+                >
+                  {editMode ? (
+                    <>
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Save & Approve
+                    </>
+                  ) : (
+                    <>
+                      <Pencil className="w-3.5 h-3.5" />
+                      Edit Rubric
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Collapsible JD source */}
+              <div className="bg-gray-50 border rounded-xl mb-5 overflow-hidden">
+                <div
+                  className="flex items-center justify-between px-5 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => setJdOpen(!jdOpen)}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Source: Job Description</span>
+                    <span className="text-xs text-gray-400">— click to {jdOpen ? "collapse" : "view"}</span>
+                  </div>
+                  {jdOpen ? (
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  )}
+                </div>
+                {jdOpen && (
+                  <div className="px-5 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-200 pt-3 max-h-64 overflow-y-auto">
+                    <p className="mb-3">
+                      As our primary full-stack developer, you'll be in charge of our complete mobile app
+                      stack: Flutter frontend, Python REST API backend, and Azure deployment. On the
+                      front-end side, you'll be responsible for translating UI mockups and requirements into
+                      smooth, polished, user-friendly, and well-maintained features for our cross-platform
+                      consumer mobile app.
+                    </p>
+                    <p className="mb-3">
+                      On the back-end side, you'll be responsible for designing, building, maintaining, improving, and
+                      expanding our Python REST API and Azure cloud architecture to support fast, scalable
+                      business logic implementations, data-heavy AI/ML workflows, 3rd-party API
+                      integrations, and high-performance database operations.
+                    </p>
+                    <p className="text-xs text-gray-400 italic">Full JD available in the "Job Details" tab →</p>
+                  </div>
+                )}
+              </div>
+
               {/* Info chips */}
               <div className="flex gap-3 mb-6 flex-wrap">
                 {[
@@ -258,26 +434,44 @@ const DemoJobDetail = () => {
               <TierSection
                 title="Must Have — Knockout Criteria"
                 subtitle="Non-negotiable. Candidates without these will not be shown."
-                skills={rubricData.mustHave}
+                skills={rubric.mustHave}
                 tierColor="#DC2626"
                 bgColor="#FEF2F2"
                 borderColor="#FECACA"
+                editMode={editMode}
+                onAddSkill={() => addSkill("mustHave")}
+                onRemoveSkill={(i) => removeSkill("mustHave", i)}
+                onSkillChange={(i, val) => updateSkill("mustHave", i, "skill", val)}
+                onProficiencyChange={(i, val) => updateSkill("mustHave", i, "proficiency", val)}
+                onToggle={(i) => toggleSkill("mustHave", i)}
               />
               <TierSection
                 title="Should Have — Strong Preference"
                 subtitle="Candidates with these score significantly higher."
-                skills={rubricData.shouldHave}
+                skills={rubric.shouldHave}
                 tierColor="#D97706"
                 bgColor="#FFF7ED"
                 borderColor="#FED7AA"
+                editMode={editMode}
+                onAddSkill={() => addSkill("shouldHave")}
+                onRemoveSkill={(i) => removeSkill("shouldHave", i)}
+                onSkillChange={(i, val) => updateSkill("shouldHave", i, "skill", val)}
+                onProficiencyChange={(i, val) => updateSkill("shouldHave", i, "proficiency", val)}
+                onToggle={(i) => toggleSkill("shouldHave", i)}
               />
               <TierSection
                 title="Nice to Have — Bonus Points"
                 subtitle="Won't disqualify without, but adds to the score."
-                skills={rubricData.niceToHave}
+                skills={rubric.niceToHave}
                 tierColor="#6B7280"
                 bgColor="#F9FAFB"
                 borderColor="#E5E7EB"
+                editMode={editMode}
+                onAddSkill={() => addSkill("niceToHave")}
+                onRemoveSkill={(i) => removeSkill("niceToHave", i)}
+                onSkillChange={(i, val) => updateSkill("niceToHave", i, "skill", val)}
+                onProficiencyChange={(i, val) => updateSkill("niceToHave", i, "proficiency", val)}
+                onToggle={(i) => toggleSkill("niceToHave", i)}
               />
 
               {/* Parameters */}
@@ -289,26 +483,30 @@ const DemoJobDetail = () => {
                 </CardHeader>
                 <CardContent>
                   {[
-                    {
-                      label: "Experience Range",
-                      value: `${rubricData.parameters.experienceMin} — ${rubricData.parameters.experienceMax} years total`,
-                    },
-                    {
-                      label: "Salary Budget",
-                      value: `${rubricData.parameters.salaryMin} — ${rubricData.parameters.salaryMax} /year`,
-                    },
-                    { label: "Location", value: rubricData.parameters.location },
-                    { label: "Availability", value: rubricData.parameters.availability },
-                    { label: "Max Notice Period", value: rubricData.parameters.noticePeriodMax },
+                    { label: "Min Experience", key: "experienceMin", suffix: " years" },
+                    { label: "Max Experience", key: "experienceMax", suffix: " years" },
+                    { label: "Min Salary", key: "salaryMin", suffix: " /year" },
+                    { label: "Max Salary", key: "salaryMax", suffix: " /year" },
+                    { label: "Location", key: "location", suffix: "" },
+                    { label: "Availability", key: "availability", suffix: "" },
+                    { label: "Max Notice Period", key: "noticePeriodMax", suffix: "" },
                   ].map((param) => (
                     <div
                       key={param.label}
                       className="flex justify-between items-center py-3 border-b border-gray-100"
                     >
                       <span className="text-sm text-gray-500 font-medium">{param.label}</span>
-                      <span className="bg-gray-100 px-3.5 py-1.5 rounded-md text-sm font-semibold text-gray-900 font-mono">
-                        {param.value}
-                      </span>
+                      {editMode ? (
+                        <input
+                          className="bg-white border border-dashed border-gray-400 focus:border-gray-600 outline-none px-3 py-1.5 rounded-md text-sm font-semibold text-gray-900 text-right w-40"
+                          value={rubric.parameters[param.key]}
+                          onChange={(e) => updateParam(param.key, e.target.value)}
+                        />
+                      ) : (
+                        <span className="bg-gray-100 px-3.5 py-1.5 rounded-md text-sm font-semibold text-gray-900 font-mono">
+                          {rubric.parameters[param.key]}{param.suffix}
+                        </span>
+                      )}
                     </div>
                   ))}
                 </CardContent>
@@ -325,24 +523,47 @@ const DemoJobDetail = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {rubricData.culture.map((item) => (
-                    <div key={item.label} className="flex items-center gap-2.5 py-2">
+                  {rubric.culture.map((item, index) => (
+                    <div key={`${item.label}-${index}`} className={`flex items-center gap-2.5 py-2 ${editMode ? "border-b border-dashed border-gray-200" : ""}`}>
                       <div
-                        className={`w-[18px] h-[18px] rounded flex items-center justify-center shrink-0 ${
+                        onClick={() => toggleCulture(index)}
+                        className={`w-[18px] h-[18px] rounded flex items-center justify-center shrink-0 cursor-pointer ${
                           item.checked ? "bg-cyan-600" : "border-2 border-gray-300"
                         }`}
                       >
                         {item.checked && <Check className="w-3 h-3 text-white" />}
                       </div>
-                      <span
-                        className={`text-sm ${
-                          item.checked ? "text-gray-900 font-medium" : "text-gray-400"
-                        }`}
-                      >
-                        {item.label}
-                      </span>
+                      {editMode ? (
+                        <input
+                          className="text-sm text-gray-900 font-medium bg-transparent border-b border-dashed border-gray-400 focus:border-gray-600 outline-none px-1 py-0 flex-1"
+                          value={item.label}
+                          onChange={(e) => updateCultureLabel(index, e.target.value)}
+                        />
+                      ) : (
+                        <span
+                          className={`text-sm ${
+                            item.checked ? "text-gray-900 font-medium" : "text-gray-400"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      )}
+                      {editMode && (
+                        <button onClick={() => removeCulture(index)} className="text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors">
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   ))}
+                  {editMode && (
+                    <button
+                      onClick={addCulture}
+                      className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 mt-3 px-3 py-2.5 rounded-lg border border-dashed border-gray-300 hover:border-gray-400 w-full justify-center transition-colors"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" />
+                      Add Trait
+                    </button>
+                  )}
                 </CardContent>
               </Card>
 
@@ -368,7 +589,7 @@ const DemoJobDetail = () => {
               </Button>
 
               <div className="text-center py-6 text-xs text-gray-400">
-                Rubric established by Elexis AI · Skills assessed by proficiency level, not self-reported
+                Rubric drafted by Elexis AI · Reviewed & approved by client · Skills assessed by proficiency level, not self-reported
                 years
               </div>
             </div>

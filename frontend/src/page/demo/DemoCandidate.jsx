@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Mail, Phone, Search, ListFilter, CheckCircle, Printer, Settings, Eye } from "lucide-react";
+import { Mail, Phone, Search, ListFilter, CheckCircle, Printer, Settings, Eye, PlusCircle, Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -134,45 +134,139 @@ function SkillScoreRow({ item, showInterview }) {
 
 // ── Demo Interview Questions Dialog ──
 
-const demoQuestions = [
-  "Can you walk me through your experience with Flutter and how you've used it in production?",
-  "Describe a complex state management challenge you faced and how you solved it.",
-  "How do you approach writing clean, maintainable code in a fast-paced startup environment?",
-  "Tell me about your experience with Python backend development and API design.",
-  "How do you handle CI/CD pipelines and deployment workflows?",
-  "Describe your experience with cloud services (AWS/GCP) and infrastructure management.",
-  "How do you approach testing in mobile and web applications?",
-  "Tell me about a time you had to debug a complex production issue under pressure.",
-  "How do you stay current with emerging technologies and best practices?",
-  "What's your approach to collaborating with cross-functional teams (design, product, QA)?",
+const generatedQuestionsFromResume = [
+  "Can you walk me through your experience building the cross-platform Flutter app at Infosys that serves 50,000+ active users?",
+  "Describe how you architected the BLoC-based state management layer handling 200+ state transitions. How did you ensure zero race conditions?",
+  "Tell me about your FastAPI microservices handling 30,000 requests/minute. What were the key design decisions for scalability?",
+  "How did you design the MongoDB schemas supporting 10K+ event ingestion per minute for analytics dashboards?",
+  "Walk me through the CI/CD pipeline you implemented with GitHub Actions that reduced deployment time from 45 to 12 minutes.",
+  "Describe your experience with Azure services — App Service, Functions, and Cosmos DB. How did you ensure 99.2% uptime?",
+  "At ZestMoney, how did you reduce the app crash rate from 2.1% to 0.3%? What monitoring strategies did you implement?",
+  "Tell me about your experience integrating payment gateways and KYC verification in the consumer lending app.",
+  "How do you approach Clean Architecture in Flutter projects? Can you explain the layer separation in your open-source template?",
+  "Describe your mentoring experience — how do you conduct code reviews and architecture sessions with junior developers?",
 ];
 
 function DemoInterviewQsns({ candidate }) {
   const [open, setOpen] = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [newQuestionText, setNewQuestionText] = useState("");
+  const [generating, setGenerating] = useState(false);
+
+  const handleAddQuestion = () => {
+    if (newQuestionText.trim()) {
+      const id = `q-${Date.now()}`;
+      setQuestions((prev) => [...prev, { id, question: newQuestionText.trim() }]);
+      setSelectedIds((prev) => new Set(prev).add(id));
+      setNewQuestionText("");
+    }
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleGenerateQuestions = () => {
+    setGenerating(true);
+    setTimeout(() => {
+      const generated = generatedQuestionsFromResume.map((q, i) => ({
+        id: `gen-${Date.now()}-${i}`,
+        question: q,
+      }));
+      setQuestions(generated);
+      setSelectedIds(new Set());
+      setGenerating(false);
+    }, 1500);
+  };
+
+  const selectedCount = selectedIds.size;
+
   return (
     <div className="mb-4">
       <Dialog open={open} onOpenChange={setOpen}>
         <Button variant="outline" size="sm" className="gap-2" onClick={() => setOpen(true)}>
           <Settings className="w-4 h-4" /> Manage Interview Questions
         </Button>
-        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Interview Questions</DialogTitle>
+            <DialogTitle>Questions</DialogTitle>
             <DialogDescription>
-              Questions for {candidate.jobName} — {candidate.name}
+              {selectedCount < 10 && (
+                <span className="text-red-400">Minimum 10 questions required</span>
+              )}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-2">
-            {demoQuestions.map((q, i) => (
-              <div key={i} className="flex gap-3 items-start p-3 rounded-lg bg-gray-50 border border-gray-200">
-                <span className="text-xs font-bold text-gray-400 font-mono mt-0.5 shrink-0">{String(i + 1).padStart(2, "0")}</span>
-                <p className="text-sm text-gray-700 leading-relaxed">{q}</p>
+          <div className="space-y-4">
+            {/* Input field + add button */}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Type your question here..."
+                value={newQuestionText}
+                onChange={(e) => setNewQuestionText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleAddQuestion(); }}
+                className="flex-1 text-base py-2"
+              />
+              <Button onClick={handleAddQuestion} disabled={!newQuestionText.trim()}>
+                <PlusCircle className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* Questions list */}
+            <ScrollArea className="h-56 pr-4">
+              <div className="space-y-3">
+                {questions.map((q, index) => {
+                  const isSelected = selectedIds.has(q.id);
+                  return (
+                    <div
+                      key={q.id}
+                      className={`flex items-center justify-between p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow ${isSelected ? "border-green-200 bg-green-50" : "border-gray-200 bg-white"}`}
+                    >
+                      <span className="text-gray-800 text-sm flex-1 mr-4">
+                        {index + 1}. {q.question}
+                      </span>
+                      <Button
+                        variant={isSelected ? "destructive" : "default"}
+                        size="icon"
+                        onClick={() => toggleSelect(q.id)}
+                        className={`rounded-full w-8 h-8 flex-shrink-0 ${!isSelected ? "bg-gray-900 hover:bg-gray-700" : ""}`}
+                      >
+                        {isSelected ? <Trash2 className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            </ScrollArea>
+
+            {/* Generate Questions button */}
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={handleGenerateQuestions}
+              disabled={generating}
+            >
+              <Sparkles className="w-4 h-4" />
+              {generating ? "Generating Questions..." : "Generate Questions?"}
+            </Button>
           </div>
-          <DialogFooter>
+
+          <DialogFooter className="sm:justify-start">
+            <Button disabled={selectedCount < 10} onClick={() => setOpen(false)}>
+              Save
+            </Button>
             <DialogClose asChild>
-              <Button variant="secondary">Close</Button>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
@@ -235,10 +329,17 @@ function CandidateDetail({ candidate }) {
                 <div className="text-3xl font-extrabold text-teal-300 font-mono leading-none">{candidate.roleFitScore}</div>
                 <div className="text-xs text-gray-400">/100</div>
               </div>
-              <div className="bg-blue-900/50 border border-blue-700 rounded-xl px-6 py-4 text-center min-w-[100px]">
+              <div className="bg-blue-900/50 border border-blue-700 rounded-xl px-6 py-4 text-center min-w-[100px] flex flex-col items-center justify-center">
                 <div className="text-[10px] text-blue-300 font-semibold uppercase tracking-wide mb-1">Growth</div>
-                <div className="text-3xl font-extrabold text-blue-300 font-mono leading-none">{candidate.growthPotential}</div>
-                <div className="text-xs text-gray-400">/100</div>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  candidate.growthPotential >= 85 ? "bg-green-800 text-green-200" :
+                  candidate.growthPotential >= 70 ? "bg-blue-800 text-blue-200" :
+                  "bg-gray-700 text-gray-300"
+                }`}>{
+                  candidate.growthPotential >= 85 ? "High Potential" :
+                  candidate.growthPotential >= 70 ? "Moderate" :
+                  "Developing"
+                }</span>
               </div>
             </div>
           </div>
@@ -363,7 +464,7 @@ function CandidateDetail({ candidate }) {
                 <div className="flex gap-2 mb-5">
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-100 text-xs text-gray-700">
                     <span className="w-2 h-2 rounded-full bg-gray-400" />
-                    Layer 1: Resume Keywords
+                    Layer 1: Resume Analysis
                   </div>
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-100 text-xs text-gray-700">
                     <span className="w-2 h-2 rounded-full bg-gray-900" />
@@ -553,7 +654,7 @@ function CandidateDetail({ candidate }) {
                       <CardTitle className="text-sm font-bold uppercase tracking-wide flex items-center gap-2">
                         Organization Fit
                       </CardTitle>
-                      <span className="bg-green-50 text-green-800 px-3 py-1 rounded-md text-sm font-bold font-mono">{orgFit.matchPercent}%</span>
+                      <span className="bg-green-50 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">Partial Match</span>
                     </div>
                   </CardHeader>
                   <CardContent>

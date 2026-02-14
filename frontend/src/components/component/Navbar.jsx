@@ -53,11 +53,11 @@ const Navbar = () => {
         <div className="ml-auto flex-end items-center space-x-4">
           {/* <Button>Add Candidate</Button>
           */}
-          <Button asChild className='bg-white text-muted-foreground rounded-full'>
-            <Link to={isDemo ? '/demo/jobs' : '/jobs'} className=' border border-gray-200 shadow-lg'><WalletCards /> Jobs</Link>
+          <Button asChild className={`rounded-full ${activePath === "jobs" ? '' : 'bg-white text-muted-foreground'}`}>
+            <Link to={isDemo ? '/demo/jobs' : '/jobs'} className={activePath === "jobs" ? 'bg-red-700 text-white border shadow-2xl' : 'border border-gray-200 shadow-lg'}><WalletCards /> Jobs</Link>
           </Button>
-          <Button asChild className='rounded-full'>
-            <Link to={isDemo ? '/demo/candidate' : '/'} className=' bg-red-700 text-white border shadow-2xl'><PersonStanding /> Candidates</Link>
+          <Button asChild className={`rounded-full ${activePath === "candidates" ? '' : 'bg-white text-muted-foreground'}`}>
+            <Link to={isDemo ? '/demo/candidate' : '/'} className={activePath === "candidates" ? 'bg-red-700 text-white border shadow-2xl' : 'border border-gray-200 shadow-lg'}><PersonStanding /> Candidates</Link>
           </Button>
         </div>
 
