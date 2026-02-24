@@ -22,6 +22,7 @@ import { InterviewPrintPreview } from './page/interview/InterviewPrintPreview';
 import DemoJobsList from './page/demo/DemoJobsList';
 import DemoJobDetail from './page/demo/DemoJobDetail';
 import DemoCandidate from './page/demo/DemoCandidate';
+import DemoTalentProfile from './page/demo/DemoTalentProfile';
 const App = () => {
   return (
     <BrowserRouter>
@@ -63,6 +64,9 @@ const App = () => {
             <Route path="/demo/job" element={<DemoJobDetail />} />
             <Route path="/demo/candidate" element={<DemoCandidate />} />
           </Route>
+
+          {/* Shareable Talent Profile — standalone, no app chrome */}
+          <Route path="/demo/profile" element={<DemoTalentProfile />} />
 
           {/* Start Interview Route */}
           <Route

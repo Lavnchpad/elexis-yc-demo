@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Mail, Phone, Search, ListFilter, CheckCircle, Printer, Settings, Eye, PlusCircle, Trash2, Sparkles } from "lucide-react";
+import { Mail, Phone, Search, ListFilter, CheckCircle, Printer, Settings, Eye, PlusCircle, Trash2, Sparkles, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -369,6 +369,11 @@ function CandidateDetail({ candidate }) {
         <Button variant="outline" size="sm" className="gap-2" onClick={() => window.print()}>
           <Printer className="w-4 h-4" /> Print
         </Button>
+        <a href="/demo/profile" target="_blank" rel="noopener noreferrer">
+          <Button variant="outline" size="sm" className="gap-2">
+            <ExternalLink className="w-4 h-4" /> Share Profile
+          </Button>
+        </a>
         {isInterviewCompleted && (
           <Popover>
             <PopoverTrigger asChild>
