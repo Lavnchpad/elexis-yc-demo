@@ -334,7 +334,7 @@ function ProfileTab({ mobile }) {
 
   return (
     <div style={{ maxWidth: 840, margin: "0 auto", fontFamily: sans, color: c.g[900], background: "#fff", fontSize: 13 }}>
-      <div style={{ padding: mobile ? "10px 12px 16px" : "14px 20px 20px" }}>
+      <div style={{ padding: mobile ? "14px 16px 20px" : "14px 20px 20px" }}>
 
         {/* ═══ RUBRIC BANNER ═══ */}
         <div style={{ background: c.teal.bg, border: `1px solid ${c.teal.brd}`, borderRadius: 8, padding: mobile ? "8px 12px" : "7px 14px", marginBottom: 12, display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "flex-start" : "center", gap: mobile ? 4 : 0 }}>
@@ -360,44 +360,34 @@ function ProfileTab({ mobile }) {
 
         {/* ═══ RECOMMENDATION ═══ */}
         <Section icon="" title="RECOMMENDATION" badge={recommendation.verdict} />
-        <p style={{ fontSize: 12.5, lineHeight: 1.6, color: c.g[700], margin: "0 0 8px" }}>{recommendation.summary}</p>
-        <div style={{ background: c.amber.bg, border: `1px solid ${c.amber.brd}`, borderRadius: 6, padding: "7px 12px", marginBottom: 14 }}>
-          <span style={{ fontSize: 11.5, color: c.amber.txt }}><strong>Hiring Consideration:</strong> {recommendation.hiringConsideration}</span>
+        <p style={{ fontSize: mobile ? 13 : 12.5, lineHeight: 1.65, color: c.g[700], margin: "0 0 10px" }}>{recommendation.summary}</p>
+        <div style={{ background: c.amber.bg, border: `1px solid ${c.amber.brd}`, borderRadius: 6, padding: mobile ? "10px 14px" : "7px 12px", marginBottom: mobile ? 20 : 14 }}>
+          <span style={{ fontSize: mobile ? 12 : 11.5, color: c.amber.txt, lineHeight: 1.55 }}><strong>Hiring Consideration:</strong> {recommendation.hiringConsideration}</span>
         </div>
 
         {/* ═══ MUST-HAVES ═══ */}
         <Section icon="" title="MUST-HAVE VERIFICATION — KNOCKOUT CRITERIA" badge={`${mustsPassed}/${musts.length} PASSED`} badgeColor={mustsPassed === musts.length ? c.green : c.red} />
-        <div style={{ fontSize: 9.5, color: c.g[400], fontFamily: mono, margin: "-4px 0 8px" }}>Any must-have failure = candidate removed. No exceptions.</div>
+        <div style={{ fontSize: mobile ? 10.5 : 9.5, color: c.g[400], fontFamily: mono, margin: "-4px 0 8px" }}>Any must-have failure = candidate removed. No exceptions.</div>
 
         {mobile ? (
-          /* Mobile: stacked cards */
+          /* Mobile: stacked cards with colored left border */
           musts.map((m, i) => (
-            <div key={i} style={{ border: `1px solid ${c.g[200]}`, borderRadius: 8, padding: "10px 12px", marginBottom: 6, background: i % 2 ? c.g[50] : "#fff" }}>
+            <div key={i} style={{ borderLeft: `3px solid ${m.passed ? "#22C55E" : c.red.txt}`, borderRadius: 8, padding: "12px 14px", marginBottom: 8, background: c.g[50], boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                  <Dot on={m.passed} />
-                  <span style={{ fontSize: 12.5, fontWeight: 700 }}>{m.skill}</span>
-                </div>
+                <span style={{ fontSize: 13.5, fontWeight: 700 }}>{m.skill}</span>
                 <Pill color={confC[m.confidence].txt} bg={confC[m.confidence].bg}>{confC[m.confidence].label}</Pill>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "52px 1fr", gap: "6px 8px", fontSize: 10 }}>
-                <span style={{ fontFamily: mono, color: c.g[400], fontWeight: 700 }}>Resume</span>
-                <span style={{ color: c.g[600] }}>
-                  {m.resume.sections.length > 0
-                    ? <>{m.resume.sections.join(" · ")} — <span style={{ color: m.resume.signal === "strong" ? c.green.txt : c.amber.txt }}>{m.resume.signal === "strong" ? "Strong" : "Moderate"}</span></>
-                    : "—"}
-                </span>
-                <span style={{ fontFamily: mono, color: c.g[400], fontWeight: 700 }}>Code</span>
-                <span style={{ color: c.g[600] }}>
-                  {m.liveCoding.status === "n/a"
-                    ? <span style={{ fontStyle: "italic", color: c.g[400] }}>{m.liveCoding.detail}</span>
-                    : m.liveCoding.proficiency && <Pill color={profC[m.liveCoding.proficiency].txt} bg={profC[m.liveCoding.proficiency].bg}>{m.liveCoding.proficiency}</Pill>}
-                </span>
-                <span style={{ fontFamily: mono, color: c.g[400], fontWeight: 700 }}>GitHub</span>
-                <span style={{ color: c.g[600] }}>
-                  {!m.github?.active ? "—" : m.github.proficiency && <Pill color={profC[m.github.proficiency]?.txt} bg={profC[m.github.proficiency]?.bg}>{m.github.proficiency}</Pill>}
-                </span>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 8 }}>
+                {m.resume.sections.length > 0 && <Pill color={m.resume.signal === "strong" ? c.green.txt : c.amber.txt} bg={m.resume.signal === "strong" ? c.green.bg : c.amber.bg}>Resume: {m.resume.signal === "strong" ? "Strong" : "Moderate"}</Pill>}
+                {m.liveCoding.proficiency && <Pill color={profC[m.liveCoding.proficiency].txt} bg={profC[m.liveCoding.proficiency].bg}>Code: {m.liveCoding.proficiency}</Pill>}
+                {m.github?.proficiency && <Pill color={profC[m.github.proficiency]?.txt} bg={profC[m.github.proficiency]?.bg}>GH: {m.github.proficiency}</Pill>}
               </div>
+              {m.liveCoding.status !== "n/a" && m.liveCoding.detail && (
+                <div style={{ fontSize: 11, color: c.g[500], lineHeight: 1.45 }}>{m.liveCoding.detail}</div>
+              )}
+              {m.liveCoding.status === "n/a" && (
+                <div style={{ fontSize: 11, color: c.g[400], fontStyle: "italic" }}>{m.liveCoding.detail}</div>
+              )}
             </div>
           ))
         ) : (
@@ -445,32 +435,33 @@ function ProfileTab({ mobile }) {
           </>
         )}
 
-        <div style={{ fontSize: 9.5, color: c.g[400], fontStyle: "italic", marginTop: 4 }}>AI Interview details per skill are in the Screening section below.</div>
-        <div style={{ height: 14 }} />
+        <div style={{ fontSize: mobile ? 10.5 : 9.5, color: c.g[400], fontStyle: "italic", marginTop: 4 }}>AI Interview details per skill are in the Screening section below.</div>
+        <div style={{ height: mobile ? 20 : 14 }} />
 
         {/* ═══ EXTRAS ═══ */}
         <Section icon="" title="BONUS SKILLS DETECTED" />
-        <div style={{ fontSize: 12, color: c.g[700], lineHeight: 1.6, marginBottom: 14 }}>
+        <div style={{ fontSize: 12, color: c.g[700], lineHeight: 1.6, marginBottom: mobile ? 20 : 14 }}>
           {extras.filter(e => e.found).map(e => e.skill).join(", ")} verified across resume, GitHub, and live coding. Notable: {extras.filter(e => e.found).map(e => e.evidence.split(".")[0]).join(". ")}.
         </div>
 
         {/* ═══ LIVE CODING EVIDENCE ═══ */}
         <Section icon="" title="LIVE CODING EVIDENCE" badge="3 prompts · 38 min" badgeColor={c.teal} />
-        <div style={{ fontSize: 9.5, fontFamily: mono, color: c.g[400], margin: "-4px 0 8px" }}>Role-specific prompts from client intake. Async. Keystrokes captured.</div>
+        <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[400], margin: "-4px 0 8px" }}>Role-specific prompts from client intake. Async. Keystrokes captured.</div>
 
+        <div style={{ height: mobile ? 4 : 0 }} />
         {codingPrompts.map(p => (
-          <div key={p.id} style={{ background: c.g[50], border: `1px solid ${c.g[200]}`, borderRadius: 8, padding: "8px 14px", marginBottom: 6 }}>
-            <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "flex-start" : "center", gap: mobile ? 4 : 0, marginBottom: 4 }}>
+          <div key={p.id} style={{ background: c.g[50], border: `1px solid ${c.g[200]}`, borderRadius: 8, padding: mobile ? "12px 14px" : "8px 14px", marginBottom: mobile ? 8 : 6 }}>
+            <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "flex-start" : "center", gap: mobile ? 6 : 0, marginBottom: 6 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                <span style={{ fontFamily: mono, fontWeight: 700, fontSize: 11, color: c.g[900] }}>{p.title}</span>
+                <span style={{ fontFamily: mono, fontWeight: 700, fontSize: mobile ? 12 : 11, color: c.g[900] }}>{p.title}</span>
                 <Pill color={c.teal.txt} bg={c.teal.bg}>{p.skill}</Pill>
                 <Pill color={profC[p.proficiency].txt} bg={profC[p.proficiency].bg}>{p.proficiency}</Pill>
               </div>
-              <span style={{ fontSize: 9, fontFamily: mono, color: c.g[400] }}>{p.time} · {p.keystrokes} keystrokes · {p.pastes} pastes</span>
+              <span style={{ fontSize: mobile ? 10 : 9, fontFamily: mono, color: c.g[400] }}>{p.time} · {p.keystrokes} keystrokes · {p.pastes} pastes</span>
             </div>
-            <div style={{ fontSize: 11.5, color: c.g[700], lineHeight: 1.5 }}>{p.verdict}</div>
+            <div style={{ fontSize: mobile ? 12 : 11.5, color: c.g[700], lineHeight: 1.55 }}>{p.verdict}</div>
             {p.flags.length > 0 && p.flags.map((f, j) => (
-              <div key={j} style={{ fontSize: 10, color: c.amber.txt, background: c.amber.bg, padding: "3px 8px", borderRadius: 4, marginTop: 4 }}>Flag: {f}</div>
+              <div key={j} style={{ fontSize: mobile ? 11 : 10, color: c.amber.txt, background: c.amber.bg, padding: "4px 10px", borderRadius: 4, marginTop: 6 }}>Flag: {f}</div>
             ))}
           </div>
         ))}
@@ -478,7 +469,7 @@ function ProfileTab({ mobile }) {
 
         {/* ═══ AI INTERVIEW ═══ */}
         <Section icon="" title="AI SCREENING INTERVIEW" badge="STRONG FIT" />
-        <div style={{ display: "grid", gridTemplateColumns: mobile ? "repeat(3, 1fr)" : "repeat(5, 1fr)", gap: 6, marginBottom: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: mobile ? "repeat(3, 1fr)" : "repeat(5, 1fr)", gap: mobile ? 10 : 6, marginBottom: mobile ? 14 : 10, background: mobile ? c.g[50] : "transparent", borderRadius: 8, padding: mobile ? "12px 8px" : 0 }}>
           {Object.entries(interviewScores).map(([area, val]) => {
             const label = val >= 9 ? "Excellent" : val >= 8 ? "Strong" : val >= 7 ? "Good" : "Developing";
             const color = val >= 8 ? c.teal.acc : val >= 7 ? c.amber.txt : c.red.txt;
