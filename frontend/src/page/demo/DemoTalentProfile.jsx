@@ -1,4 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const useMobile = (bp = 640) => {
+  const [m, setM] = useState(typeof window !== "undefined" && window.innerWidth < bp);
+  useEffect(() => {
+    const h = () => setM(window.innerWidth < bp);
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
+  }, [bp]);
+  return m;
+};
 
 // ─── CANDIDATE DATA ───
 const candidate = {
@@ -242,9 +252,9 @@ const GH = ({ github }) => {
 };
 
 // ─── RESUME TAB CONTENT ───
-function ResumeTab() {
+function ResumeTab({ mobile }) {
   return (
-    <div style={{ maxWidth: 840, margin: "0 auto", fontFamily: sans, color: c.g[900], background: "#fff", fontSize: 13, padding: "20px" }}>
+    <div style={{ maxWidth: 840, margin: "0 auto", fontFamily: sans, color: c.g[900], background: "#fff", fontSize: 13, padding: mobile ? "12px" : "20px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0 }}>Rahul Kumar</h1>
@@ -260,7 +270,7 @@ function ResumeTab() {
 
       <Section icon="" title="EXPERIENCE" />
       <div style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+        <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", marginBottom: 4, gap: mobile ? 2 : 0 }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700 }}>Senior Software Engineer</div>
             <div style={{ fontSize: 12, color: c.teal.txt, fontWeight: 600 }}>Infosys — Product Engineering Division</div>
@@ -276,7 +286,7 @@ function ResumeTab() {
         </ul>
       </div>
       <div style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+        <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", marginBottom: 4, gap: mobile ? 2 : 0 }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700 }}>Software Engineer</div>
             <div style={{ fontSize: 12, color: c.teal.txt, fontWeight: 600 }}>Wipro — Digital Platforms</div>
@@ -316,7 +326,7 @@ function ResumeTab() {
 }
 
 // ─── TALENT PROFILE TAB CONTENT ───
-function ProfileTab() {
+function ProfileTab({ mobile }) {
   const hasGH = musts.some(m => m.github?.active);
   const mustsPassed = musts.filter(m => m.passed).length;
   const extPts = extras.reduce((a, e) => a + e.points, 0);
@@ -324,25 +334,25 @@ function ProfileTab() {
 
   return (
     <div style={{ maxWidth: 840, margin: "0 auto", fontFamily: sans, color: c.g[900], background: "#fff", fontSize: 13 }}>
-      <div style={{ padding: "14px 20px 20px" }}>
+      <div style={{ padding: mobile ? "10px 12px 16px" : "14px 20px 20px" }}>
 
         {/* ═══ RUBRIC BANNER ═══ */}
-        <div style={{ background: c.teal.bg, border: `1px solid ${c.teal.brd}`, borderRadius: 8, padding: "7px 14px", marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 12, color: c.teal.txt }}>Scored against: <strong>{role.company} — {role.title}</strong> · {role.team}</span>
+        <div style={{ background: c.teal.bg, border: `1px solid ${c.teal.brd}`, borderRadius: 8, padding: mobile ? "8px 12px" : "7px 14px", marginBottom: 12, display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "flex-start" : "center", gap: mobile ? 4 : 0 }}>
+          <span style={{ fontSize: mobile ? 11 : 12, color: c.teal.txt }}>Scored against: <strong>{role.company} — {role.title}</strong> · {role.team}</span>
           <span style={{ fontSize: 10, color: c.g[400] }}>{musts.length} musts · {extras.length} extras · rubric-verified</span>
         </div>
 
         {/* ═══ CANDIDATE HEADER ═══ */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+        <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "stretch" : "flex-start", gap: mobile ? 10 : 0, marginBottom: 14 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>{candidate.name}</h1>
-            <div style={{ fontSize: 13, color: c.g[500], marginTop: 2 }}>{candidate.title} @ {candidate.company} · {candidate.location}</div>
+            <h1 style={{ fontSize: mobile ? 19 : 22, fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>{candidate.name}</h1>
+            <div style={{ fontSize: mobile ? 11.5 : 13, color: c.g[500], marginTop: 2 }}>{candidate.title} @ {candidate.company} · {candidate.location}</div>
             <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
               <Pill color={c.green.txt} bg={c.green.bg}>{candidate.status}</Pill>
               <Pill color={c.g[500]} bg={c.g[100]}>{candidate.noticePeriod}</Pill>
             </div>
           </div>
-          <div style={{ background: c.teal.bg, border: `1px solid ${c.teal.brd}`, borderRadius: 8, padding: "8px 14px", textAlign: "center", minWidth: 75 }}>
+          <div style={{ background: c.teal.bg, border: `1px solid ${c.teal.brd}`, borderRadius: 8, padding: "8px 14px", textAlign: mobile ? "left" : "center", minWidth: 75, ...(mobile ? { display: "flex", alignItems: "center", gap: 8 } : {}) }}>
             <div style={{ fontFamily: mono, fontSize: 9, fontWeight: 700, color: c.teal.txt, letterSpacing: "0.05em" }}>RUBRIC FIT</div>
             <div style={{ fontFamily: mono, fontSize: 16, fontWeight: 800, color: c.teal.txt, lineHeight: 1.3 }}>Strong</div>
           </div>
@@ -359,46 +369,81 @@ function ProfileTab() {
         <Section icon="" title="MUST-HAVE VERIFICATION — KNOCKOUT CRITERIA" badge={`${mustsPassed}/${musts.length} PASSED`} badgeColor={mustsPassed === musts.length ? c.green : c.red} />
         <div style={{ fontSize: 9.5, color: c.g[400], fontFamily: mono, margin: "-4px 0 8px" }}>Any must-have failure = candidate removed. No exceptions.</div>
 
-        {/* Table header */}
-        <div style={{ display: "grid", gridTemplateColumns: "130px 90px 1fr 1fr 70px", padding: "5px 8px", background: c.g[100], borderRadius: "6px 6px 0 0" }}>
-          {["MUST-HAVE", "RESUME", "LIVE CODING", "GITHUB", "CONF."].map(h => (
-            <span key={h} style={{ fontSize: 9.5, fontFamily: mono, fontWeight: 700, color: c.g[500] }}>{h}</span>
-          ))}
-        </div>
-
-        {musts.map((m, i) => (
-          <div key={i} style={{ display: "grid", gridTemplateColumns: "130px 90px 1fr 1fr 70px", padding: "7px 8px", background: i % 2 ? c.g[50] : "#fff", borderBottom: `1px solid ${c.g[100]}` }}>
-            <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-              <Dot on={m.passed} />
-              <span style={{ fontSize: 11.5, fontWeight: 700 }}>{m.skill}</span>
+        {mobile ? (
+          /* Mobile: stacked cards */
+          musts.map((m, i) => (
+            <div key={i} style={{ border: `1px solid ${c.g[200]}`, borderRadius: 8, padding: "10px 12px", marginBottom: 6, background: i % 2 ? c.g[50] : "#fff" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                  <Dot on={m.passed} />
+                  <span style={{ fontSize: 12.5, fontWeight: 700 }}>{m.skill}</span>
+                </div>
+                <Pill color={confC[m.confidence].txt} bg={confC[m.confidence].bg}>{confC[m.confidence].label}</Pill>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "52px 1fr", gap: "6px 8px", fontSize: 10 }}>
+                <span style={{ fontFamily: mono, color: c.g[400], fontWeight: 700 }}>Resume</span>
+                <span style={{ color: c.g[600] }}>
+                  {m.resume.sections.length > 0
+                    ? <>{m.resume.sections.join(" · ")} — <span style={{ color: m.resume.signal === "strong" ? c.green.txt : c.amber.txt }}>{m.resume.signal === "strong" ? "Strong" : "Moderate"}</span></>
+                    : "—"}
+                </span>
+                <span style={{ fontFamily: mono, color: c.g[400], fontWeight: 700 }}>Code</span>
+                <span style={{ color: c.g[600] }}>
+                  {m.liveCoding.status === "n/a"
+                    ? <span style={{ fontStyle: "italic", color: c.g[400] }}>{m.liveCoding.detail}</span>
+                    : m.liveCoding.proficiency && <Pill color={profC[m.liveCoding.proficiency].txt} bg={profC[m.liveCoding.proficiency].bg}>{m.liveCoding.proficiency}</Pill>}
+                </span>
+                <span style={{ fontFamily: mono, color: c.g[400], fontWeight: 700 }}>GitHub</span>
+                <span style={{ color: c.g[600] }}>
+                  {!m.github?.active ? "—" : m.github.proficiency && <Pill color={profC[m.github.proficiency]?.txt} bg={profC[m.github.proficiency]?.bg}>{m.github.proficiency}</Pill>}
+                </span>
+              </div>
             </div>
-            <div>
-              {m.resume.sections.length > 0 ? (
-                <>
-                  <div style={{ fontSize: 10, fontFamily: mono, color: c.g[500] }}>{m.resume.sections.join(" · ")}</div>
-                  <div style={{ fontSize: 9, color: m.resume.signal === "strong" ? c.green.txt : c.amber.txt, marginTop: 1 }}>{m.resume.signal === "strong" ? "Strong" : "Moderate"}</div>
-                </>
-              ) : <span style={{ fontSize: 10, color: c.g[400] }}>—</span>}
-            </div>
-            <div>
-              {m.liveCoding.status === "n/a" ? (
-                <span style={{ fontSize: 10, color: c.g[400], fontStyle: "italic" }}>{m.liveCoding.detail}</span>
-              ) : (
-                <>
-                  <div style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 2 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: m.liveCoding.status === "strong" ? c.green.txt : c.amber.txt }}>
-                      {m.liveCoding.status === "strong" ? "✓" : "~"}
-                    </span>
-                    {m.liveCoding.proficiency && <Pill color={profC[m.liveCoding.proficiency].txt} bg={profC[m.liveCoding.proficiency].bg}>{m.liveCoding.proficiency}</Pill>}
-                  </div>
-                  <div style={{ fontSize: 10, color: c.g[700], lineHeight: 1.35 }}>{m.liveCoding.detail}</div>
-                </>
-              )}
-            </div>
-            <GH github={m.github} />
-            <Pill color={confC[m.confidence].txt} bg={confC[m.confidence].bg}>{confC[m.confidence].label}</Pill>
+          ))
+        ) : (
+          <>
+          {/* Desktop: table */}
+          <div style={{ display: "grid", gridTemplateColumns: "130px 90px 1fr 1fr 70px", padding: "5px 8px", background: c.g[100], borderRadius: "6px 6px 0 0" }}>
+            {["MUST-HAVE", "RESUME", "LIVE CODING", "GITHUB", "CONF."].map(h => (
+              <span key={h} style={{ fontSize: 9.5, fontFamily: mono, fontWeight: 700, color: c.g[500] }}>{h}</span>
+            ))}
           </div>
-        ))}
+
+          {musts.map((m, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "130px 90px 1fr 1fr 70px", padding: "7px 8px", background: i % 2 ? c.g[50] : "#fff", borderBottom: `1px solid ${c.g[100]}` }}>
+              <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                <Dot on={m.passed} />
+                <span style={{ fontSize: 11.5, fontWeight: 700 }}>{m.skill}</span>
+              </div>
+              <div>
+                {m.resume.sections.length > 0 ? (
+                  <>
+                    <div style={{ fontSize: 10, fontFamily: mono, color: c.g[500] }}>{m.resume.sections.join(" · ")}</div>
+                    <div style={{ fontSize: 9, color: m.resume.signal === "strong" ? c.green.txt : c.amber.txt, marginTop: 1 }}>{m.resume.signal === "strong" ? "Strong" : "Moderate"}</div>
+                  </>
+                ) : <span style={{ fontSize: 10, color: c.g[400] }}>—</span>}
+              </div>
+              <div>
+                {m.liveCoding.status === "n/a" ? (
+                  <span style={{ fontSize: 10, color: c.g[400], fontStyle: "italic" }}>{m.liveCoding.detail}</span>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 2 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: m.liveCoding.status === "strong" ? c.green.txt : c.amber.txt }}>
+                        {m.liveCoding.status === "strong" ? "✓" : "~"}
+                      </span>
+                      {m.liveCoding.proficiency && <Pill color={profC[m.liveCoding.proficiency].txt} bg={profC[m.liveCoding.proficiency].bg}>{m.liveCoding.proficiency}</Pill>}
+                    </div>
+                    <div style={{ fontSize: 10, color: c.g[700], lineHeight: 1.35 }}>{m.liveCoding.detail}</div>
+                  </>
+                )}
+              </div>
+              <GH github={m.github} />
+              <Pill color={confC[m.confidence].txt} bg={confC[m.confidence].bg}>{confC[m.confidence].label}</Pill>
+            </div>
+          ))}
+          </>
+        )}
 
         <div style={{ fontSize: 9.5, color: c.g[400], fontStyle: "italic", marginTop: 4 }}>AI Interview details per skill are in the Screening section below.</div>
         <div style={{ height: 14 }} />
@@ -415,8 +460,8 @@ function ProfileTab() {
 
         {codingPrompts.map(p => (
           <div key={p.id} style={{ background: c.g[50], border: `1px solid ${c.g[200]}`, borderRadius: 8, padding: "8px 14px", marginBottom: 6 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "flex-start" : "center", gap: mobile ? 4 : 0, marginBottom: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                 <span style={{ fontFamily: mono, fontWeight: 700, fontSize: 11, color: c.g[900] }}>{p.title}</span>
                 <Pill color={c.teal.txt} bg={c.teal.bg}>{p.skill}</Pill>
                 <Pill color={profC[p.proficiency].txt} bg={profC[p.proficiency].bg}>{p.proficiency}</Pill>
@@ -433,7 +478,7 @@ function ProfileTab() {
 
         {/* ═══ AI INTERVIEW ═══ */}
         <Section icon="" title="AI SCREENING INTERVIEW" badge="STRONG FIT" />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, marginBottom: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: mobile ? "repeat(3, 1fr)" : "repeat(5, 1fr)", gap: 6, marginBottom: 10 }}>
           {Object.entries(interviewScores).map(([area, val]) => {
             const label = val >= 9 ? "Excellent" : val >= 8 ? "Strong" : val >= 7 ? "Good" : "Developing";
             const color = val >= 8 ? c.teal.acc : val >= 7 ? c.amber.txt : c.red.txt;
@@ -456,7 +501,7 @@ function ProfileTab() {
         <div style={{ height: 14 }} />
 
         {/* ═══ BOTTOM: Edu + Comp ═══ */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16 }}>
           {/* Education */}
           <div>
             <Section icon="" title="EDUCATION CONTEXT" />
@@ -519,6 +564,7 @@ function ProfileTab() {
 export default function DemoTalentProfile() {
   const [activeTab, setActiveTab] = useState("profile");
   const hasGH = musts.some(m => m.github?.active);
+  const mobile = useMobile();
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff", fontFamily: sans }}>
@@ -530,14 +576,14 @@ export default function DemoTalentProfile() {
           <span style={{ color: c.g[300], margin: "0 3px" }}>|</span>
           <span style={{ fontSize: 11, color: c.g[400] }}>Talent Intelligence Profile</span>
         </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        {!mobile && <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {[["Resume", true], ["Live Code", true], ["GitHub", hasGH], ["AI Interview", true]].map(([label, on]) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: 3 }}>
               <Dot on={on} />
               <span style={{ fontSize: 9, fontFamily: mono, color: on ? c.g[700] : c.g[400] }}>{label}</span>
             </div>
           ))}
-        </div>
+        </div>}
       </div>
 
       {/* ═══ TAB BAR ═══ */}
@@ -565,7 +611,7 @@ export default function DemoTalentProfile() {
       </div>
 
       {/* ═══ TAB CONTENT ═══ */}
-      {activeTab === "profile" ? <ProfileTab /> : <ResumeTab />}
+      {activeTab === "profile" ? <ProfileTab mobile={mobile} /> : <ResumeTab mobile={mobile} />}
     </div>
   );
 }
