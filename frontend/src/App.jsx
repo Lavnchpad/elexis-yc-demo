@@ -74,7 +74,9 @@ const App = () => {
           <Route path="/demo/profile" element={<DemoTalentProfile />} />
           <Route path="/demo/baller-profile" element={<BallerCorpTalentProfile />} />
           <Route path="/demo/kamlesh-profile" element={<KamleshTalentProfile />} />
+          <Route path="/kamlesh-profile" element={<KamleshTalentProfile />} />
           <Route path="/demo/prashant-profile" element={<PrashantTalentProfile />} />
+          <Route path="/prashant-profile" element={<PrashantTalentProfile />} />
 
           {/* Start Interview Route */}
           <Route
