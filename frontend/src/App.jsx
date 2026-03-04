@@ -23,6 +23,10 @@ import DemoJobsList from './page/demo/DemoJobsList';
 import DemoJobDetail from './page/demo/DemoJobDetail';
 import DemoCandidate from './page/demo/DemoCandidate';
 import DemoTalentProfile from './page/demo/DemoTalentProfile';
+import BallerCorpTalentProfile from './page/demo/BallerCorpTalentProfile';
+import BallerCorpJobDetail from './page/demo/BallerCorpJobDetail';
+import KamleshTalentProfile from './page/demo/KamleshTalentProfile';
+import PrashantTalentProfile from './page/demo/PrashantTalentProfile';
 const App = () => {
   return (
     <BrowserRouter>
@@ -62,11 +66,15 @@ const App = () => {
             {/* Demo Routes — No auth required, hardcoded data */}
             <Route path="/demo/jobs" element={<DemoJobsList />} />
             <Route path="/demo/job" element={<DemoJobDetail />} />
+            <Route path="/demo/baller-job" element={<BallerCorpJobDetail />} />
             <Route path="/demo/candidate" element={<DemoCandidate />} />
           </Route>
 
           {/* Shareable Talent Profile — standalone, no app chrome */}
           <Route path="/demo/profile" element={<DemoTalentProfile />} />
+          <Route path="/demo/baller-profile" element={<BallerCorpTalentProfile />} />
+          <Route path="/demo/kamlesh-profile" element={<KamleshTalentProfile />} />
+          <Route path="/demo/prashant-profile" element={<PrashantTalentProfile />} />
 
           {/* Start Interview Route */}
           <Route
