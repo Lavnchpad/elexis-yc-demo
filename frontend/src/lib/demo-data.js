@@ -293,6 +293,17 @@ export const demoJobs = [
     candidates: 5,
     created: "Dec 20, 2025",
   },
+  {
+    id: "demo-5",
+    job_name: "Senior Flutter BLoC Developer",
+    location: "Remote (India)",
+    max_ctc: "₹18L - ₹24L",
+    recruiter: { id: "demo-recruiter", name: "Hardik" },
+    client: "Baller Corp",
+    status: "Active",
+    candidates: 1,
+    created: "Mar 1, 2026",
+  },
 ];
 
 // ── Applications (Inbound Applicants) — Screen 2: Resume Analysis ──
@@ -1681,5 +1692,126 @@ export const interviewTranscript = [
   {
     speaker: "candidate",
     text: "Thank you. I really enjoyed the conversation — the questions were thoughtful and relevant. Looking forward to hearing back.",
+  },
+];
+
+// ══════════════════════════════════════════════════════════════════
+// BALLER CORP — Senior Flutter BLoC Developer
+// ══════════════════════════════════════════════════════════════════
+
+export const ballerCorpRubricData = {
+  client: "Baller Corp",
+  role: "Senior Flutter BLoC Developer",
+  department: "Mobile Product Team",
+  priority: "HIGH",
+  established: "Mar 1, 2026",
+  location: "Remote (India)",
+  headcount: "4 positions",
+  targetStart: "April 2026",
+  engagement: "Full-time",
+  mustHave: [
+    { skill: "Flutter / Dart", proficiency: "Advanced", checked: true },
+    { skill: "BLoC State Management", proficiency: "Advanced", checked: true },
+    { skill: "REST API Integration", proficiency: "Intermediate", checked: true },
+    { skill: "Git & Daily PR Workflow", proficiency: "Intermediate", checked: true },
+  ],
+  shouldHave: [
+    { skill: "Social Media / Marketplace Features", proficiency: "Intermediate", checked: true },
+    { skill: "App Store Publishing (iOS + Android)", proficiency: "Intermediate", checked: true },
+    { skill: "Performance Optimization & Memory Mgmt", proficiency: "Intermediate", checked: true },
+    { skill: "Secure Auth & Encryption", proficiency: "Beginner", checked: true },
+    { skill: "Real-time / Messaging (GetStream, WebSocket)", proficiency: "Beginner", checked: true },
+  ],
+  niceToHave: [
+    { skill: "Specific APIs (Stripe, Firebase, GetStream, Airship, EasyPost, Scandit)", proficiency: "Any Experience", checked: true },
+    { skill: "CI/CD & Automated Testing", proficiency: "Any Experience", checked: true },
+    { skill: "AI/ML Integration", proficiency: "Any Experience", checked: true },
+    { skill: "Team Lead / Mentoring", proficiency: "Any Experience", checked: true },
+  ],
+  parameters: {
+    experienceMin: 3,
+    experienceMax: 7,
+    salaryMin: "₹18L",
+    salaryMax: "₹24L",
+    location: "Remote (India)",
+    availability: "Within 30 days",
+    noticePeriodMax: "30 days",
+  },
+  culture: [
+    { label: "Ships every day — PR into dev branch daily", checked: true },
+    { label: "Strong execution focus — builds exactly to spec", checked: true },
+    { label: "Self-driven QA — reviews own deliverables before submitting", checked: true },
+    { label: "Comfortable in fast-paced, high-accountability environment", checked: true },
+  ],
+  aiNote:
+    "Baller Corp's JD is unusually explicit about execution culture — the founder's note about daily PRs and QA ownership signals this is a high-discipline, high-output role. Flutter and BLoC are the core must-haves at Advanced level. Social media and marketplace experience is strongly preferred but not blocking — fintech or enterprise payment backgrounds transfer directly to Stripe and order management. The daily shipping requirement is the most important non-technical filter: developers from slow enterprise or academic environments will struggle with this culture regardless of technical skill.",
+};
+
+export const ballerCorpApplications = [
+  {
+    id: "bc-app-1",
+    stage: "candidate_onboard",
+    created_date: "2026-03-01T09:00:00Z",
+    created_by: { name: "Elexis AI" },
+    candidate: {
+      id: "bc-cand-1",
+      name: "Priya Sharma",
+      email: "priya.sharma@gmail.com",
+      phone_number: "+91 97654 32100",
+    },
+    ai_evaluations: [{
+      id: "bc-eval-1",
+      roleFitScore: 88,
+      recommendation: {
+        overallRecommendation: "Strong Hire — Flutter/BLoC claims are well-verified across resume, GitHub, and live coding. Fintech background transfers directly to Baller Corp's payment and order management features. Daily shipping culture is already her norm at FinStack.",
+      },
+      directComparison: {
+        relevantSections: [
+          "**Skills:** Flutter, Dart, BLoC listed prominently — directly matches primary must-haves.",
+          "**Experience — FinStack:** Provider → BLoC migration, payment flows, tokenized card storage, UPI integration, biometric auth. Production-grade work.",
+          "**Experience — TCS:** Enterprise Flutter apps, Firebase, REST API integrations — shows breadth across client environments.",
+          "**Published App:** FinStack on Play Store with 10K+ downloads validates real-world deployment experience.",
+        ],
+        missingRequirements: [
+          "No social media or marketplace feature experience — FinStack is pure fintech. Feed, listing, and social UX patterns are net new.",
+          "No experience with Baller Corp's specific API stack (Airship, EasyPost, GetStream, Scandit) — learnable but not verified.",
+          "No Kubernetes or CI/CD pipeline ownership — manual builds only.",
+        ],
+      },
+      backgroundAnalysis: {
+        industryContext: "4 years in mobile development across enterprise IT (TCS) and Series A fintech (FinStack). Fintech background provides strong payment and security domain knowledge — directly relevant to Baller Corp's payments and order management features.",
+        companyBackground: "FinStack is a Series A fintech startup — small team, feature ownership, fast shipping. This is the same culture Baller Corp explicitly requires. Low culture-fit risk.",
+        relevance: "High relevance. Flutter/BLoC depth is verified across all layers. Payment domain knowledge transfers. Daily shipping culture already embedded. Primary gap is social/marketplace UX patterns — expected ramp time of 2-3 weeks.",
+      },
+      roleFitAnalysis: {
+        jobTitleMatch: "Good match. 'Flutter Developer' with 4 YOE applying for 'Senior Flutter BLoC Developer'. Title undersells her — BLoC architecture ownership at FinStack is senior-level work.",
+        experienceLevel: "4 years total. Within the 3-7 year range. BLoC migration ownership and production app publishing suggest she operates above a mid-level developer.",
+        keySkills: ["Flutter", "Dart", "BLoC", "REST APIs", "Firebase", "WebSocket", "Git", "UPI Integration", "Biometric Auth", "Play Store Publishing"],
+        missingSkills: ["Social Media / Marketplace Features", "GetStream API", "CI/CD (Fastlane/automated)"],
+      },
+      gapsAndImprovements: {
+        missingSkills: ["Social Media / Marketplace Features", "GetStream API", "CI/CD pipeline ownership"],
+      },
+      hiringSignals: {
+        resumeQuality: "Good quality. Quantified achievements (10K+ downloads, 4.2 rating, 60% state bug reduction). Technical specificity is strong — names BLoC, sealed classes, tokenized storage, PCI compliance.",
+        careerTrajectory: "Clear upward progression from junior at TCS to feature ownership at Series A startup. BLoC migration at FinStack is a strong signal of architectural maturity.",
+        prestigeFactors: "COEP Technological University (Tier 1, #28 in India for Engineering, ~4% acceptance). FinStack Series A — small team, high ownership.",
+        transitionEase: "High. Fintech → social/marketplace is the only domain gap. Technical stack is an exact match. 30-day notice period.",
+      },
+    }],
+    githubAnalysis: {
+      username: "priya-sharma-flutter",
+      totalRepos: 5,
+      totalCommits: 520,
+      accountAge: "3.5 years",
+      topLanguages: ["Dart", "JavaScript"],
+      skillVerification: [
+        { skill: "Flutter / Dart", status: "strong", repos: 5, commits: 120, latest: "1 week ago", detail: "BLoC in 3 repos. Provider in earlier repos — migration to BLoC visible over time." },
+        { skill: "BLoC State Management", status: "strong", repos: 3, commits: null, latest: null, detail: "Full event/state/bloc class architecture in recent repos. Sealed classes in latest repo." },
+        { skill: "REST API Integration", status: "moderate", repos: 4, commits: null, latest: null, detail: "Older repos use generic try/catch. Newest repo shows typed error handling — improving." },
+        { skill: "Firebase", status: "strong", repos: 2, commits: null, latest: null, detail: "Auth + Firestore + Crashlytics in production repos." },
+        { skill: "Git Workflow", status: "moderate", repos: 5, commits: 520, latest: "1 week ago", detail: "Atomic commits, feature branch workflow. Daily commits during active sprints." },
+      ],
+    },
   },
 ];
