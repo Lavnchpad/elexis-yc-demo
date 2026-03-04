@@ -276,8 +276,6 @@ const GH = ({ github }) => {
 function ProfileTab({ mobile }) {
   const hasGH = musts.some(m => m.github?.active);
   const mustsPassed = musts.filter(m => m.passed).length;
-  const extPts = extras.reduce((a, e) => a + e.points, 0);
-  const extMax = extras.reduce((a, e) => a + e.max, 0);
 
   return (
     <div style={{ maxWidth: 840, margin: "0 auto", fontFamily: sans, color: c.g[900], background: "#fff", fontSize: 13, padding: mobile ? "12px 16px 20px" : "14px 20px 20px" }}>
@@ -308,9 +306,9 @@ function ProfileTab({ mobile }) {
 
       {/* RECOMMENDATION */}
       <Section icon="⚠️" title="RECOMMENDATION" badge={`${recommendation.verdict} · ${recommendation.confidence}% Confidence`} badgeColor={c.amber} />
-      <ul style={{ margin: "0 0 14px", paddingLeft: 18 }}>
+      <ul style={{ margin: "0 0 14px", paddingLeft: 20, listStyleType: "disc" }}>
         {recommendation.bullets.map((b, i) => (
-          <li key={i} style={{ fontSize: mobile ? 12.5 : 12, lineHeight: 1.65, color: c.g[700], marginBottom: 4 }}>{b}</li>
+          <li key={i} style={{ fontSize: mobile ? 12.5 : 12, lineHeight: 1.65, color: c.g[700], marginBottom: 6, paddingLeft: 2 }}>{b}</li>
         ))}
       </ul>
 
@@ -399,17 +397,27 @@ function ProfileTab({ mobile }) {
       <div style={{ height: mobile ? 20 : 14 }} />
 
       {/* BONUS SKILLS */}
-      <Section icon="⭐" title="BONUS SKILLS DETECTED" badge={`${extPts}/${extMax} pts`} badgeColor={c.blue} />
-      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 6, marginBottom: mobile ? 20 : 14 }}>
-        {extras.map((e, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 10px", background: e.found ? c.green.bg : c.g[50], borderRadius: 6, border: `1px solid ${e.found ? c.green.brd : c.g[200]}` }}>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: e.found ? c.green.txt : c.g[400] }}>{e.found ? "✅" : "—"} {e.skill}</div>
-              <div style={{ fontSize: 9.5, color: c.g[500], marginTop: 1, lineHeight: 1.3 }}>{e.evidence}</div>
+      <Section icon="⭐" title="BONUS SKILLS DETECTED" badge={`${extras.filter(e => e.found).length}/${extras.length} FOUND`} badgeColor={c.blue} />
+      <div style={{ marginBottom: mobile ? 20 : 14 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+          {extras.map((e, i) => (
+            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: e.found ? c.green.bg : c.g[50], border: `1px solid ${e.found ? c.green.brd : c.g[200]}`, borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: e.found ? c.green.txt : c.g[400] }}>
+              {e.found ? "✓" : "—"} {e.skill}
+            </span>
+          ))}
+        </div>
+        <div style={{ borderLeft: `2px solid ${c.g[200]}`, paddingLeft: 10 }}>
+          {extras.filter(e => e.found).map((e, i) => (
+            <div key={i} style={{ fontSize: 10, color: c.g[500], lineHeight: 1.45, marginBottom: 4 }}>
+              <span style={{ fontWeight: 700, color: c.g[700] }}>{e.skill}:</span> {e.evidence}
             </div>
-            <span style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: e.found ? c.green.txt : c.g[400], whiteSpace: "nowrap", marginLeft: 8, alignSelf: "flex-start" }}>+{e.points}/{e.max}</span>
-          </div>
-        ))}
+          ))}
+          {extras.some(e => !e.found) && (
+            <div style={{ fontSize: 10, color: c.g[400], marginTop: 2, fontStyle: "italic" }}>
+              Not detected: {extras.filter(e => !e.found).map(e => e.skill).join(", ")}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* LIVE CODING */}
