@@ -203,7 +203,7 @@ const findings = [
   "Platform channel depth is above average — self-taught Swift/SwiftUI to implement iOS Live Activities and Dynamic Island when Flutter had no native support and no online resources. Demonstrates initiative and learning velocity.",
   "Payment integrations (Stripe, Razorpay, UK-based provider) and CI/CD (Xcode Cloud) directly match Baller Corp's stack. Both are explicitly in resume skills — not interview-only claims.",
   "Backend collaboration pattern is strong — sits with BE team before sprints, designed partial data fetching for 30–40 widget dashboard, owns API contract discussions from design phase.",
-  "Verbal explanation is weaker than implementation quality. Sealed class advantage not articulated (missed exhaustive switch matching) but code usage was correct throughout. Recommend light prep before client intro call.",
+  "Verbal explanation is weaker than implementation quality. Sealed class advantage not articulated (missed exhaustive switch matching) but code usage was correct throughout.",
 ];
 
 // ─── EDUCATION ───
