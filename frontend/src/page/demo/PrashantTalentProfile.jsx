@@ -182,9 +182,9 @@ const codingPrompts = [
     pastes: "Multiple",
     refactors: 0,
     proficiency: "Intermediate",
-    verdict: "Task completed end-to-end — Events base class, State base class, Events, States, BlocBuilder, ListView.builder all present. Try-catch applied proactively without prompting (positive). However: heavy documentation copying throughout, DTOs created with 8 plural field names (pattern-copied without semantic understanding), and candidate could not diagnose the issue when an error occurred — read the error message passively without recognizing the root cause.",
+    verdict: "Task completed end-to-end — Events base class, State base class, Events, States, BlocBuilder, ListView.builder all present. Try-catch applied proactively without prompting (positive). However: heavy documentation copying throughout, DTO class named in plural form (e.g. Items instead of Item — an instance represents one object, not a collection), and candidate could not diagnose the issue when an error occurred — read the error message passively without recognizing the root cause.",
     flags: [
-      "DTO naming: 8 plural field names — copied doc pattern without adapting to context",
+      "DTO naming convention: class named plural (Items) instead of singular (Item) — an instance represents one object, not a group",
       "Couldn't recognize issue from error message — passive reading, not active debugging",
       "Heavy doc dependency throughout — patterns not fully internalized",
       "Sealed class advantage not articulated — missed exhaustive switch matching benefit",
@@ -198,7 +198,7 @@ const interviewScores = { "Tech Depth": 7.5, "Domain": 7.5, "Comms": 5.5, "Probl
 const findings = [
   "BLoC modular architecture in banking app is the strongest signal — per-service independent blocs (accounts, transactions, auth) with correct global vs screen-scoped provider placement. This is production-grade, Level 3 architectural thinking.",
   "GitHub independently verifies all resume claims: flutter_bloc in pubspec.yaml, Pull Shark badge (multiple PRs merged), published packages on pub.dev. The Pull Shark badge is GitHub-issued — not self-reported.",
-  "Live coding completed the full task structure but exposed key gaps: DTO naming convention error (8 plural field names) suggests heavy pattern-copying from docs; failure to diagnose from error message is a meaningful weakness for a senior role where debugging speed is critical.",
+  "Live coding completed the full task structure but exposed key gaps: DTO class named in plural form (Items instead of Item) — a naming convention error that signals shallow OOP understanding; failure to diagnose from error message is a meaningful weakness for a senior role where debugging speed is critical.",
   "Communication flagged directly by the interviewer. In a remote async team, the ability to communicate clearly in text and calls is as important as technical skill — this is the highest-weighted risk in this profile.",
   "OOP understanding is shallow — has clarity of why BLoC is the right choice (conceptually sound) but cannot explain the class hierarchy principles that make sealed states correct. Gap shared by other candidates in this pool.",
   "Platform channels for migration and backend API contract negotiation show breadth — candidate is not purely a UI-layer Flutter developer.",
