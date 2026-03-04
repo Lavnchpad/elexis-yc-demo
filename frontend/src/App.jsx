@@ -27,6 +27,7 @@ import BallerCorpTalentProfile from './page/demo/BallerCorpTalentProfile';
 import BallerCorpJobDetail from './page/demo/BallerCorpJobDetail';
 import KamleshTalentProfile from './page/demo/KamleshTalentProfile';
 import PrashantTalentProfile from './page/demo/PrashantTalentProfile';
+import NitishTalentProfile from './page/demo/NitishTalentProfile';
 const App = () => {
   return (
     <BrowserRouter>
@@ -77,6 +78,8 @@ const App = () => {
           <Route path="/kamlesh-profile" element={<KamleshTalentProfile />} />
           <Route path="/demo/prashant-profile" element={<PrashantTalentProfile />} />
           <Route path="/prashant-profile" element={<PrashantTalentProfile />} />
+          <Route path="/demo/nitish-profile" element={<NitishTalentProfile />} />
+          <Route path="/nitish-profile" element={<NitishTalentProfile />} />
 
           {/* Start Interview Route */}
           <Route
