@@ -29,15 +29,15 @@ const role = {
 };
 
 const recommendation = {
-  verdict: "Strong Fit",
-  confidence: 80,
+  verdict: "Good Fit",
+  confidence: 72,
   bullets: [
-    "Strongest resume signal in this batch. 4/4 must-haves at strong/high confidence. 5/5 should-haves met — the only candidate in this batch to clear all five, including real-time/messaging.",
-    "Stream Chat SDK in production at 24/7 Software is a direct hit on Baller Corp's in-app messaging and live feature layer. WebSockets listed in skills. Real-time experience is not theoretical — 1,000+ concurrent sessions in production.",
-    "Native Platform Channels in production — built a custom Flutter plugin for native media handling (photo, video, audio, documents) and integrated Media3 ExoPlayer via Method Channels at Infimatrix. Shipped, not conceptual.",
-    "Performance work is metric-backed: 40% reduction in debugging time (Datadog APM), 25% app performance improvement, 30% crash reduction, 60% bug report decrease. Datadog instrumentation is senior-level operational thinking.",
-    "Salary expectation ₹18L–₹19L (~$21.6K–$22.9K) is below client budget floor — strong budget position for Baller Corp with headroom to offer.",
-    "Layer 3 (live coding + screening interview) pending. Assessment above is L1+L2 only. High confidence at this stage; live coding will confirm current BLoC production fluency.",
+    "Stream Chat SDK and native method channels both confirmed in L3 — production experience is real. Video SDK integrated via Flutter method channels, Android & iOS method channel experience noted by interviewer. Not embellished.",
+    "L3 debugging flag: during live coding, a type error wasn't caught, root cause couldn't be identified from the error message, and documentation navigation for the correct parameter was slow. Specific and callable — implementation fluency is present, debugging self-sufficiency under pressure is not.",
+    "Platform breadth confirmed across iOS, Android, Web — strongest multi-platform signal in this batch. Datadog, Stream Chat SDK, Firebase, Amplify GraphQL all verified in interview. Resume understated what she's worked with.",
+    "Amplify GraphQL confirmed in interview but not on resume — additional backend integration capability. Mentoring 2 interns signals senior contributor status beyond IC coding.",
+    "Salary expectation ₹18L–₹19L (~$21.6K–$22.9K) remains below client budget floor. Financial fit is unchanged and strong.",
+    "For a remote async team, debugging self-sufficiency matters — getting stuck on type errors without being able to self-unblock from error messages is a real day-to-day risk. Manageable with team support, cannot be assumed away.",
   ],
 };
 
@@ -47,11 +47,17 @@ const musts = [
     skill: "Flutter / Dart",
     passed: true,
     resume: { sections: ["Skills", "Experience", "Summary"], signal: "strong" },
+    liveCoding: {
+      status: "moderate",
+      proficiency: "Intermediate",
+      detail: "Flutter project structure and widget scaffolding correct. Type error occurred during implementation — candidate couldn't identify root cause from error output.",
+      evidence: "Had trouble with documentation navigation to determine correct parameter. Implementation pattern knowledge present; debugging fluency gap surfaced.",
+    },
     github: {
       active: true,
       proficiency: "Advanced",
-      detail: "37 public repos, active into Apr 2025. Flutter/Dart repos: taza_khabar_app (Feb 2025), Car-Booking-App (Flutter+Dart+Provider+Dio), Shopping_App. 5 published production apps across Android, iOS, Web.",
-      evidence: "Production work in private employer repos — consistent with rest of batch.",
+      detail: "37 public repos, active into Apr 2025. taza_khabar_app (Feb 2025), Car-Booking-App (Flutter+Dart+Provider+Dio), Shopping_App. 5 published production apps across Android, iOS, Web.",
+      evidence: "Production work in private employer repos.",
     },
     confidence: "high",
   },
@@ -59,11 +65,17 @@ const musts = [
     skill: "BLoC State Management",
     passed: true,
     resume: { sections: ["Skills", "Experience"], signal: "strong" },
+    liveCoding: {
+      status: "moderate",
+      proficiency: "Intermediate",
+      detail: "BLoC event/state scaffolding set up correctly. Hit a type error during event emission wiring — couldn't diagnose from error message.",
+      evidence: "Architecture structure was in place before the debugging wall. BLoC pattern understanding is present; Dart type system fluency under pressure is the gap.",
+    },
     github: {
       active: true,
       proficiency: "Intermediate",
-      detail: "trading_app_dashboard (3★): 'demonstrate skills in bloc by making Trading app dashboard'. login_with_bloc: 'demonstrate skills in bloc pattern state management flutter'. Both explicitly BLoC.",
-      evidence: "Production BLoC ownership at Infimatrix (DorPlay from scratch) and 24/7 Software (state bugs -20%). Public repos confirm pattern familiarity.",
+      detail: "trading_app_dashboard (3★): explicit BLoC demo. login_with_bloc: 'demonstrate skills in bloc pattern state management flutter'. Both BLoC-specific repos.",
+      evidence: "Production BLoC ownership at Infimatrix (DorPlay from scratch) and 24/7 Software (state bugs -20%).",
     },
     confidence: "high",
   },
@@ -71,11 +83,12 @@ const musts = [
     skill: "REST API Integration",
     passed: true,
     resume: { sections: ["Skills", "Experience"], signal: "strong" },
+    liveCoding: { status: "n/a", detail: "Not the focus of the coding prompt. Amplify GraphQL confirmed in interview." },
     github: {
       active: true,
       proficiency: "Intermediate",
-      detail: "Car-Booking-App uses Dio. Shopping App integrates REST API with GridView. Postman in DevOps tools. Stream Chat + AWS Amplify API integrations in production.",
-      evidence: "Multiple production integrations across 3 companies. Backend API creation at 24/7 Software.",
+      detail: "Car-Booking-App uses Dio. Shopping App integrates REST API. Stream Chat + AWS Amplify in production.",
+      evidence: "Multiple production integrations across 3 companies.",
     },
     confidence: "high",
   },
@@ -83,11 +96,12 @@ const musts = [
     skill: "Git & Daily PR Workflow",
     passed: true,
     resume: { sections: ["Skills", "Experience"], signal: "moderate" },
+    liveCoding: { status: "n/a", detail: "Assessed via interview." },
     github: {
       active: true,
       proficiency: "Intermediate",
-      detail: "37 public repos, consistent commit cadence. Azure DevOps + Git CI/CD at Sunstone. Bitbucket at Infimatrix. Git + Jira in current skills.",
-      evidence: "Active into Apr 2025. Multiple team environments with version control confirmed.",
+      detail: "37 public repos, consistent cadence. Azure DevOps + Git CI/CD at Sunstone. Bitbucket at Infimatrix.",
+      evidence: "Active into Apr 2025. Multiple team environments.",
     },
     confidence: "medium",
   },
@@ -99,48 +113,80 @@ const shouldHaves = [
     skill: "Social Media / Marketplace Features",
     met: true,
     level: "Beginner",
-    note: "Shopping App (cart, checkout), Communicator App (internal communication and messaging platform), Sunstone engagement features (quizzes, competitions, leaderboards, 50K+ users). No sports-specific social feed. Ramp expected on Baller Corp's live commerce and social layer.",
+    note: "Shopping App (cart, checkout), Communicator App (internal messaging platform), Sunstone engagement features (quizzes, competitions, leaderboards, 50K+ users). No sports-specific social feed. Ramp expected on Baller Corp's live commerce and social layer.",
     risk: "medium",
   },
   {
     skill: "App Store Publishing (iOS + Android)",
     met: true,
     level: "Advanced",
-    note: "5 published apps explicitly listed: Checkpoint, Communicator, DorTV, DorPlay, Sunstone. Cross-platform (Android, iOS, Web) confirmed across 3 companies. CI/CD to stores via Firebase distribution and Azure DevOps.",
+    note: "5 published apps: Checkpoint, Communicator, DorTV, DorPlay, Sunstone. iOS + Android + Web confirmed across 3 companies and verified in L3. CI/CD to stores via Firebase distribution and Azure DevOps.",
     risk: "low",
   },
   {
     skill: "Performance Optimization & Memory Mgmt",
     met: true,
     level: "Advanced",
-    note: "40% reduction in production debugging time (Datadog APM + crash tracking). 25% app performance improvement via modular architecture and optimized widget rebuilds. 30% crash reduction. 60% bug report decrease via unit testing. Most quantified performance record in this batch.",
+    note: "40% reduction in production debugging time (Datadog APM — confirmed in L3). 25% app performance improvement. 30% crash reduction. 60% bug report decrease via unit testing. Most quantified performance record in this batch.",
     risk: "low",
   },
   {
     skill: "Firebase",
     met: true,
     level: "Intermediate",
-    note: "Firebase auth + Firestore + FCM in projects. Firebase distribution for CI/CD at Sunstone. Not primary integration at current role (AWS Amplify used instead) — some recency gap possible.",
+    note: "Firebase confirmed in L3 interview alongside Datadog, Stream Chat SDK, Amplify. Firebase auth + Firestore + FCM in projects. Firebase distribution for CI/CD at Sunstone.",
     risk: "low",
   },
   {
     skill: "Real-time / Messaging (GetStream, WebSocket)",
     met: true,
     level: "Advanced",
-    note: "Stream Chat SDK in production at 24/7 Software — real-time translation, multilingual messaging. WebSockets listed in Backend Integration skills. Real-time location tracking via AWS Amplify (1,000+ concurrent sessions). Direct match for Baller Corp's live feature layer.",
+    note: "Stream Chat SDK confirmed in L3 interview — production at 24/7 Software. Real-time translation, multilingual messaging. WebSockets in skills. Real-time location tracking via AWS Amplify (1,000+ concurrent sessions). Direct match for Baller Corp's live feature layer.",
     risk: "low",
   },
 ];
 
 // ─── BONUS SKILLS ───
 const extras = [
-  { skill: "CI/CD", found: true, evidence: "Azure DevOps + Git → Firebase distribution pipeline at Sunstone. CD/CI listed in DevOps tools. Automated builds and deployments in production at multiple companies." },
-  { skill: "Clean Architecture", found: true, evidence: "DorPlay built from scratch using Clean Architecture + BLoC at Infimatrix. 'Clean Architecture, MVVM, OOP, SOLID Principles' in skills. Confirmed team-wide pattern." },
-  { skill: "Native Platform Channels", found: true, evidence: "Custom Flutter plugin for native media handling (photo, video, audio, documents) at 24/7 Software. Media3 ExoPlayer via Method Channels at Infimatrix. Both shipped in production." },
-  { skill: "Stream Chat SDK", found: true, evidence: "Stream Chat SDK with real-time translation integration at 24/7 Software. Enhanced multilingual communication in production. Direct experience with the SDK relevant to Baller Corp's messaging layer." },
-  { skill: "Payment Gateways", found: false, evidence: "Shopping App has cart and checkout, but no payment gateway named (no Razorpay, Stripe, or gateway SDK confirmed)." },
-  { skill: "Fintech Domain", found: false, evidence: "No fintech products, virtual cards, or financial platform work detected." },
-  { skill: "Google Maps / Geolocation", found: false, evidence: "Real-time location tracking confirmed via AWS Amplify — location awareness present, but Google Maps SDK not mentioned." },
+  { skill: "CI/CD", found: true, evidence: "Azure DevOps + Git → Firebase distribution pipeline at Sunstone. CD/CI in DevOps tools. Automated builds and deployments in production at multiple companies." },
+  { skill: "Clean Architecture", found: true, evidence: "DorPlay built from scratch using Clean Architecture + BLoC at Infimatrix. 'Clean Architecture, MVVM, OOP, SOLID Principles' in skills." },
+  { skill: "Native Platform Channels", found: true, evidence: "Android & iOS method channel experience confirmed in L3 interview. Video SDK integrated through Flutter method channels at 24/7 Software. Custom media plugin at current role. Production-verified." },
+  { skill: "Stream Chat SDK", found: true, evidence: "Stream Chat SDK confirmed in L3 interview — production at 24/7 Software. Real-time translation integration. Direct experience with the SDK relevant to Baller Corp's messaging layer." },
+  { skill: "Payment Gateways", found: false, evidence: "Shopping App has cart and checkout but no payment gateway named." },
+  { skill: "Fintech Domain", found: false, evidence: "Not detected in resume, GitHub, or L3 interview." },
+  { skill: "Google Maps / Geolocation", found: false, evidence: "Real-time location tracking via AWS Amplify — location awareness present, but Google Maps SDK not confirmed." },
+];
+
+// ─── LIVE CODING ───
+const codingPrompts = [
+  {
+    id: 1,
+    title: "Employee Search with BLoC",
+    skill: "Flutter / BLoC",
+    tier: "Must-Have",
+    prompt: "Build a search feature using BLoC. Search box emits events to a BLoC which filters results from a mock service. Show loading and loaded states. No UI polish required.",
+    time: "~40 min",
+    pastes: "Some",
+    proficiency: "Intermediate",
+    verdict: "BLoC event/state scaffolding and Flutter widget structure were set up correctly — architectural pattern knowledge is present. Hit a type error during implementation and could not identify the root cause from the Dart error message. Attempted to reference documentation/examples to find the correct parameter, but had difficulty determining which parameter to pass. The structure was right; execution stalled on a Dart type system error.",
+    flags: [
+      "Type error not caught — passed wrong type but did not catch the mismatch before hitting the error.",
+      "Couldn't identify issue from error message — when params were passed incorrectly, couldn't diagnose root cause from Flutter/Dart error output. Debugging self-sufficiency gap.",
+      "Trouble with documentation navigation — when referencing examples/tutorials, had difficulty identifying which parameter to use. Slows down independent unblocking in remote async work.",
+    ],
+  },
+];
+
+// ─── INTERVIEW ───
+const interviewScores = { "Tech Depth": 7.5, "Domain": 7.0, "Comms": 7.5, "Problem Solving": 6.5, "Culture Fit": 7.5 };
+
+const findings = [
+  "Stream Chat SDK, Datadog, Firebase, and Video SDK via Flutter method channels all confirmed in L3 — the resume was accurate and the production SDK breadth is real. Third-party integration depth is among the highest in this batch.",
+  "Android & iOS method channel experience confirmed by interviewer. Video SDK integrated through Flutter method channels at 24/7 Software. Native platform channel work is production-verified, not conceptual — directly relevant to Baller Corp's native feature layer.",
+  "Debugging gap is the primary L3 flag: type error not caught during coding, couldn't identify root cause from Dart error message, had trouble navigating documentation for the correct parameter. This is a specific, bounded weakness — not a pattern misunderstanding. Manageable with team pair review, not manageable in fully async solo work.",
+  "Amplify GraphQL confirmed in interview — not documented on resume. Additional backend integration capability that understates the overall API experience.",
+  "Mentoring 2 interns at 24/7 Software — confirms senior contributor status with team responsibility, not just individual coding output.",
+  "iOS, Android, Web platform breadth confirmed across all three layers. Strongest multi-platform profile in this batch. Baller Corp's cross-platform requirements are covered without ramp.",
 ];
 
 // ─── EDUCATION ───
@@ -151,7 +197,7 @@ const edu = {
   score: "Not listed",
   location: "Pune, India",
   comparable: "Bachelor's degree (US) / BA (UK)",
-  relevance: "Non-CS degree, offset by Masai School Full Stack Android Development Course (Apr 2021–Jan 2022, Bangalore). Entered Flutter career at Sunstone Feb 2022 — career trajectory is developer-first.",
+  relevance: "Non-CS degree, offset by Masai School Full Stack Android Development Course (Apr 2021–Jan 2022). Entered Flutter career at Sunstone Feb 2022 — career trajectory is developer-first.",
   course: "Masai School — Full Stack Android Dev (Apr 2021–Jan 2022)",
 };
 
@@ -200,16 +246,10 @@ function ProfileTab({ mobile }) {
   return (
     <div style={{ maxWidth: 840, margin: "0 auto", fontFamily: sans, color: c.g[900], background: "#fff", fontSize: 13, padding: mobile ? "12px 16px 20px" : "14px 20px 20px" }}>
 
-      {/* LAYER 3 PENDING BANNER */}
-      <div style={{ background: c.amber.bg, border: `1px solid ${c.amber.brd}`, borderRadius: 8, padding: mobile ? "8px 12px" : "7px 14px", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 14 }}>⏳</span>
-        <span style={{ fontSize: mobile ? 11 : 11.5, color: c.amber.txt }}><strong>Layer 3 Pending</strong> — Live coding and screening interview not yet conducted. This assessment is based on resume (L1) and GitHub (L2) only. Confidence score reflects L1+L2 signal strength.</span>
-      </div>
-
       {/* RUBRIC BANNER */}
       <div style={{ background: c.teal.bg, border: `1px solid ${c.teal.brd}`, borderRadius: 8, padding: mobile ? "8px 12px" : "7px 14px", marginBottom: 12, display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "flex-start" : "center", gap: mobile ? 4 : 0 }}>
         <span style={{ fontSize: mobile ? 11 : 12, color: c.teal.txt }}>Scored against: <strong>{role.company} — {role.title}</strong> · {role.team}</span>
-        <span style={{ fontSize: 10, color: c.g[400] }}>{musts.length} musts · {extras.length} extras · Layer 1 + Layer 2 verified</span>
+        <span style={{ fontSize: 10, color: c.g[400] }}>{musts.length} musts · {extras.length} extras · Layer 1 + Layer 2 + Layer 3 verified</span>
       </div>
 
       {/* CANDIDATE HEADER */}
@@ -223,15 +263,15 @@ function ProfileTab({ mobile }) {
             <Pill color={c.blue.txt} bg={c.blue.bg}>Notice: {candidate.noticePeriod}</Pill>
           </div>
         </div>
-        <div style={{ background: c.teal.bg, border: `1px solid ${c.teal.brd}`, borderRadius: 8, padding: "8px 16px", textAlign: "center" }}>
-          <div style={{ fontFamily: mono, fontSize: 9, fontWeight: 700, color: c.teal.txt, letterSpacing: "0.05em" }}>RUBRIC FIT</div>
-          <div style={{ fontFamily: mono, fontSize: 20, fontWeight: 800, color: c.teal.txt, lineHeight: 1.2, marginTop: 2 }}>Strong Fit</div>
-          <div style={{ fontSize: 10, color: c.teal.txt, opacity: 0.7, marginTop: 1 }}>80% confidence · L1+L2</div>
+        <div style={{ background: c.blue.bg, border: `1px solid ${c.blue.brd}`, borderRadius: 8, padding: "8px 16px", textAlign: "center" }}>
+          <div style={{ fontFamily: mono, fontSize: 9, fontWeight: 700, color: c.blue.txt, letterSpacing: "0.05em" }}>RUBRIC FIT</div>
+          <div style={{ fontFamily: mono, fontSize: 20, fontWeight: 800, color: c.blue.txt, lineHeight: 1.2, marginTop: 2 }}>Good Fit</div>
+          <div style={{ fontSize: 10, color: c.blue.txt, opacity: 0.7, marginTop: 1 }}>72% confidence</div>
         </div>
       </div>
 
       {/* RECOMMENDATION */}
-      <Section icon="✅" title="RECOMMENDATION" badge={`${recommendation.verdict} · ${recommendation.confidence}% Confidence (L1+L2)`} badgeColor={c.teal} />
+      <Section icon="✅" title="RECOMMENDATION" badge={`${recommendation.verdict} · ${recommendation.confidence}% Confidence`} badgeColor={c.blue} />
       <ul style={{ margin: "0 0 14px", paddingLeft: 20, listStyleType: "disc" }}>
         {recommendation.bullets.map((b, i) => (
           <li key={i} style={{ fontSize: mobile ? 12.5 : 12, lineHeight: 1.65, color: c.g[700], marginBottom: 6, paddingLeft: 2 }}>{b}</li>
@@ -251,21 +291,22 @@ function ProfileTab({ mobile }) {
             </div>
             <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 6 }}>
               {m.resume.sections.length > 0 && <Pill color={m.resume.signal === "strong" ? c.green.txt : c.amber.txt} bg={m.resume.signal === "strong" ? c.green.bg : c.amber.bg}>Resume: {m.resume.signal === "strong" ? "Strong" : "Moderate"}</Pill>}
-              {m.github?.active && m.github?.proficiency && <Pill color={profC[m.github.proficiency]?.txt} bg={profC[m.github.proficiency]?.bg}>GitHub: {m.github.proficiency}</Pill>}
+              {m.liveCoding?.proficiency && m.liveCoding.status !== "n/a" && <Pill color={profC[m.liveCoding.proficiency]?.txt} bg={profC[m.liveCoding.proficiency]?.bg}>Code: {m.liveCoding.proficiency}</Pill>}
             </div>
-            {m.github?.detail && <div style={{ fontSize: 11, color: c.g[500], lineHeight: 1.45, marginBottom: 4 }}>{m.github.detail}</div>}
-            {m.github?.evidence && <div style={{ fontSize: 10.5, color: c.g[700], background: c.g[100], borderRadius: 4, padding: "4px 8px", marginTop: 4 }}>{m.github.evidence}</div>}
+            {m.liveCoding?.status !== "n/a" && m.liveCoding?.detail && <div style={{ fontSize: 11, color: c.g[500], lineHeight: 1.45, marginBottom: 4 }}>{m.liveCoding.detail}</div>}
+            {m.liveCoding?.status === "n/a" && <div style={{ fontSize: 11, color: c.g[400], fontStyle: "italic" }}>{m.liveCoding.detail}</div>}
+            {m.liveCoding?.evidence && m.liveCoding.status !== "n/a" && <div style={{ fontSize: 10.5, color: c.g[700], background: c.g[100], borderRadius: 4, padding: "4px 8px", marginTop: 4 }}>{m.liveCoding.evidence}</div>}
           </div>
         ))
       ) : (
         <>
-          <div style={{ display: "grid", gridTemplateColumns: "150px 90px 1fr 70px", padding: "5px 8px", background: c.g[100], borderRadius: "6px 6px 0 0" }}>
-            {["MUST-HAVE", "RESUME", "GITHUB", "CONF."].map(h => (
+          <div style={{ display: "grid", gridTemplateColumns: "150px 90px 1fr 1fr 70px", padding: "5px 8px", background: c.g[100], borderRadius: "6px 6px 0 0" }}>
+            {["MUST-HAVE", "RESUME", "LIVE CODING", "GITHUB", "CONF."].map(h => (
               <span key={h} style={{ fontSize: 9.5, fontFamily: mono, fontWeight: 700, color: c.g[500] }}>{h}</span>
             ))}
           </div>
           {musts.map((m, i) => (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "150px 90px 1fr 70px", padding: "7px 8px", background: i % 2 ? c.g[50] : "#fff", borderBottom: `1px solid ${c.g[100]}` }}>
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "150px 90px 1fr 1fr 70px", padding: "7px 8px", background: i % 2 ? c.g[50] : "#fff", borderBottom: `1px solid ${c.g[100]}` }}>
               <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
                 <Dot on={m.passed} />
                 <span style={{ fontSize: 11.5, fontWeight: 700 }}>{m.skill}</span>
@@ -279,11 +320,23 @@ function ProfileTab({ mobile }) {
                 ) : <span style={{ fontSize: 10, color: c.g[400] }}>—</span>}
               </div>
               <div>
-                {m.github?.active ? (
+                {m.liveCoding?.status === "n/a" ? (
+                  <span style={{ fontSize: 10, color: c.g[400], fontStyle: "italic" }}>{m.liveCoding.detail}</span>
+                ) : (
                   <>
                     <div style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 2 }}>
-                      {m.github.proficiency && <Pill color={profC[m.github.proficiency]?.txt} bg={profC[m.github.proficiency]?.bg}>{m.github.proficiency}</Pill>}
+                      <span style={{ fontSize: 10, fontWeight: 700, color: m.liveCoding?.status === "strong" ? c.green.txt : c.amber.txt }}>{m.liveCoding?.status === "strong" ? "✓" : "~"}</span>
+                      {m.liveCoding?.proficiency && <Pill color={profC[m.liveCoding.proficiency]?.txt} bg={profC[m.liveCoding.proficiency]?.bg}>{m.liveCoding.proficiency}</Pill>}
                     </div>
+                    <div style={{ fontSize: 10, color: c.g[700], lineHeight: 1.35 }}>{m.liveCoding?.detail}</div>
+                    {m.liveCoding?.evidence && <div style={{ fontSize: 9, color: c.g[400], fontStyle: "italic", marginTop: 1 }}>{m.liveCoding.evidence}</div>}
+                  </>
+                )}
+              </div>
+              <div>
+                {m.github?.active ? (
+                  <>
+                    <div style={{ marginBottom: 2 }}><Pill color={profC[m.github.proficiency]?.txt} bg={profC[m.github.proficiency]?.bg}>{m.github.proficiency}</Pill></div>
                     <div style={{ fontSize: 10, color: c.g[700], lineHeight: 1.35 }}>{m.github.detail}</div>
                     {m.github.evidence && <div style={{ fontSize: 9, color: c.g[400], fontStyle: "italic", marginTop: 1 }}>{m.github.evidence}</div>}
                   </>
@@ -295,12 +348,12 @@ function ProfileTab({ mobile }) {
         </>
       )}
       <div style={{ background: c.green.bg, border: `1px solid ${c.green.brd}`, borderRadius: 6, padding: "6px 10px", marginTop: 6, fontSize: 10, color: c.green.txt }}>
-        <strong>GitHub — Prachip9767:</strong> 37 public repos, active into April 2025. BLoC explicitly demonstrated in trading_app_dashboard and login_with_bloc. Multiple Flutter/Dart projects visible. Most active GitHub in this batch.
+        <strong>GitHub — Prachip9767:</strong> 37 public repos, active into April 2025. BLoC explicitly demonstrated in trading_app_dashboard and login_with_bloc. Most active GitHub in this batch.
       </div>
       <div style={{ height: mobile ? 20 : 14 }} />
 
       {/* SHOULD-HAVES */}
-      <Section icon="🟡" title="SHOULD-HAVE ASSESSMENT" badge={`${shouldHaves.filter(s => s.met).length}/${shouldHaves.length} MET`} badgeColor={c.teal} />
+      <Section icon="🟡" title="SHOULD-HAVE ASSESSMENT" badge={`${shouldHaves.filter(s => s.met).length}/${shouldHaves.length} MET`} badgeColor={c.blue} />
       <div style={{ fontSize: mobile ? 10.5 : 9.5, color: c.g[400], fontFamily: mono, margin: "-4px 0 8px" }}>Strong preference. Gaps flagged with risk level.</div>
       {shouldHaves.map((s, i) => (
         <div key={i} style={{ display: "flex", gap: 10, padding: "6px 8px", background: i % 2 ? c.g[50] : "#fff", borderBottom: `1px solid ${c.g[100]}`, alignItems: "flex-start" }}>
@@ -318,7 +371,7 @@ function ProfileTab({ mobile }) {
       <div style={{ height: mobile ? 20 : 14 }} />
 
       {/* BONUS SKILLS */}
-      <Section icon="⭐" title="BONUS SKILLS DETECTED" badge={`${extras.filter(e => e.found).length}/${extras.length} FOUND`} badgeColor={c.teal} />
+      <Section icon="⭐" title="BONUS SKILLS DETECTED" badge={`${extras.filter(e => e.found).length}/${extras.length} FOUND`} badgeColor={c.blue} />
       <div style={{ marginBottom: mobile ? 20 : 14 }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
           {extras.map((e, i) => (
@@ -340,6 +393,53 @@ function ProfileTab({ mobile }) {
           )}
         </div>
       </div>
+
+      {/* LIVE CODING */}
+      <Section icon="⟨/⟩" title="LIVE CODING EVIDENCE" badge="1 prompt · ~40 min" badgeColor={c.teal} />
+      <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[400], margin: "-4px 0 8px" }}>Role-specific BLoC architecture prompt.</div>
+      {codingPrompts.map(p => (
+        <div key={p.id} style={{ background: c.g[50], border: `1px solid ${c.g[200]}`, borderRadius: 8, padding: mobile ? "12px 14px" : "8px 14px", marginBottom: 6 }}>
+          <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "flex-start" : "center", gap: mobile ? 6 : 0, marginBottom: 6 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <span style={{ fontFamily: mono, fontWeight: 700, fontSize: mobile ? 12 : 11, color: c.g[900] }}>Prompt {p.id}: {p.title}</span>
+              <Pill color={c.teal.txt} bg={c.teal.bg}>{p.skill}</Pill>
+              <Pill color={profC[p.proficiency].txt} bg={profC[p.proficiency].bg}>{p.proficiency}</Pill>
+            </div>
+            <span style={{ fontSize: mobile ? 10 : 9, fontFamily: mono, color: c.g[400] }}>{p.time} · {p.pastes} doc lookups</span>
+          </div>
+          <div style={{ fontSize: 11, color: c.g[400], marginBottom: 5, fontStyle: "italic" }}>"{p.prompt}"</div>
+          <div style={{ fontSize: mobile ? 12 : 11.5, color: c.g[700], lineHeight: 1.55 }}>{p.verdict}</div>
+          {p.flags.map((f, j) => (
+            <div key={j} style={{ fontSize: mobile ? 11 : 10, color: c.amber.txt, background: c.amber.bg, padding: "4px 10px", borderRadius: 4, marginTop: 6 }}>⚠ {f}</div>
+          ))}
+        </div>
+      ))}
+      <div style={{ height: mobile ? 20 : 14 }} />
+
+      {/* INTERVIEW */}
+      <Section icon="🎙" title="SCREENING INTERVIEW" badge="GOOD FIT" badgeColor={c.blue} />
+      <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[400], margin: "-4px 0 10px" }}>Transcript verified</div>
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "repeat(3, 1fr)" : "repeat(5, 1fr)", gap: mobile ? 10 : 6, marginBottom: mobile ? 14 : 10, background: mobile ? c.g[50] : "transparent", borderRadius: 8, padding: mobile ? "12px 8px" : 0 }}>
+        {Object.entries(interviewScores).map(([area, val]) => {
+          const label = val >= 9 ? "Excellent" : val >= 8 ? "Strong" : val >= 7 ? "Good" : val >= 6 ? "Fair" : "Weak";
+          const color = val >= 8 ? c.teal.acc : val >= 7 ? c.blue.txt : val >= 6 ? c.amber.txt : c.red.txt;
+          return (
+            <div key={area} style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 10, color: c.g[500], marginBottom: 1 }}>{area}</div>
+              <div style={{ fontFamily: mono, fontSize: 12, fontWeight: 800, color }}>{label}</div>
+              <div style={{ fontFamily: mono, fontSize: 10, color: c.g[400] }}>{val}/10</div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: c.g[500], marginBottom: 5 }}>KEY FINDINGS</div>
+      {findings.map((f, i) => (
+        <div key={i} style={{ display: "flex", gap: 8, padding: "4px 0", borderBottom: `1px solid ${c.g[100]}` }}>
+          <span style={{ fontFamily: mono, fontSize: 10, color: c.g[300], minWidth: 16 }}>{String(i + 1).padStart(2, "0")}</span>
+          <span style={{ fontSize: 11.5, color: c.g[700], lineHeight: 1.5 }}>{f}</span>
+        </div>
+      ))}
+      <div style={{ height: mobile ? 20 : 14 }} />
 
       {/* EDUCATION + COMPENSATION */}
       <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16 }}>
@@ -384,12 +484,9 @@ function ProfileTab({ mobile }) {
               <span style={{ fontFamily: mono, fontSize: 10.5, fontWeight: 700 }}>$25,000 – $30,000 / yr</span>
             </div>
             <div style={{ borderTop: `1px solid ${c.teal.brd}`, paddingTop: 4, display: "flex", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 11.5, fontWeight: 700, color: c.teal.txt }}>Expectation vs budget</span>
-              <span style={{ fontFamily: mono, fontSize: 13, fontWeight: 800, color: c.teal.txt }}>$3K–$4K below floor</span>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: c.teal.txt }}>Likely accepts at</span>
+              <span style={{ fontFamily: mono, fontSize: 16, fontWeight: 800, color: c.teal.txt }}>~$22K</span>
             </div>
-          </div>
-          <div style={{ background: c.green.bg, border: `1px solid ${c.green.brd}`, borderRadius: 6, padding: "5px 10px", marginTop: 6, fontSize: 10.5, color: c.green.txt }}>
-            Strong budget position. Client can offer at low end of range or use headroom to close quickly.
           </div>
         </div>
       </div>
@@ -415,7 +512,7 @@ export default function PrachiTalentProfile() {
         </div>
         {!mobile && (
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            {[["Resume", true], ["GitHub", true], ["Live Code", false], ["Interview", false]].map(([label, on]) => (
+            {[["Resume", true], ["GitHub", true], ["Live Code", true], ["Interview", true]].map(([label, on]) => (
               <div key={label} style={{ display: "flex", alignItems: "center", gap: 3 }}>
                 <Dot on={on} />
                 <span style={{ fontSize: 9, fontFamily: mono, color: on ? c.g[700] : c.g[400] }}>{label}</span>
