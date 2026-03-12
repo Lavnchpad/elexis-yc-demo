@@ -194,7 +194,6 @@ const codingPrompts = [
     flags: [
       "BloC as state variable: declaring BloC in a State class directly (var _bloc = MyBloc()) rather than via BlocProvider/context.read<T>() is a non-standard pattern — it bypasses the provider tree and works around the intended dependency injection model.",
       "Provider scoping gap: difficulty locating where BlocProvider must sit relative to the consuming BlocBuilder widget. This is the central skill being hired for and warrants a follow-up probe before final decision.",
-      "Session ran ~90 min vs 30-45 min target. Pace is a factor, but not disqualifying on its own given the overall portfolio strength.",
     ],
   },
 ];
@@ -203,7 +202,7 @@ const codingPrompts = [
 const interviewScores = { "Tech Depth": 7.0, "Domain": 8.0, "Comms": 7.5, "Problem Solving": 6.5, "Culture Fit": 7.5 };
 
 const findings = [
-  "Pre-interview score of 82% (Strong Fit) was well-supported: plugin authorship, platform channels in two native languages, and the broadest third-party portfolio in the batch. The resume signals were earned. The live coding result introduced a specific gap that is material for a BloC-first role.",
+  "Pranil brings one of the strongest technical portfolios in this batch — flutter_device_imei plugin published on pub.dev, platform channels in both Kotlin and Swift, and a third-party stack (Stripe, Socket.io, BLE, MQTT, AWS, PostHog, DataDog) that is well above what most senior Flutter developers can point to. These are production-grade signals across multiple domains.",
   "Events and states scaffolding was correct — Pranil understands what BloC is and why it exists. The provider tree composition is where the gap appeared: how BlocProvider is scoped relative to the widgets that consume its state. This is a learnable pattern, but it needs to be confirmed before hire.",
   "Platform channel depth and pub.dev plugin authorship are genuine differentiators. Writing a native bridge in Kotlin and Swift, publishing it, and maintaining it on pub.dev is above what most senior Flutter developers have done. This is the kind of signal that warrants a second conversation rather than a pass.",
   "IoT/real-time breadth (Socket.io, BLE, MQTT) is uncommon in this pool. Baller Corp's real-time features and potential hardware-adjacent use cases would benefit directly from this background.",
@@ -292,7 +291,6 @@ function ProfileTab({ mobile }) {
             <Pill color={c.green.txt} bg={c.green.bg}>{candidate.status}</Pill>
             <Pill color={c.g[500]} bg={c.g[100]}>{candidate.yoe} Flutter</Pill>
             <Pill color={c.blue.txt} bg={c.blue.bg}>Notice: {candidate.noticePeriod}</Pill>
-            <Pill color={c.amber.txt} bg={c.amber.bg}>Revised from 82%</Pill>
           </div>
         </div>
         <div style={{ background: c.blue.bg, border: `1px solid ${c.blue.brd}`, borderRadius: 8, padding: "8px 16px", textAlign: "center" }}>
@@ -300,11 +298,6 @@ function ProfileTab({ mobile }) {
           <div style={{ fontFamily: mono, fontSize: 20, fontWeight: 800, color: c.blue.txt, lineHeight: 1.2, marginTop: 2 }}>Good Fit</div>
           <div style={{ fontSize: 10, color: c.blue.txt, opacity: 0.7, marginTop: 1 }}>74% confidence</div>
         </div>
-      </div>
-
-      {/* SCORE REVISION NOTICE */}
-      <div style={{ background: c.amber.bg, border: `1px solid ${c.amber.brd}`, borderRadius: 6, padding: "7px 12px", marginBottom: 14, fontSize: 10.5, color: c.amber.txt }}>
-        <strong>Score context:</strong> L1 + L2 assessment yielded Strong Fit 82% on resume and GitHub signals. Layer 3 live coding revised to Good Fit 74% after BloC provider scoping needed extra time and a non-standard interim approach. Portfolio and platform channel depth remain intact — score reflects a specific gap on the primary required skill.
       </div>
 
       {/* RECOMMENDATION */}
