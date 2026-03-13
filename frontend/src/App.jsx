@@ -33,6 +33,7 @@ import AmanTalentProfile from './page/demo/AmanTalentProfile';
 import ArticulusQAProfile from './page/demo/ArticulusQAProfile';
 import PranilTalentProfile from './page/demo/PranilTalentProfile';
 import GaurangTalentProfile from './page/demo/GaurangTalentProfile';
+import BalakrishnaTalentProfile from './page/demo/BalakrishnaTalentProfile';
 const App = () => {
   return (
     <BrowserRouter>
@@ -95,6 +96,8 @@ const App = () => {
           <Route path="/pranil-profile" element={<PranilTalentProfile />} />
           <Route path="/demo/gaurang-nodejs-profile" element={<GaurangTalentProfile />} />
           <Route path="/gaurang-nodejs-profile" element={<GaurangTalentProfile />} />
+          <Route path="/demo/balakrishna-nodejs-profile" element={<BalakrishnaTalentProfile />} />
+          <Route path="/balakrishna-nodejs-profile" element={<BalakrishnaTalentProfile />} />
 
           {/* Start Interview Route */}
           <Route
