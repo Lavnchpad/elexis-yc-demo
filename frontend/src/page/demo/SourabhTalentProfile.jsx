@@ -28,7 +28,7 @@ const role = {
 };
 
 const recommendation = {
-  verdict: "Good Fit",
+  verdict: "Strong Fit",
   confidence: 82,
   bullets: [
     "Node.js + TypeScript confirmed across all employers — TypeScript listed as primary programming language, referenced naturally during PR review with correct typing instincts (payload DTOs, return types, entity interfaces). Full-stack capacity (React.js, Next.js alongside Node.js) is additive for the role, not a gap.",
@@ -272,7 +272,7 @@ function ProfileTab({ mobile }) {
         </div>
         <div style={{ background: c.blue.bg, border: `1px solid ${c.blue.brd}`, borderRadius: 8, padding: "8px 16px", textAlign: "center" }}>
           <div style={{ fontFamily: mono, fontSize: 9, fontWeight: 700, color: c.blue.txt, letterSpacing: "0.05em" }}>RUBRIC FIT</div>
-          <div style={{ fontFamily: mono, fontSize: 20, fontWeight: 800, color: c.blue.txt, lineHeight: 1.2, marginTop: 2 }}>Good Fit</div>
+          <div style={{ fontFamily: mono, fontSize: 20, fontWeight: 800, color: c.blue.txt, lineHeight: 1.2, marginTop: 2 }}>Strong Fit</div>
           <div style={{ fontSize: 10, color: c.blue.txt, opacity: 0.7, marginTop: 1 }}>82% confidence</div>
         </div>
       </div>
