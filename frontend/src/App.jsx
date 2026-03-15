@@ -38,6 +38,8 @@ import MohsinTalentProfile from './page/demo/MohsinTalentProfile';
 import MayankTalentProfile from './page/demo/MayankTalentProfile';
 import AbhishekTalentProfile from './page/demo/AbhishekTalentProfile';
 import RuchitTalentProfile from './page/demo/RuchitTalentProfile';
+import DevendraTalentProfile from './page/demo/DevendraTalentProfile';
+import SourabhTalentProfile from './page/demo/SourabhTalentProfile';
 const App = () => {
   return (
     <BrowserRouter>
@@ -110,6 +112,10 @@ const App = () => {
           <Route path="/abhishek-flutter-profile" element={<AbhishekTalentProfile />} />
           <Route path="/demo/ruchit-flutter-profile" element={<RuchitTalentProfile />} />
           <Route path="/ruchit-flutter-profile" element={<RuchitTalentProfile />} />
+          <Route path="/demo/devendra-nodejs-profile" element={<DevendraTalentProfile />} />
+          <Route path="/devendra-nodejs-profile" element={<DevendraTalentProfile />} />
+          <Route path="/demo/sourabh-nodejs-profile" element={<SourabhTalentProfile />} />
+          <Route path="/sourabh-nodejs-profile" element={<SourabhTalentProfile />} />
 
           {/* Start Interview Route */}
           <Route
