@@ -45,42 +45,27 @@ const musts = [
     skill: "Unity Engine + C#",
     passed: true,
     resume: { sections: ["Skills", "Experience"], signal: "strong" },
-    prReview: {
-      status: "confirmed",
-      detail: "MonoBehaviour lifecycle correct (Awake/Start/Update/OnDestroy). Some anti-patterns visible: GameObject.Find in Start (acceptable for mobile, a warning sign in complex VR scenes), no ScriptableObjects for config. Fundamentals solid; architecture maturity is intermediate rather than senior.",
-    },
-    interview: {
-      status: "confirmed",
-      note: "2.5 years Unity, primarily mobile (Unity 2020/2021). 5 shipped titles on Play Store/App Store. C# fundamentals confirmed — delegates, coroutines, generics understood. Not NestJS-level abstraction but a solid mobile Unity foundation.",
-    },
+    prReview: { status: "confirmed" },
+    interview: { status: "confirmed" },
+    summary: "Solid mobile Unity foundation — correct lifecycle, C# fundamentals confirmed. Some anti-patterns (GameObject.Find); architecture maturity is intermediate.",
     confidence: "high",
   },
   {
     skill: "VR/AR SDK Integration",
     passed: null,
     resume: { sections: ["Skills"], signal: "moderate" },
-    prReview: {
-      status: "partial",
-      detail: "Used deprecated Oculus Integration SDK instead of XR Interaction Toolkit — the current standard. Basic OVRGrabbable for grab interaction (deprecated API). Teleportation not implemented. No XRRig or ActionBasedController setup. Shows Oculus SDK awareness but 2-generation behind current VR development practice.",
-    },
-    interview: {
-      status: "partial",
-      note: "8 months VR exposure at Outlier Games, one internal prototype (not shipped to any store or device fleet). Familiar with Quest sideloading via SideQuest but no production deployment. SteamVR and OpenXR mentioned in skills but not demonstrated in work output or review. No understanding of platform-specific build requirements.",
-    },
+    prReview: { status: "partial" },
+    interview: { status: "partial" },
+    summary: "Used deprecated Oculus SDK (not XR Interaction Toolkit). One internal prototype, never shipped. No SteamVR or OpenXR demonstrated.",
     confidence: "medium",
   },
   {
     skill: "3D Math + Performance Optimization",
     passed: null,
     resume: { sections: ["Experience"], signal: "moderate" },
-    prReview: {
-      status: "partial",
-      detail: "Caught obvious Update loop Instantiate issue (prompted by name, but identified correctly once flagged). Did not catch draw call batching opportunity — didn't recognize static vs dynamic batcher implications. Used Euler angles where quaternions were required — did not flag the interpolation issue.",
-    },
-    interview: {
-      status: "partial",
-      note: "Mobile optimization comfortable: texture compression (ETC2/ASTC), atlas packing, overdraw reduction. VR-specific optimization not demonstrated: didn't know 90fps hard requirement for VR comfort (guessed '60fps like mobile'). Unfamiliar with foveal rendering, single-pass instanced rendering, or occlusion culling for standalone VR hardware. These are table-stakes for production VR.",
-    },
+    prReview: { status: "partial" },
+    interview: { status: "partial" },
+    summary: "Mobile optimization present; VR-specific gaps are significant — didn't know 90fps requirement, missed quaternion and draw call issues in review.",
     confidence: "medium",
   },
 ];
@@ -91,56 +76,44 @@ const shouldHaves = [
     skill: "Multiplayer VR / Networking",
     met: false,
     level: "None",
-    note: "No networking experience across 2.5 years. All shipped mobile titles are single-player. No Photon, Mirror, Unity Netcode, or socket experience. This is a complete gap — multiplayer VR is one of the most technically demanding aspects of the role.",
+    note: "No networking experience — all 5 shipped titles are single-player mobile games.",
     risk: "high",
   },
   {
     skill: "Immersive UI/UX Design",
     met: false,
     level: "Developing",
-    note: "Basic world-space canvas UI attempted in the internal VR prototype — one screen, no interaction design. No understanding of VR UI constraints (arm reach, gaze-based focus, depth placement). Mobile UI background is flat; the mental model shift to immersive UI is untested.",
+    note: "One basic world-space canvas UI in internal prototype — no shipped immersive UX design.",
     risk: "high",
   },
   {
     skill: "Cross-platform VR",
     met: false,
     level: "None",
-    note: "Only Quest sideloading via SideQuest. No SteamVR, no OpenXR abstraction layer, no PC VR target. No build matrix or platform-specific feature flag management. Cross-platform VR was listed in skills section without supporting evidence.",
+    note: "Quest sideloading only — no SteamVR, OpenXR, or PC VR demonstrated.",
     risk: "high",
   },
   {
     skill: "Shader + Graphics Programming",
     met: false,
     level: "None",
-    note: "No shader experience. Used off-the-shelf URP lit materials across all mobile projects. Shader Graph not explored. This gap is manageable if role doesn't require custom graphics work — but for a senior VR role with interactive environments, it is a meaningful gap.",
+    note: "No shader experience — off-the-shelf URP materials only across all projects.",
     risk: "medium",
   },
   {
     skill: "CI/CD + Build Pipeline",
     met: true,
     level: "Intermediate",
-    note: "GitHub Actions configured for automated Android/iOS builds at PlayForge. Familiar with build signing, store submission automation, and Unity caching. This is the strongest should-have signal — clean, production CI/CD for mobile. VR-specific builds (APK for Quest, EXE for SteamVR) not demonstrated but the tooling knowledge transfers.",
+    note: "GitHub Actions for automated Android/iOS builds at PlayForge — strongest should-have signal, tooling transfers to VR builds.",
     risk: "low",
   },
   {
     skill: "Shipped VR Title",
     met: false,
     level: "None",
-    note: "No shipped VR title. One internal prototype at Outlier Games — not released to App Lab, not sideloaded to a device fleet, not in any store. Mobile shipping record is strong (5 titles) but VR has a separate quality bar and deployment complexity. This is the highest-signal gap for the senior VR role.",
+    note: "One internal VR prototype, never shipped — no title on App Lab, device fleet, or any store.",
     risk: "high",
   },
-];
-
-// ─── BONUS SKILLS ───
-const extras = [
-  { skill: "GitHub Actions (CI/CD)", found: true, evidence: "GitHub Actions for automated Android/iOS builds at PlayForge. Build signing, caching, store submission. Strongest technical signal in the should-have range." },
-  { skill: "Mobile Optimization", found: true, evidence: "ETC2/ASTC texture compression, sprite atlasing, overdraw reduction for hyper-casual mobile titles. Solid mobile performance background — does not transfer directly to VR but shows optimization awareness." },
-  { skill: "Unity Ads / IAP", found: true, evidence: "In-app purchases and Unity Ads integrated across multiple PlayForge titles. Not relevant to VR role but shows full mobile pipeline ownership." },
-  { skill: "Google Play Games SDK", found: true, evidence: "Leaderboards and achievements via Google Play Games SDK at PlayForge. Platform SDK familiarity that partially prepares for Oculus Platform SDK." },
-  { skill: "XR Interaction Toolkit", found: false, evidence: "Used deprecated Oculus Integration SDK in PR review. XR Interaction Toolkit not demonstrated — it is the current standard for Unity VR development." },
-  { skill: "Photon / Netcode", found: false, evidence: "No networking experience. All 5 shipped titles are single-player mobile games." },
-  { skill: "Shader Graph / HLSL", found: false, evidence: "No shader work across 2.5 years. Off-the-shelf URP materials only." },
-  { skill: "SteamVR / OpenXR", found: false, evidence: "Listed in resume skills section but not demonstrated in work output, PR review, or interview. No PC VR experience confirmed." },
 ];
 
 // ─── PR REVIEW ───
@@ -188,7 +161,8 @@ const edu = {
   institution: "VIT Pune",
   degree: "B.Tech — Information Technology, 2022",
   location: "Pune, India",
-  usEquivalent: "Bachelor of Technology in IT (4-year) — equivalent to a US BS in Computer Science or Information Systems.",
+  nirf: "151–200 band — Engineering (NIRF 2024)",
+  naac: "A Grade",
   relevance: "4-year engineering degree. Standard IT curriculum. Graduated 2022; joined PlayForge Interactive as Junior Unity Developer within 2 months of graduation.",
 };
 
@@ -343,8 +317,7 @@ function ProfileTab({ mobile }) {
               <Pill color={m.resume.signal === "strong" ? c.green.txt : c.amber.txt} bg={m.resume.signal === "strong" ? c.green.bg : c.amber.bg}>Resume: {m.resume.signal === "strong" ? "Strong" : "Moderate"}</Pill>
               <Pill color={m.prReview?.status === "confirmed" ? c.green.txt : c.amber.txt} bg={m.prReview?.status === "confirmed" ? c.green.bg : c.amber.bg}>PR Review: {m.prReview?.status}</Pill>
             </div>
-            {m.prReview?.detail && <div style={{ fontSize: 11, color: c.g[500], lineHeight: 1.45, marginBottom: 4 }}>{m.prReview.detail}</div>}
-            {m.interview?.note && <div style={{ fontSize: 10.5, color: c.g[700], background: c.g[100], borderRadius: 4, padding: "4px 8px", marginTop: 4 }}>{m.interview.note}</div>}
+            {m.summary && <div style={{ fontSize: 11, color: c.g[600], lineHeight: 1.45 }}>{m.summary}</div>}
           </div>
         ))
       ) : (
@@ -365,12 +338,11 @@ function ProfileTab({ mobile }) {
                 <div style={{ fontSize: 9, color: m.resume.signal === "strong" ? c.green.txt : c.amber.txt, marginTop: 1 }}>{m.resume.signal === "strong" ? "Strong" : "Moderate"}</div>
               </div>
               <div>
-                <div style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 3, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap", marginBottom: 4 }}>
                   <Pill color={m.prReview?.status === "confirmed" ? c.green.txt : c.amber.txt} bg={m.prReview?.status === "confirmed" ? c.green.bg : c.amber.bg}>PR: {m.prReview?.status}</Pill>
                   <Pill color={m.interview?.status === "confirmed" ? c.green.txt : c.amber.txt} bg={m.interview?.status === "confirmed" ? c.green.bg : c.amber.bg}>Interview: {m.interview?.status}</Pill>
                 </div>
-                {m.prReview?.detail && <div style={{ fontSize: 10, color: c.g[700], lineHeight: 1.4, marginBottom: 3 }}>{m.prReview.detail}</div>}
-                {m.interview?.note && <div style={{ fontSize: 10, color: c.g[500], fontStyle: "italic", lineHeight: 1.35 }}>{m.interview.note}</div>}
+                {m.summary && <div style={{ fontSize: 10.5, color: c.g[600], lineHeight: 1.45 }}>{m.summary}</div>}
               </div>
               <Pill color={confC[m.confidence].txt} bg={confC[m.confidence].bg}>{confC[m.confidence].label}</Pill>
             </div>
@@ -397,59 +369,25 @@ function ProfileTab({ mobile }) {
       ))}
       <div style={{ height: mobile ? 20 : 14 }} />
 
-      {/* BONUS SKILLS */}
-      <Section icon="⭐" title="BONUS SKILLS DETECTED" badge={`${extras.filter(e => e.found).length}/${extras.length} FOUND`} badgeColor={c.blue} />
-      <div style={{ marginBottom: mobile ? 20 : 14 }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-          {extras.map((e, i) => (
-            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: e.found ? c.green.bg : c.g[50], border: `1px solid ${e.found ? c.green.brd : c.g[200]}`, borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: e.found ? c.green.txt : c.g[400] }}>
-              {e.found ? "✓" : "—"} {e.skill}
-            </span>
-          ))}
-        </div>
-        <div style={{ borderLeft: `2px solid ${c.g[200]}`, paddingLeft: 10 }}>
-          {extras.filter(e => e.found).map((e, i) => (
-            <div key={i} style={{ fontSize: 10, color: c.g[500], lineHeight: 1.45, marginBottom: 4 }}>
-              <span style={{ fontWeight: 700, color: c.g[700] }}>{e.skill}:</span> {e.evidence}
-            </div>
-          ))}
-          {extras.some(e => !e.found) && (
-            <div style={{ fontSize: 10, color: c.g[400], marginTop: 2, fontStyle: "italic" }}>
-              Not detected: {extras.filter(e => !e.found).map(e => e.skill).join(", ")}
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* PR REVIEW */}
       <Section icon="⟨/⟩" title="PR REVIEW ACTIVITY" badge="~20 min · Screen Share" badgeColor={c.teal} />
-      <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[400], margin: "-4px 0 8px" }}>Live code review on a Unity VR controller script for XR Interaction Toolkit. Candidate annotated and explained issues in real time.</div>
-      <div style={{ background: c.g[50], border: `1px solid ${c.g[200]}`, borderRadius: 8, padding: mobile ? "12px 14px" : "10px 14px", marginBottom: 6 }}>
-        <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "flex-start" : "center", gap: mobile ? 6 : 0, marginBottom: 6 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: mono, fontWeight: 700, fontSize: mobile ? 12 : 11, color: c.g[900] }}>{prReviewPrompt.title}</span>
-            <Pill color={profC[prReviewPrompt.proficiency].txt} bg={profC[prReviewPrompt.proficiency].bg}>{prReviewPrompt.proficiency}</Pill>
-          </div>
-          <span style={{ fontSize: mobile ? 10 : 9, fontFamily: mono, color: c.g[400] }}>{prReviewPrompt.time}</span>
+      <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[700], margin: "-4px 0 10px" }}>{prReviewPrompt.context}</div>
+      <div style={{ marginBottom: 6 }}>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: c.green.txt, marginBottom: 6 }}>CAUGHT</div>
+          {prReviewPrompt.caught.map((item, i) => (
+            <div key={i} style={{ fontSize: 11, color: c.g[700], lineHeight: 1.55, display: "flex", gap: 6, marginBottom: 4 }}>
+              <span style={{ color: c.green.txt, flexShrink: 0 }}>✓</span> {item}
+            </div>
+          ))}
         </div>
-        <div style={{ fontSize: 11, color: c.g[400], marginBottom: 6, fontStyle: "italic" }}>{prReviewPrompt.context}</div>
-        <div style={{ fontSize: mobile ? 12 : 11.5, color: c.g[700], lineHeight: 1.55, marginBottom: 8 }}>{prReviewPrompt.verdict}</div>
-
-        <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 10 }}>
-          <div>
-            <div style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: c.green.txt, marginBottom: 4 }}>CAUGHT INDEPENDENTLY</div>
-            {prReviewPrompt.caught.map((item, i) => (
-              <div key={i} style={{ fontSize: 10, color: c.g[700], lineHeight: 1.5, display: "flex", gap: 5, marginBottom: 2 }}>
-                <span style={{ color: c.green.txt, flexShrink: 0 }}>✓</span> {item}
-              </div>
-            ))}
-          </div>
-          <div>
-            <div style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: c.amber.txt, marginBottom: 4 }}>MISSED / PROMPTED</div>
-            {prReviewPrompt.missed.map((item, i) => (
-              <div key={i} style={{ fontSize: 10, color: c.amber.txt, background: c.amber.bg, padding: "4px 8px", borderRadius: 4, marginBottom: 4 }}>⚠ {item}</div>
-            ))}
-          </div>
+        <div>
+          <div style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: c.amber.txt, marginBottom: 6 }}>MISSED</div>
+          {prReviewPrompt.missed.map((item, i) => (
+            <div key={i} style={{ fontSize: 11, color: c.g[700], lineHeight: 1.55, display: "flex", gap: 6, marginBottom: 4 }}>
+              <span style={{ color: c.amber.txt, flexShrink: 0 }}>⚠</span> {item}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -457,7 +395,7 @@ function ProfileTab({ mobile }) {
 
       {/* INTERVIEW */}
       <Section icon="🎙" title="SCREENING INTERVIEW" badge="PARTIAL FIT" badgeColor={c.amber} />
-      <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[400], margin: "-4px 0 10px" }}>~45 min · Transcript verified · Conducted by Aditya Panchal</div>
+      <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[400], margin: "-4px 0 10px" }}>~45 min · Transcript verified</div>
       <div style={{ display: "grid", gridTemplateColumns: mobile ? "repeat(3, 1fr)" : "repeat(5, 1fr)", gap: mobile ? 10 : 6, marginBottom: mobile ? 14 : 10, background: mobile ? c.g[50] : "transparent", borderRadius: 8, padding: mobile ? "12px 8px" : 0 }}>
         {Object.entries(interviewScores).map(([area, val]) => {
           const label = val >= 9 ? "Excellent" : val >= 8 ? "Strong" : val >= 7 ? "Good" : val >= 6 ? "Fair" : "Developing";
@@ -486,7 +424,7 @@ function ProfileTab({ mobile }) {
           <Section icon="🎓" title="EDUCATION CONTEXT" />
           <div style={{ fontSize: 15, fontWeight: 700 }}>{edu.institution}</div>
           <div style={{ fontSize: 11.5, color: c.g[500], marginBottom: 8 }}>{edu.degree}</div>
-          {[["Location", edu.location], ["US Equivalent", edu.usEquivalent]].map(([l, v]) => (
+          {[["Location", edu.location], ["NIRF Rank", edu.nirf], ["NAAC Grade", edu.naac]].map(([l, v]) => (
             <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "3px 0", borderBottom: `1px solid ${c.g[100]}` }}>
               <span style={{ fontSize: 11, color: c.g[500], flexShrink: 0 }}>{l}</span>
               <span style={{ fontSize: 11, fontWeight: 600, textAlign: "right" }}>{v}</span>
@@ -497,27 +435,20 @@ function ProfileTab({ mobile }) {
           </div>
         </div>
         <div>
-          <Section icon="💰" title="COMPENSATION" badge="Market Rate" badgeColor={c.amber} />
-          <div style={{ fontFamily: mono, fontSize: 10, color: c.g[500], marginBottom: 4 }}>BUDGET (Senior Unity VR Developer · India)</div>
-          <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Market Rate</div>
+          <Section icon="💰" title="COMPENSATION" badgeColor={c.amber} />
+          <div style={{ fontSize: 10, color: c.g[500], marginBottom: 4 }}>Source: AmbitionBox · Unity Developer · Pune · 2–3 YOE</div>
           {[
-            ["Role", "Senior Unity VR Developer", "Client Company"],
-            ["Candidate current CTC", "Not disclosed", "To be confirmed"],
-            ["Candidate expectation", "Not confirmed", "Ask before offer"],
+            ["Market range", "₹5 – 9 LPA", "AmbitionBox avg, mobile game dev Pune"],
+            ["Current CTC estimate", "₹6 – 8 LPA", "Based on 2.5 YOE at hyper-casual studios"],
           ].map(([s, v, n]) => (
-            <div key={s} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: `1px solid ${c.g[100]}` }}>
-              <span style={{ fontSize: 10, color: c.g[500] }}>{s}</span>
+            <div key={s} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: `1px solid ${c.g[100]}` }}>
+              <span style={{ fontSize: 11, color: c.g[500] }}>{s}</span>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontFamily: mono, fontSize: 10.5, fontWeight: 700 }}>{v}</div>
-                <div style={{ fontSize: 8.5, color: c.g[400] }}>{n}</div>
+                <div style={{ fontSize: 11.5, fontWeight: 700 }}>{v}</div>
+                <div style={{ fontSize: 9, color: c.g[400] }}>{n}</div>
               </div>
             </div>
           ))}
-          <div style={{ background: c.amber.bg, border: `1px solid ${c.amber.brd}`, borderRadius: 6, padding: "7px 10px", marginTop: 8 }}>
-            <div style={{ fontSize: 10.5, color: c.amber.txt }}>
-              <strong>Note:</strong> This is a sample profile for demonstration purposes. Budget and compensation details are illustrative only.
-            </div>
-          </div>
         </div>
       </div>
       <div style={{ height: mobile ? 20 : 14 }} />

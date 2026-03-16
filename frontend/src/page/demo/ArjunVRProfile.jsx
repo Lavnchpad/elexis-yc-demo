@@ -45,42 +45,27 @@ const musts = [
     skill: "Unity Engine + C#",
     passed: true,
     resume: { sections: ["Skills", "Experience"], signal: "strong" },
-    prReview: {
-      status: "confirmed",
-      detail: "Clean MonoBehaviour patterns throughout — event-driven architecture via UnityEvents, ScriptableObject usage for runtime config (XR interaction settings), proper OnEnable/OnDisable lifecycle management. No GameObject.Find anti-patterns. Architecture-level thinking visible in how XR components are composed.",
-    },
-    interview: {
-      status: "confirmed",
-      note: "Unity 2021 LTS primary at ImmersaTech, Unity 2020 at Gamitronics. Familiar with DOTS/ECS concepts though not production-deployed. Leads architecture decisions at ImmersaTech — not just feature implementation.",
-    },
+    prReview: { status: "confirmed" },
+    interview: { status: "confirmed" },
+    summary: "Event-driven MonoBehaviours, ScriptableObject config, proper lifecycle management — no anti-patterns. Leads architecture at ImmersaTech.",
     confidence: "high",
   },
   {
     skill: "VR/AR SDK Integration",
     passed: true,
     resume: { sections: ["Skills", "Experience"], signal: "strong" },
-    prReview: {
-      status: "confirmed",
-      detail: "Correct XR Interaction Toolkit patterns: IXRInteractable interface properly implemented, XRGrabInteractable with custom attach transform, teleportation locomotion via TeleportationArea (not deprecated XRRig setup). Hand tracking integration using OVRHand API — current SDK, not legacy.",
-    },
-    interview: {
-      status: "confirmed",
-      note: "Meta Quest SDK (native + Unity), SteamVR legacy + current, OpenXR for cross-platform abstraction. 3 shipped titles — enterprise safety training (B2B, 200+ headsets), VR art gallery on App Lab (~4k downloads), multiplayer VR whiteboard (enterprise internal). SDK choice explained with rationale: OpenXR for portability, native Quest SDK for performance-sensitive paths.",
-    },
+    prReview: { status: "confirmed" },
+    interview: { status: "confirmed" },
+    summary: "Current XR Interaction Toolkit patterns confirmed. Meta Quest SDK, SteamVR, OpenXR. 3 shipped VR titles across B2B and consumer.",
     confidence: "high",
   },
   {
     skill: "3D Math + Performance Optimization",
     passed: true,
     resume: { sections: ["Experience"], signal: "strong" },
-    prReview: {
-      status: "confirmed",
-      detail: "Flagged Instantiate call inside Update loop — correctly identified as frame-rate killer and proposed object pooling pattern. Caught batching opportunity for static props (marked non-static in Inspector). Corrected Lerp → Slerp for quaternion interpolation without prompting — understands why Lerp breaks at large angular differences.",
-    },
-    interview: {
-      status: "confirmed",
-      note: "Designed occlusion culling system reducing draw calls from 340 to 89 for manufacturing VR training app — 74% reduction. Understands 90fps hard requirement for VR comfort. Explained foveal rendering concept and single-pass instanced rendering tradeoffs. Matrix transforms and quaternion math confirmed live.",
-    },
+    prReview: { status: "confirmed" },
+    interview: { status: "confirmed" },
+    summary: "Caught Instantiate-in-Update, Lerp→Slerp, and draw call batching independently. Reduced draw calls 340→89 in production. Knows 90fps VR constraint.",
     confidence: "high",
   },
 ];
@@ -91,56 +76,44 @@ const shouldHaves = [
     skill: "Multiplayer VR / Networking",
     met: true,
     level: "Advanced",
-    note: "Photon Fusion for a 6-player VR collaboration space at ImmersaTech: networked avatar systems, voice proximity detection, object ownership transfer via Photon RPCs. Networked VR is distinctly harder than flat multiplayer — avatar body IK, head/hand prediction, physics authority. Arjun owns this end-to-end in production. Best networking signal in any VR candidate seen this quarter.",
+    note: "Built a 6-player VR collaboration space at ImmersaTech using Photon Fusion — networked avatars, voice proximity, and object ownership in production.",
     risk: "low",
   },
   {
     skill: "Immersive UI/UX Design",
     met: true,
     level: "Advanced",
-    note: "World-space canvas UI, interaction design spec written for enterprise onboarding flow (45-page doc, reviewed by client stakeholders), haptic feedback patterns for grab/release/hover states. Won internal UX award at ImmersaTech for accessibility-first VR UI (dyslexia-friendly fonts, colorblind-safe palette in VR space). Understands UI in VR is not 2D ported — depth, gaze, and hand reach constraints built into design spec.",
+    note: "Wrote a 45-page UX spec for enterprise VR onboarding and won an internal UX award for accessibility-first VR UI design.",
     risk: "low",
   },
   {
     skill: "Cross-platform VR",
     met: true,
     level: "Intermediate",
-    note: "Quest 2/3 standalone builds + SteamVR PC VR via OpenXR abstraction layer. Build matrix maintained with platform-specific feature flags (#if UNITY_ANDROID for Quest-specific hand tracking paths). Tested on Quest 2, Quest 3, Valve Index, and HP Reverb G2. No mobile AR (ARCore/ARKit) exposure — cross-platform is VR-to-VR only, not VR-to-AR.",
+    note: "Single codebase targeting Quest 2/3 and PC VR (Valve Index, HP Reverb G2) via OpenXR with platform-specific feature flags.",
     risk: "low",
   },
   {
     skill: "Shader + Graphics Programming",
     met: true,
     level: "Intermediate",
-    note: "Shader Graph for environment materials — custom water shader, edge-detection outline for interactable objects. Custom post-processing stack adapted for single-pass instanced rendering (standard post-processing breaks in VR; Arjun has solved this). HLSL direct edits for performance-critical paths. Not a graphics specialist — intermediate and growing.",
+    note: "Shader Graph for environment materials and custom post-processing adapted for single-pass instanced rendering in VR.",
     risk: "low",
   },
   {
     skill: "CI/CD + Build Pipeline",
     met: true,
     level: "Intermediate",
-    note: "GitHub Actions + Unity Cloud Build: automated APK (Quest) + EXE (SteamVR) builds on merge to main. Platform signing automated (keystore for Android, codesign for Windows). Build time reduced from 40min to 12min via Unity caching layer. No advanced DevOps (no Kubernetes, no containerized build agents) — standard Unity CI/CD, done well.",
+    note: "GitHub Actions + Unity Cloud Build delivering automated APK and EXE builds — reduced build time from 40 min to 12 min.",
     risk: "low",
   },
   {
     skill: "Shipped VR Title",
     met: true,
     level: "Advanced",
-    note: "3 shipped titles: (1) Enterprise VR safety training — B2B deployment to 200+ headsets across 3 manufacturing facilities. (2) VR art gallery — public release on Meta App Lab, ~4,000 downloads. (3) Multiplayer VR whiteboard — enterprise internal tool, 50+ daily active users. Breadth across B2B enterprise, consumer storefront, and internal tooling. Strongest shipping record in the VR pipeline.",
+    note: "3 shipped titles: enterprise safety training (200+ headsets), VR art gallery (App Lab, ~4k downloads), multiplayer VR whiteboard (50+ daily users).",
     risk: "low",
   },
-];
-
-// ─── BONUS SKILLS ───
-const extras = [
-  { skill: "DOTS / ECS", found: true, evidence: "Exploring Unity DOTS/ECS in personal projects — not production deployed yet but understands data-oriented design principles. Relevant for high-entity-count VR simulations." },
-  { skill: "Oculus Platform SDK", found: true, evidence: "Achievements, leaderboards, and entitlement checks implemented in VR art gallery via Oculus Platform SDK. Commerce-ready integration confirmed." },
-  { skill: "Photon Fusion", found: true, evidence: "Production multiplayer VR: 6-player collaboration space with networked avatars, voice proximity, and object ownership. Photon Fusion v1 with shared mode for simplicity + server mode for authority." },
-  { skill: "Mirror Networking", found: true, evidence: "Used Mirror at Gamitronics for a 2-player mobile game. Prior networking foundation before Photon. Not VR-specific but shows networking trajectory." },
-  { skill: "New Relic (APM)", found: true, evidence: "Performance monitoring integrated at ImmersaTech for build health tracking. Frame rate regression alerts on CI. Proactive monitoring mindset." },
-  { skill: "Blender (3D Modeling)", found: true, evidence: "Basic Blender proficiency — can prototype and UV-unwrap assets without depending on a dedicated 3D artist. Useful for rapid VR prototyping." },
-  { skill: "ARCore / ARKit", found: false, evidence: "No mobile AR experience. Cross-platform is VR-to-VR (Quest + PC VR), not VR-to-AR." },
-  { skill: "WebXR", found: false, evidence: "No web-based XR experience. All shipped titles are native Unity builds." },
 ];
 
 // ─── PR REVIEW ───
@@ -189,8 +162,9 @@ const edu = {
   institution: "BITS Pilani",
   degree: "B.E. — Computer Science, 2020",
   location: "Rajasthan, India",
-  usEquivalent: "Bachelor of Engineering in Computer Science (4-year) — equivalent to a US BS CS degree. BITS Pilani is a top-5 Indian engineering institution (comparable to IIT for CS/Engineering).",
-  relevance: "4-year engineering degree from a premier institution. Strong CS fundamentals — BITS has rigorous algorithms and systems curriculum. Graduated 2020; joined Gamitronics immediately post-graduation.",
+  nirf: "#16 — Engineering (NIRF 2024)",
+  naac: "A++ (Highest Grade)",
+  relevance: "Premier engineering institution. Strong CS fundamentals — rigorous algorithms and systems curriculum. Graduated 2020; joined Gamitronics immediately post-graduation.",
 };
 
 // ─── RESUME DATA ───
@@ -347,8 +321,7 @@ function ProfileTab({ mobile }) {
               <Pill color={m.resume.signal === "strong" ? c.green.txt : c.amber.txt} bg={m.resume.signal === "strong" ? c.green.bg : c.amber.bg}>Resume: {m.resume.signal === "strong" ? "Strong" : "Moderate"}</Pill>
               <Pill color={m.prReview?.status === "confirmed" ? c.green.txt : c.amber.txt} bg={m.prReview?.status === "confirmed" ? c.green.bg : c.amber.bg}>PR Review: {m.prReview?.status}</Pill>
             </div>
-            {m.prReview?.detail && <div style={{ fontSize: 11, color: c.g[500], lineHeight: 1.45, marginBottom: 4 }}>{m.prReview.detail}</div>}
-            {m.interview?.note && <div style={{ fontSize: 10.5, color: c.g[700], background: c.g[100], borderRadius: 4, padding: "4px 8px", marginTop: 4 }}>{m.interview.note}</div>}
+            {m.summary && <div style={{ fontSize: 11, color: c.g[600], lineHeight: 1.45 }}>{m.summary}</div>}
           </div>
         ))
       ) : (
@@ -369,12 +342,11 @@ function ProfileTab({ mobile }) {
                 <div style={{ fontSize: 9, color: m.resume.signal === "strong" ? c.green.txt : c.amber.txt, marginTop: 1 }}>{m.resume.signal === "strong" ? "Strong" : "Moderate"}</div>
               </div>
               <div>
-                <div style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 3, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap", marginBottom: 4 }}>
                   <Pill color={m.prReview?.status === "confirmed" ? c.green.txt : c.amber.txt} bg={m.prReview?.status === "confirmed" ? c.green.bg : c.amber.bg}>PR: {m.prReview?.status}</Pill>
                   <Pill color={m.interview?.status === "confirmed" ? c.green.txt : c.amber.txt} bg={m.interview?.status === "confirmed" ? c.green.bg : c.amber.bg}>Interview: {m.interview?.status}</Pill>
                 </div>
-                {m.prReview?.detail && <div style={{ fontSize: 10, color: c.g[700], lineHeight: 1.4, marginBottom: 3 }}>{m.prReview.detail}</div>}
-                {m.interview?.note && <div style={{ fontSize: 10, color: c.g[500], fontStyle: "italic", lineHeight: 1.35 }}>{m.interview.note}</div>}
+                {m.summary && <div style={{ fontSize: 10.5, color: c.g[600], lineHeight: 1.45 }}>{m.summary}</div>}
               </div>
               <Pill color={confC[m.confidence].txt} bg={confC[m.confidence].bg}>{confC[m.confidence].label}</Pill>
             </div>
@@ -401,59 +373,25 @@ function ProfileTab({ mobile }) {
       ))}
       <div style={{ height: mobile ? 20 : 14 }} />
 
-      {/* BONUS SKILLS */}
-      <Section icon="⭐" title="BONUS SKILLS DETECTED" badge={`${extras.filter(e => e.found).length}/${extras.length} FOUND`} badgeColor={c.blue} />
-      <div style={{ marginBottom: mobile ? 20 : 14 }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-          {extras.map((e, i) => (
-            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: e.found ? c.green.bg : c.g[50], border: `1px solid ${e.found ? c.green.brd : c.g[200]}`, borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: e.found ? c.green.txt : c.g[400] }}>
-              {e.found ? "✓" : "—"} {e.skill}
-            </span>
-          ))}
-        </div>
-        <div style={{ borderLeft: `2px solid ${c.g[200]}`, paddingLeft: 10 }}>
-          {extras.filter(e => e.found).map((e, i) => (
-            <div key={i} style={{ fontSize: 10, color: c.g[500], lineHeight: 1.45, marginBottom: 4 }}>
-              <span style={{ fontWeight: 700, color: c.g[700] }}>{e.skill}:</span> {e.evidence}
-            </div>
-          ))}
-          {extras.some(e => !e.found) && (
-            <div style={{ fontSize: 10, color: c.g[400], marginTop: 2, fontStyle: "italic" }}>
-              Not detected: {extras.filter(e => !e.found).map(e => e.skill).join(", ")}
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* PR REVIEW */}
       <Section icon="⟨/⟩" title="PR REVIEW ACTIVITY" badge="~20 min · Screen Share" badgeColor={c.teal} />
-      <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[400], margin: "-4px 0 8px" }}>Live code review on a junior developer's XR interaction controller. Candidate annotated and explained issues in real time.</div>
-      <div style={{ background: c.g[50], border: `1px solid ${c.g[200]}`, borderRadius: 8, padding: mobile ? "12px 14px" : "10px 14px", marginBottom: 6 }}>
-        <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "flex-start" : "center", gap: mobile ? 6 : 0, marginBottom: 6 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: mono, fontWeight: 700, fontSize: mobile ? 12 : 11, color: c.g[900] }}>{prReviewPrompt.title}</span>
-            <Pill color={profC[prReviewPrompt.proficiency].txt} bg={profC[prReviewPrompt.proficiency].bg}>{prReviewPrompt.proficiency}</Pill>
-          </div>
-          <span style={{ fontSize: mobile ? 10 : 9, fontFamily: mono, color: c.g[400] }}>{prReviewPrompt.time}</span>
+      <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[700], margin: "-4px 0 10px" }}>{prReviewPrompt.context}</div>
+      <div style={{ marginBottom: 6 }}>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: c.green.txt, marginBottom: 6 }}>CAUGHT</div>
+          {prReviewPrompt.caught.map((item, i) => (
+            <div key={i} style={{ fontSize: 11, color: c.g[700], lineHeight: 1.55, display: "flex", gap: 6, marginBottom: 4 }}>
+              <span style={{ color: c.green.txt, flexShrink: 0 }}>✓</span> {item}
+            </div>
+          ))}
         </div>
-        <div style={{ fontSize: 11, color: c.g[400], marginBottom: 6, fontStyle: "italic" }}>{prReviewPrompt.context}</div>
-        <div style={{ fontSize: mobile ? 12 : 11.5, color: c.g[700], lineHeight: 1.55, marginBottom: 8 }}>{prReviewPrompt.verdict}</div>
-
-        <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 10 }}>
-          <div>
-            <div style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: c.green.txt, marginBottom: 4 }}>CAUGHT INDEPENDENTLY</div>
-            {prReviewPrompt.caught.map((item, i) => (
-              <div key={i} style={{ fontSize: 10, color: c.g[700], lineHeight: 1.5, display: "flex", gap: 5, marginBottom: 2 }}>
-                <span style={{ color: c.green.txt, flexShrink: 0 }}>✓</span> {item}
-              </div>
-            ))}
-          </div>
-          <div>
-            <div style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: c.amber.txt, marginBottom: 4 }}>MISSED / PROMPTED</div>
-            {prReviewPrompt.missed.map((item, i) => (
-              <div key={i} style={{ fontSize: 10, color: c.amber.txt, background: c.amber.bg, padding: "4px 8px", borderRadius: 4, marginBottom: 4 }}>⚠ {item}</div>
-            ))}
-          </div>
+        <div>
+          <div style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: c.amber.txt, marginBottom: 6 }}>MISSED</div>
+          {prReviewPrompt.missed.map((item, i) => (
+            <div key={i} style={{ fontSize: 11, color: c.g[700], lineHeight: 1.55, display: "flex", gap: 6, marginBottom: 4 }}>
+              <span style={{ color: c.amber.txt, flexShrink: 0 }}>⚠</span> {item}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -461,7 +399,7 @@ function ProfileTab({ mobile }) {
 
       {/* INTERVIEW */}
       <Section icon="🎙" title="SCREENING INTERVIEW" badge="STRONG FIT" badgeColor={c.teal} />
-      <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[400], margin: "-4px 0 10px" }}>~60 min · Transcript verified · Conducted by Aditya Panchal</div>
+      <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[400], margin: "-4px 0 10px" }}>~60 min · Transcript verified</div>
       <div style={{ display: "grid", gridTemplateColumns: mobile ? "repeat(3, 1fr)" : "repeat(5, 1fr)", gap: mobile ? 10 : 6, marginBottom: mobile ? 14 : 10, background: mobile ? c.g[50] : "transparent", borderRadius: 8, padding: mobile ? "12px 8px" : 0 }}>
         {Object.entries(interviewScores).map(([area, val]) => {
           const label = val >= 9 ? "Excellent" : val >= 8 ? "Strong" : val >= 7 ? "Good" : "Developing";
@@ -490,7 +428,7 @@ function ProfileTab({ mobile }) {
           <Section icon="🎓" title="EDUCATION CONTEXT" />
           <div style={{ fontSize: 15, fontWeight: 700 }}>{edu.institution}</div>
           <div style={{ fontSize: 11.5, color: c.g[500], marginBottom: 8 }}>{edu.degree}</div>
-          {[["Location", edu.location], ["US Equivalent", edu.usEquivalent]].map(([l, v]) => (
+          {[["Location", edu.location], ["NIRF Rank", edu.nirf], ["NAAC Grade", edu.naac]].map(([l, v]) => (
             <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "3px 0", borderBottom: `1px solid ${c.g[100]}` }}>
               <span style={{ fontSize: 11, color: c.g[500], flexShrink: 0 }}>{l}</span>
               <span style={{ fontSize: 11, fontWeight: 600, textAlign: "right" }}>{v}</span>
@@ -501,26 +439,20 @@ function ProfileTab({ mobile }) {
           </div>
         </div>
         <div>
-          <Section icon="💰" title="COMPENSATION" badge="Market Rate" badgeColor={c.green} />
-          <div style={{ fontFamily: mono, fontSize: 10, color: c.g[500], marginBottom: 4 }}>CLIENT BUDGET (Senior Unity VR · India Remote)</div>
-          <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Budget: Market Rate</div>
+          <Section icon="💰" title="COMPENSATION" badgeColor={c.green} />
+          <div style={{ fontSize: 10, color: c.g[500], marginBottom: 4 }}>Source: AmbitionBox · Senior Unity Developer · Bangalore · 4–5 YOE</div>
           {[
-            ["Candidate current CTC", "Not disclosed", "To be confirmed"],
-            ["Candidate expectation", "Not confirmed", "Ask before L2 offer"],
+            ["Market range", "₹16 – 24 LPA", "AmbitionBox avg, VR niche adds premium"],
+            ["Current CTC estimate", "₹18 – 20 LPA", "Based on YOE trajectory at ImmersaTech"],
           ].map(([s, v, n]) => (
-            <div key={s} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: `1px solid ${c.g[100]}` }}>
-              <span style={{ fontSize: 10, color: c.g[500] }}>{s}</span>
+            <div key={s} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: `1px solid ${c.g[100]}` }}>
+              <span style={{ fontSize: 11, color: c.g[500] }}>{s}</span>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 10.5, fontWeight: 700 }}>{v}</div>
-                <div style={{ fontSize: 8.5, color: c.g[400] }}>{n}</div>
+                <div style={{ fontSize: 11.5, fontWeight: 700 }}>{v}</div>
+                <div style={{ fontSize: 9, color: c.g[400] }}>{n}</div>
               </div>
             </div>
           ))}
-          <div style={{ background: c.amber.bg, border: `1px solid ${c.amber.brd}`, borderRadius: 6, padding: "7px 10px", marginTop: 8 }}>
-            <div style={{ fontSize: 10.5, color: c.amber.txt }}>
-              <strong>Note:</strong> Confirm CTC and expectation before presenting to client. At 4.5 YOE, candidate may have an expectation reflecting senior VR specialization — ask directly before L2.
-            </div>
-          </div>
         </div>
       </div>
       <div style={{ height: mobile ? 20 : 14 }} />
