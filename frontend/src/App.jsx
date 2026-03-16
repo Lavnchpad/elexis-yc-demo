@@ -40,6 +40,8 @@ import AbhishekTalentProfile from './page/demo/AbhishekTalentProfile';
 import RuchitTalentProfile from './page/demo/RuchitTalentProfile';
 import DevendraTalentProfile from './page/demo/DevendraTalentProfile';
 import SourabhTalentProfile from './page/demo/SourabhTalentProfile';
+import ArjunVRProfile from './page/demo/ArjunVRProfile';
+import SiddharthVRProfile from './page/demo/SiddharthVRProfile';
 const App = () => {
   return (
     <BrowserRouter>
@@ -116,6 +118,10 @@ const App = () => {
           <Route path="/devendra-nodejs-profile" element={<DevendraTalentProfile />} />
           <Route path="/demo/sourabh-nodejs-profile" element={<SourabhTalentProfile />} />
           <Route path="/sourabh-nodejs-profile" element={<SourabhTalentProfile />} />
+          <Route path="/demo/arjun-vr-profile" element={<ArjunVRProfile />} />
+          <Route path="/arjun-vr-profile" element={<ArjunVRProfile />} />
+          <Route path="/demo/siddharth-vr-profile" element={<SiddharthVRProfile />} />
+          <Route path="/siddharth-vr-profile" element={<SiddharthVRProfile />} />
 
           {/* Start Interview Route */}
           <Route
