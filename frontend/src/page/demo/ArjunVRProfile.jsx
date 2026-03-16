@@ -220,8 +220,7 @@ const resumeData = {
   education: {
     degree: "B.E. Computer Science",
     institution: "BITS Pilani",
-    year: "2020",
-    note: "Top-5 Indian engineering institution",
+    year: "2016 – 2020",
   },
 };
 
@@ -543,7 +542,7 @@ function ResumeTab({ mobile }) {
             <span style={{ fontSize: 13.5, fontWeight: 700 }}>{resumeData.education.degree}</span>
             <span style={{ fontSize: 11, color: "#6B7280" }}>{resumeData.education.year}</span>
           </div>
-          <div style={{ fontSize: 12, color: "#6B7280" }}>{resumeData.education.institution} · {resumeData.education.note}</div>
+          <div style={{ fontSize: 12, color: "#6B7280" }}>{resumeData.education.institution}</div>
         </div>
       </div>
 
