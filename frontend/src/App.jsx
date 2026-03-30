@@ -42,6 +42,7 @@ import DevendraTalentProfile from './page/demo/DevendraTalentProfile';
 import SourabhTalentProfile from './page/demo/SourabhTalentProfile';
 import ArjunVRProfile from './page/demo/ArjunVRProfile';
 import SiddharthVRProfile from './page/demo/SiddharthVRProfile';
+import AbhishekJainTalentProfile from './page/demo/AbhishekJainTalentProfile';
 const App = () => {
   return (
     <BrowserRouter>
@@ -122,6 +123,8 @@ const App = () => {
           <Route path="/arjun-vr-profile" element={<ArjunVRProfile />} />
           <Route path="/demo/siddharth-vr-profile" element={<SiddharthVRProfile />} />
           <Route path="/siddharth-vr-profile" element={<SiddharthVRProfile />} />
+          <Route path="/demo/abhishek-jain-flutter-profile" element={<AbhishekJainTalentProfile />} />
+          <Route path="/abhishek-jain-flutter-profile" element={<AbhishekJainTalentProfile />} />
 
           {/* Start Interview Route */}
           <Route
