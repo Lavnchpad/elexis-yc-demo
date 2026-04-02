@@ -596,7 +596,7 @@ export default function SampleMechEngineerProfile() {
           </div>
           {!mobile && (
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              {[["Resume", true], ["Design Review", true], ["GitHub", false], ["Interview", true]].map(([label, on]) => (
+              {[["Resume", true], ["Design Review", true], ["Interview", true]].map(([label, on]) => (
                 <div key={label} style={{ display: "flex", alignItems: "center", gap: 3 }}>
                   <Dot on={on} />
                   <span style={{ fontSize: 9, fontFamily: mono, color: on ? c.g[700] : c.g[400] }}>{label}</span>
