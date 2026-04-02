@@ -471,33 +471,159 @@ function ProfileTab({ mobile }) {
   );
 }
 
+// ─── RESUME TAB ───
+function ResumeTab({ mobile }) {
+  const resumeSans = "'Georgia', 'Times New Roman', serif";
+  const bullet = (text) => (
+    <div style={{ display: "flex", gap: 8, marginBottom: 3 }}>
+      <span style={{ flexShrink: 0, marginTop: 2 }}>•</span>
+      <span style={{ fontSize: 11, lineHeight: 1.5, color: "#222" }}>{text}</span>
+    </div>
+  );
+
+  return (
+    <div style={{ maxWidth: 720, margin: "0 auto", padding: mobile ? "20px 16px" : "32px 40px", fontFamily: resumeSans, color: "#111", background: "#fff", fontSize: 12 }}>
+
+      {/* NAME + CONTACT */}
+      <div style={{ textAlign: "center", marginBottom: 18 }}>
+        <div style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Arial', sans-serif", letterSpacing: "0.02em" }}>ARJUN NAIR</div>
+        <div style={{ fontSize: 10.5, color: "#555", marginTop: 4, fontFamily: "'Arial', sans-serif" }}>
+          Pune, Maharashtra · arjun.nair@email.com · +91-98765-43210 · linkedin.com/in/arjunnair
+        </div>
+      </div>
+
+      {/* SUMMARY */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontFamily: "'Arial', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#333", borderBottom: "1.5px solid #333", paddingBottom: 2, marginBottom: 6 }}>Professional Summary</div>
+        <div style={{ fontSize: 11, lineHeight: 1.6, color: "#222" }}>
+          Mechanical Design Engineer with 7+ years of experience in product design and development across automotive, industrial, and consumer electronics domains. Proficient in SolidWorks, CATIA V5, and ANSYS. Experienced in GD&T, DFM/DFA, FEA simulation, and full NPI lifecycle from concept to production release. Strong cross-functional collaboration skills.
+        </div>
+      </div>
+
+      {/* SKILLS */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontFamily: "'Arial', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#333", borderBottom: "1.5px solid #333", paddingBottom: 2, marginBottom: 6 }}>Technical Skills</div>
+        {[
+          ["CAD Software", "SolidWorks, CATIA V5, AutoCAD"],
+          ["Simulation / FEA", "ANSYS Mechanical, SolidWorks Simulation"],
+          ["Standards", "ASME Y14.5-2018 GD&T, ISO 2768, ASME Y14.41"],
+          ["Manufacturing", "Injection Molding, Sheet Metal, CNC Machining, DFM/DFA"],
+          ["PLM Tools", "Windchill, Teamcenter"],
+          ["Other", "PFMEA, DVP&R, BOM Management, ECN Process"],
+        ].map(([k, v]) => (
+          <div key={k} style={{ display: "flex", gap: 8, marginBottom: 3, fontSize: 11 }}>
+            <span style={{ fontWeight: 700, minWidth: 130, flexShrink: 0 }}>{k}:</span>
+            <span style={{ color: "#333" }}>{v}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* EXPERIENCE */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontFamily: "'Arial', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#333", borderBottom: "1.5px solid #333", paddingBottom: 2, marginBottom: 10 }}>Work Experience</div>
+
+        {/* Job 1 */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ fontWeight: 700, fontSize: 12, fontFamily: "'Arial', sans-serif" }}>Senior Mechanical Design Engineer</div>
+            <div style={{ fontSize: 10.5, color: "#555", fontFamily: "'Arial', sans-serif" }}>Jul 2019 – Present</div>
+          </div>
+          <div style={{ fontSize: 11, color: "#555", fontFamily: "'Arial', sans-serif", marginBottom: 5 }}>Tata Elxsi Ltd. · Pune, Maharashtra</div>
+          {bullet("Led mechanical design for 4 full NPI programs across automotive enclosure and connector product lines, from concept through DV testing and production release.")}
+          {bullet("Designed injection-molded enclosures and sheet metal housings; performed DFM reviews covering draft angles, wall thickness, gate locations, and parting line planning.")}
+          {bullet("Conducted FEA (structural, modal, thermal) using ANSYS Mechanical and SolidWorks Simulation for load-bearing brackets and heat-sink assemblies.")}
+          {bullet("Applied ASME Y14.5-2018 GD&T across all design releases; trained junior engineers on datum reference frames, tolerance zones, and modifier usage.")}
+          {bullet("Managed full redesign 6 weeks before launch following supplier tooling failure — re-ran FEA, coordinated with replacement supplier, delivered on revised schedule.")}
+          {bullet("Collaborated cross-functionally with manufacturing engineering, procurement, quality, and supply chain on PFMEA and DVP&R activities.")}
+        </div>
+
+        {/* Job 2 */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ fontWeight: 700, fontSize: 12, fontFamily: "'Arial', sans-serif" }}>Mechanical Design Engineer</div>
+            <div style={{ fontSize: 10.5, color: "#555", fontFamily: "'Arial', sans-serif" }}>Jun 2017 – Jun 2019</div>
+          </div>
+          <div style={{ fontSize: 11, color: "#555", fontFamily: "'Arial', sans-serif", marginBottom: 5 }}>Godrej & Boyce Mfg. Co. Ltd. · Mumbai, Maharashtra</div>
+          {bullet("Designed and released sheet metal components (brackets, panels, enclosures) for industrial control and storage products using SolidWorks.")}
+          {bullet("Prepared production engineering drawings, BOMs, and ECNs using Windchill PLM. Participated in PFMEA and design review meetings with quality team.")}
+          {bullet("Supported tooling vendor interactions for sheet metal press tools and plastic injection molds.")}
+        </div>
+      </div>
+
+      {/* EDUCATION */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontFamily: "'Arial', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#333", borderBottom: "1.5px solid #333", paddingBottom: 2, marginBottom: 6 }}>Education</div>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 12, fontFamily: "'Arial', sans-serif" }}>B.E. — Mechanical Engineering</div>
+            <div style={{ fontSize: 11, color: "#555", fontFamily: "'Arial', sans-serif" }}>Veermata Jijabai Technological Institute (VJTI), Mumbai · CGPA: 8.4 / 10</div>
+          </div>
+          <div style={{ fontSize: 10.5, color: "#555", fontFamily: "'Arial', sans-serif" }}>2013 – 2017</div>
+        </div>
+      </div>
+
+      {/* CERTIFICATIONS */}
+      <div>
+        <div style={{ fontFamily: "'Arial', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#333", borderBottom: "1.5px solid #333", paddingBottom: 2, marginBottom: 6 }}>Certifications</div>
+        {bullet("CSWA — Certified SolidWorks Associate (Dassault Systèmes, 2018)")}
+        {bullet("GD&T Professional — ASME Y14.5-2018 (2020)")}
+      </div>
+
+    </div>
+  );
+}
+
 // ─── MAIN ───
 export default function SampleMechEngineerProfile() {
   const mobile = useMobile();
+  const [activeTab, setActiveTab] = useState("profile");
+
+  const tabs = [
+    { id: "profile", label: "Talent Profile" },
+    { id: "resume", label: "Resume" },
+  ];
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff", fontFamily: sans }}>
       {/* HEADER */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 20px", borderBottom: `1px solid ${c.g[200]}`, position: "sticky", top: 0, background: "#fff", zIndex: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontFamily: mono, fontWeight: 800, fontSize: 18, color: c.teal.acc }}>/</span>
-          <span style={{ fontWeight: 700, fontSize: 15 }}>ELEXIS</span>
-          <span style={{ color: c.g[300], margin: "0 3px" }}>|</span>
-          <span style={{ fontSize: 11, color: c.g[400] }}>Talent Intelligence Profile</span>
-        </div>
-        {!mobile && (
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            {[["Resume", true], ["Design Review", true], ["GitHub", false], ["Interview", true]].map(([label, on]) => (
-              <div key={label} style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                <Dot on={on} />
-                <span style={{ fontSize: 9, fontFamily: mono, color: on ? c.g[700] : c.g[400] }}>{label}</span>
-              </div>
-            ))}
+      <div style={{ borderBottom: `1px solid ${c.g[200]}`, position: "sticky", top: 0, background: "#fff", zIndex: 10 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontFamily: mono, fontWeight: 800, fontSize: 18, color: c.teal.acc }}>/</span>
+            <span style={{ fontWeight: 700, fontSize: 15 }}>ELEXIS</span>
+            <span style={{ color: c.g[300], margin: "0 3px" }}>|</span>
+            <span style={{ fontSize: 11, color: c.g[400] }}>Talent Intelligence Profile</span>
           </div>
-        )}
+          {!mobile && (
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              {[["Resume", true], ["Design Review", true], ["GitHub", false], ["Interview", true]].map(([label, on]) => (
+                <div key={label} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                  <Dot on={on} />
+                  <span style={{ fontSize: 9, fontFamily: mono, color: on ? c.g[700] : c.g[400] }}>{label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {/* TABS */}
+        <div style={{ display: "flex", gap: 0, padding: "0 20px" }}>
+          {tabs.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTab(t.id)}
+              style={{
+                border: "none", background: "none", cursor: "pointer", padding: "7px 14px",
+                fontSize: 12, fontWeight: activeTab === t.id ? 700 : 400,
+                color: activeTab === t.id ? c.teal.acc : c.g[500],
+                borderBottom: activeTab === t.id ? `2px solid ${c.teal.acc}` : "2px solid transparent",
+                fontFamily: sans, marginBottom: -1,
+              }}
+            >{t.label}</button>
+          ))}
+        </div>
       </div>
 
-      <ProfileTab mobile={mobile} />
+      {activeTab === "profile" ? <ProfileTab mobile={mobile} /> : <ResumeTab mobile={mobile} />}
     </div>
   );
 }
