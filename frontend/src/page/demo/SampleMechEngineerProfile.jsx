@@ -22,9 +22,9 @@ const candidate = {
 };
 
 const role = {
-  company: "US Manufacturing Company",
+  company: "Indus Robotics",
   title: "Senior Mechanical Design Engineer",
-  team: "Product Development Team",
+  team: "Hardware & Robotics Team",
 };
 
 const recommendation = {
@@ -47,11 +47,11 @@ const musts = [
     resume: { sections: ["Skills", "Experience"], signal: "strong" },
     designReview: {
       status: "confirmed",
-      detail: "Navigated a multi-part SolidWorks assembly during the design review — identified tolerance stack-up issue in a bearing housing fit independently. Understood parametric feature tree, top-down design relationships, and assembly constraints without any prompting.",
+      detail: "Identified tolerance stack-up issue in a bearing housing fit independently. Navigated assembly constraints without prompting.",
     },
     interview: {
       status: "confirmed",
-      note: "SolidWorks (7 years, primary) and CATIA V5 (3 years, Tata Elxsi automotive programs) both confirmed in work output. Created production-ready drawings, BOMs, and release packages for 4 full product programs through NPI.",
+      note: "SolidWorks (7 yrs) + CATIA V5 (3 yrs). Production drawings, BOMs, and release packages across 4 NPI programs.",
     },
     confidence: "high",
   },
@@ -61,11 +61,11 @@ const musts = [
     resume: { sections: ["Skills", "Experience"], signal: "strong" },
     designReview: {
       status: "confirmed",
-      detail: "Correctly identified 4 GD&T issues in the sample drawing independently: missing flatness callout on a mating surface, incorrect datum reference frame order, missing projected tolerance zone for a threaded insert, and an over-constrained position callout. Explained each with correct ASME Y14.5 rationale.",
+      detail: "Found 4 GD&T issues independently — flatness callout, datum frame order, projected tolerance zone, over-constrained position. Each explained with correct ASME Y14.5 rationale.",
     },
     interview: {
       status: "confirmed",
-      note: "ASME Y14.5-2018 applied across all programs. Explained difference between MMC and LMC modifiers correctly when asked. Has trained junior engineers on GD&T interpretation at Tata Elxsi — confirms teaching-level understanding.",
+      note: "ASME Y14.5-2018 across all programs. MMC/LMC modifiers explained correctly. Trains junior engineers on GD&T at Tata Elxsi.",
     },
     confidence: "high",
   },
@@ -75,11 +75,11 @@ const musts = [
     resume: { sections: ["Experience"], signal: "strong" },
     designReview: {
       status: "confirmed",
-      detail: "Flagged three DFM issues in the review drawing without prompting: insufficient draft angle on a side wall (injection mold), wall thickness below 1.5mm causing sink mark risk, and an undercut that would require a side action. Offered specific redesign suggestions for each.",
+      detail: "Flagged 3 DFM issues unprompted: draft angle, wall thickness sink risk, and undercut requiring side action. Offered redesign suggestions for each.",
     },
     interview: {
       status: "confirmed",
-      note: "Led DFM reviews for injection-molded and sheet metal components at Tata Elxsi. Reduced tooling revision cycles on two programs by catching issues at design review stage. Cross-functional work with manufacturing engineering and procurement confirmed — not just self-reported.",
+      note: "Led DFM reviews at Tata Elxsi for injection-molded and sheet metal parts. Reduced tooling revision cycles on two programs.",
     },
     confidence: "high",
   },
@@ -91,42 +91,42 @@ const shouldHaves = [
     skill: "FEA / Structural Simulation",
     met: true,
     level: "Advanced",
-    note: "ANSYS Mechanical and SolidWorks Simulation confirmed across multiple programs. Ran static structural, modal, and thermal analyses for load-bearing brackets and heat-sink assemblies. Correctly sized safety factors (1.5–2.5× depending on application), identified stress concentration zones at fillet radii, and iterated geometry based on results. Not just running canned setups — mesh sensitivity analysis and boundary condition selection explained correctly in interview.",
+    note: "ANSYS Mechanical + SolidWorks Simulation confirmed. Ran structural, modal, and thermal analyses. Sized safety factors, identified stress concentration zones, iterated geometry from results — not just canned setups.",
     risk: "low",
   },
   {
     skill: "New Product Development (NPI / NPD)",
     met: true,
     level: "Advanced",
-    note: "Full NPI lifecycle confirmed across 4 programs at Tata Elxsi: concept → detailed design → prototype → DV testing → production release. Owns design deliverables at each gate. Familiar with DVP&R, PFMEA, and design freeze processes. One program delivered on schedule after a supplier tooling failure required a redesign 6 weeks before launch — managed the redesign and re-validation independently.",
+    note: "Full NPI lifecycle across 4 programs — concept through production release. Owns deliverables at each gate. Managed a full redesign 6 weeks before launch after a supplier tooling failure and still delivered on schedule.",
     risk: "low",
   },
   {
     skill: "Sheet Metal + Injection Molding",
     met: true,
     level: "Intermediate",
-    note: "Sheet metal confirmed: designed brackets and enclosure panels with correct bend allowances, k-factor compensation, and bend relief notches. Injection molding confirmed: enclosure designs across 3 programs, DFM reviews for wall thickness, draft angles, gate locations, and parting line planning. Does not own the tooling design itself — that is the mold maker's scope. Design-for-molding depth is solid.",
+    note: "Sheet metal: brackets and enclosure panels with correct bend allowances and relief notches. Injection molding: enclosure designs across 3 programs, DFM for wall thickness, draft angles, and gate locations.",
     risk: "low",
   },
   {
     skill: "Cross-functional Collaboration",
     met: true,
     level: "Advanced",
-    note: "Confirmed working cross-functionally with manufacturing engineering, procurement, quality, and supply chain at Tata Elxsi. Attends supplier tooling reviews. Participates in PFMEA with quality team. Communicates design changes to procurement for cost impact assessment before finalizing. Not siloed in design — active in the full development ecosystem.",
+    note: "Works across manufacturing, procurement, quality, and supply chain. Attends supplier tooling reviews. Flags cost impact of design changes before finalizing — not siloed.",
     risk: "low",
   },
   {
     skill: "Technical Documentation / BOM Management",
     met: true,
     level: "Intermediate",
-    note: "Creates and maintains engineering drawings, BOMs, ECNs (Engineering Change Notices), and design history records for all owned components. Uses PLM tools (Windchill and Teamcenter both mentioned). Has not owned the PLM system administration — creates and routes documents within it. Standard senior engineer scope.",
+    note: "Maintains drawings, BOMs, and ECNs for all owned components. Uses Windchill and Teamcenter for document creation and routing.",
     risk: "low",
   },
   {
     skill: "Industry Domain (Automotive / Industrial)",
     met: true,
     level: "Advanced",
-    note: "Automotive enclosures and connectors (Tata Elxsi — OEM programs), industrial control panel housings, and consumer electronics mechanical assemblies. Understands IP-rating requirements (IP65/IP67 sealing design), vibration and shock specs (automotive grading), and thermal management constraints. Domain breadth is above average for a 7-year career.",
+    note: "Automotive OEM programs (Tata Elxsi), industrial housings, and consumer electronics assemblies. Familiar with IP65/IP67 sealing, vibration/shock specs, and thermal constraints.",
     risk: "low",
   },
 ];
@@ -171,9 +171,9 @@ const designReview = {
 const interviewScores = {
   "Tech Depth": 8.5,
   "Domain": 8.0,
-  "Communication": 8.0,
-  "Problem Solving": 8.5,
-  "Culture Fit": 8.5,
+  "Communication": 7.0,
+  "Problem Solving": 8.0,
+  "Culture Fit": 7.5,
 };
 
 const findings = [
@@ -191,6 +191,7 @@ const edu = {
   degree: "B.E. — Mechanical Engineering, 2017",
   location: "Mumbai, Maharashtra, India",
   cgpa: "8.4 / 10",
+  naac: "A+",
   usEquivalent: "Bachelor of Science in Mechanical Engineering (4-year) — equivalent to a US BS ME degree. VJTI is a Tier-1 autonomous engineering institute affiliated with Mumbai University.",
   relevance: "Tier-1 mechanical engineering program. Strong fundamentals in machine design, thermodynamics, and manufacturing processes. Graduated 2017, directly into product design roles.",
 };
@@ -433,25 +434,21 @@ function ProfileTab({ mobile }) {
           <Section icon="🎓" title="EDUCATION CONTEXT" />
           <div style={{ fontSize: 15, fontWeight: 700 }}>{edu.institution}</div>
           <div style={{ fontSize: 11.5, color: c.g[500], marginBottom: 8 }}>{edu.degree}</div>
-          {[["Location", edu.location], ["CGPA", edu.cgpa], ["US Equivalent", edu.usEquivalent]].map(([l, v]) => (
+          {[["Location", edu.location], ["CGPA", edu.cgpa], ["NAAC Grade", edu.naac]].map(([l, v]) => (
             <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "3px 0", borderBottom: `1px solid ${c.g[100]}` }}>
               <span style={{ fontSize: 11, color: c.g[500], flexShrink: 0 }}>{l}</span>
               <span style={{ fontSize: 11, fontWeight: 600, textAlign: "right" }}>{v}</span>
             </div>
           ))}
-          <div style={{ background: c.blue.bg, border: `1px solid ${c.blue.brd}`, borderRadius: 6, padding: "5px 10px", marginTop: 8, fontSize: 10.5, color: c.blue.txt }}>
-            {edu.relevance}
-          </div>
         </div>
         <div>
           <Section icon="💰" title="COMPENSATION" badge="Within Budget" badgeColor={c.green} />
-          <div style={{ fontFamily: mono, fontSize: 10, color: c.g[500], marginBottom: 4 }}>CLIENT BUDGET (Sr. Mech. Design Engineer · India Remote)</div>
-          <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>$18,000 – $28,000 / yr</div>
+          <div style={{ fontFamily: mono, fontSize: 10, color: c.g[500], marginBottom: 4 }}>CLIENT BUDGET (Sr. Mech. Design Engineer · Pune / Hybrid)</div>
+          <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>18L – 28L / yr</div>
           {[
-            ["Naukri (Sr. Mech. Design, 7+ YOE, Pune)", "$20,000 – $32,000", "India market median (~17L–27L)"],
-            ["US equivalent (Sr. Mech. Engineer, 7 YOE)", "$95,000 – $130,000", "US market, comparable scope"],
-            ["Candidate current CTC", "Not disclosed", "To be confirmed"],
-            ["Candidate expectation", "Not confirmed", "Ask before L2 offer"],
+            ["Naukri (Sr. Mech. Design, 7+ YOE, Pune)", "17L – 27L", "India market median"],
+            ["Candidate current CTC", "22L / yr", "Based on 40+ market data points"],
+            ["Candidate closes at", "26L – 28L", "Based on profile + market"],
           ].map(([s, v, n]) => (
             <div key={s} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: `1px solid ${c.g[100]}` }}>
               <span style={{ fontSize: 10, color: c.g[500] }}>{s}</span>
