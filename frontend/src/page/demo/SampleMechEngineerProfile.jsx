@@ -243,12 +243,6 @@ function ProfileTab({ mobile }) {
   return (
     <div style={{ maxWidth: 840, margin: "0 auto", fontFamily: sans, color: c.g[900], background: "#fff", fontSize: 13, padding: mobile ? "12px 16px 20px" : "14px 20px 20px" }}>
 
-      {/* SAMPLE BANNER */}
-      <div style={{ background: "#FFFBEB", border: "1px solid #FCD34D", borderRadius: 8, padding: mobile ? "8px 12px" : "7px 14px", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 13 }}>🧪</span>
-        <span style={{ fontSize: mobile ? 11 : 12, color: "#92400E" }}><strong>Sample Profile</strong> — This is an illustrative example of an Elexis Talent Intelligence Profile for a non-technical role. Candidate data is fictional.</span>
-      </div>
-
       {/* RUBRIC BANNER */}
       <div style={{ background: c.blue.bg, border: `1px solid ${c.blue.brd}`, borderRadius: 8, padding: mobile ? "8px 12px" : "7px 14px", marginBottom: 12, display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "flex-start" : "center", gap: mobile ? 4 : 0 }}>
         <span style={{ fontSize: mobile ? 11 : 12, color: c.blue.txt }}>Scored against: <strong>{role.company} — {role.title}</strong> · {role.team}</span>
