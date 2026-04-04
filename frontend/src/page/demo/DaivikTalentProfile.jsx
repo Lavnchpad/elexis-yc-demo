@@ -188,14 +188,16 @@ const edu = {
   nirf: "NIRF 151–200 (Engineering, 2024)",
   naac: "NAAC A+",
   location: "Vadodara, Gujarat",
+  usEquiv: "Mid-tier regional state university (accredited) — comparable to Cal State / UMass regional tier",
   note: "Private university with NAAC A+ accreditation. No academic score on resume. 5 years of production Flutter work across fintech, IoT, and healthcare is the primary credential.",
 };
 
 // ─── COMPENSATION ───
 const comp = {
-  marketRange: "₹10–18 LPA",
-  marketNote: "AmbitionBox: Sr. Flutter Developer, Ahmedabad, 4–6 YOE",
-  ctcEstimate: "₹12–15 LPA",
+  marketRange: "$11,000–$20,000/yr",
+  marketNote: "AmbitionBox: Sr. Flutter Dev, Ahmedabad, 4–6 YOE · converted at ₹90/$",
+  ctcEstimate: "$13,000–$17,000/yr",
+  inrEquiv: "₹12–15 LPA",
   withinBudget: true,
 };
 
@@ -415,19 +417,27 @@ function ProfileTab({ mobile }) {
               <span style={{ fontSize: 11, fontWeight: 600, textAlign: "right", maxWidth: 190 }}>{v}</span>
             </div>
           ))}
+          <div style={{ padding: "5px 0", borderBottom: `1px solid ${c.g[100]}` }}>
+            <div style={{ fontSize: 11, color: c.g[500], marginBottom: 2 }}>US Equivalent</div>
+            <div style={{ fontSize: 10.5, fontWeight: 600, color: c.g[700] }}>{edu.usEquiv}</div>
+          </div>
           <div style={{ background: c.blue.bg, border: `1px solid ${c.blue.brd}`, borderRadius: 6, padding: "5px 10px", marginTop: 8, fontSize: 10.5, color: c.blue.txt }}>
             <strong>Note:</strong> {edu.note}
           </div>
         </div>
         <div>
           <Section icon="💰" title="COMPENSATION" badge={comp.withinBudget ? "✓ Within Budget" : "⚠ Review Needed"} badgeColor={comp.withinBudget ? c.green : c.amber} />
-          <div style={{ fontFamily: mono, fontSize: 10, color: c.g[500], marginBottom: 4 }}>MARKET RATE (Sr. Flutter · Ahmedabad · 5 YOE)</div>
+          <div style={{ fontFamily: mono, fontSize: 10, color: c.g[500], marginBottom: 4 }}>MARKET RATE (Sr. Flutter · Remote India · 5 YOE)</div>
           <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>{comp.marketRange}</div>
           <div style={{ fontSize: 9.5, color: c.g[400], marginBottom: 10 }}>{comp.marketNote}</div>
           <div style={{ background: c.teal.bg, border: `1px solid ${c.teal.brd}`, borderRadius: 6, padding: "7px 10px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 10.5, color: c.g[500] }}>CTC estimate</span>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+              <span style={{ fontSize: 10.5, color: c.g[500] }}>Expected ask (USD)</span>
               <span style={{ fontFamily: mono, fontSize: 13, fontWeight: 800, color: c.teal.txt }}>{comp.ctcEstimate}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 10, color: c.g[400] }}>INR equivalent</span>
+              <span style={{ fontSize: 10, color: c.g[400] }}>{comp.inrEquiv}</span>
             </div>
           </div>
         </div>
