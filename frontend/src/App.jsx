@@ -44,6 +44,7 @@ import ArjunVRProfile from './page/demo/ArjunVRProfile';
 import SiddharthVRProfile from './page/demo/SiddharthVRProfile';
 import AbhishekJainTalentProfile from './page/demo/AbhishekJainTalentProfile';
 import SampleMechEngineerProfile from './page/demo/SampleMechEngineerProfile';
+import DaivikTalentProfile from './page/demo/DaivikTalentProfile';
 const App = () => {
   return (
     <BrowserRouter>
@@ -120,6 +121,8 @@ const App = () => {
           <Route path="/devendra-nodejs-profile" element={<DevendraTalentProfile />} />
           <Route path="/demo/sourabh-nodejs-profile" element={<SourabhTalentProfile />} />
           <Route path="/sourabh-nodejs-profile" element={<SourabhTalentProfile />} />
+          <Route path="/demo/daivik-profile" element={<DaivikTalentProfile />} />
+          <Route path="/daivik-profile" element={<DaivikTalentProfile />} />
           <Route path="/demo/arjun-vr-profile" element={<ArjunVRProfile />} />
           <Route path="/arjun-vr-profile" element={<ArjunVRProfile />} />
           <Route path="/demo/siddharth-vr-profile" element={<SiddharthVRProfile />} />
