@@ -145,28 +145,6 @@ const extras = [
   { skill: "Composites / Advanced Materials", found: false, evidence: "No composite or advanced material design experience. Work has been primarily aluminum, steel, and engineering plastics." },
 ];
 
-// ─── DESIGN REVIEW ───
-const designReview = {
-  title: "Injection-Molded Enclosure Drawing — Design Review",
-  context: "Multi-view engineering drawing of a plastic enclosure with GD&T callouts, material spec, and mating interface dimensions. Candidate reviewed live with screen share. Assessor did not prompt which issues to look for.",
-  time: "~20 min",
-  proficiency: "Advanced",
-  verdict: "Strongest review performance across this candidate batch. Found all four GD&T issues independently, flagged three DFM problems without prompting, and correctly identified the tolerance stack-up risk at the mating interface. Explanations were precise and referenced specific ASME Y14.5 clauses and injection molding process constraints. Offered redesign suggestions for each issue — not just identification. Assessor's note: 'This is what senior-level drawing review looks like.'",
-  caught: [
-    "Missing flatness callout on primary mating surface — identified as a functional requirement given the sealing interface",
-    "Incorrect datum reference frame order — B before A in position callout violates setup sequence",
-    "Missing projected tolerance zone for threaded insert — required per ASME Y14.5 for floating fasteners",
-    "Over-constrained position callout — redundant datum reference creating inspection ambiguity",
-    "Insufficient draft angle on side wall (1° — should be 2° minimum for this material)",
-    "Wall thickness 1.2mm in one section — below minimum for sink mark prevention at this gate location",
-    "Undercut on internal rib — requires side action in tool, adds tooling cost and lead time",
-    "Tolerance stack-up risk at bearing housing interface — identified worst-case gap condition",
-  ],
-  missed: [
-    "Surface finish callout missing on one exterior face — minor omission, caught on second pass when assessor pointed to that area",
-  ],
-};
-
 // ─── INTERVIEW ───
 const interviewScores = {
   "Tech Depth": 8.5,
@@ -369,36 +347,22 @@ function ProfileTab({ mobile }) {
         </div>
       </div>
 
-      {/* DESIGN REVIEW */}
-      <Section icon="📐" title="DESIGN REVIEW ACTIVITY" badge="~20 min · Screen Share" badgeColor={c.teal} />
-      <div style={{ fontSize: mobile ? 10.5 : 9.5, fontFamily: mono, color: c.g[400], margin: "-4px 0 8px" }}>Live review of a multi-view engineering drawing. Candidate identified issues independently — assessor did not indicate what to look for.</div>
-      <div style={{ background: c.g[50], border: `1px solid ${c.g[200]}`, borderRadius: 8, padding: mobile ? "12px 14px" : "10px 14px", marginBottom: 6 }}>
-        <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "flex-start" : "center", gap: mobile ? 6 : 0, marginBottom: 6 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: mono, fontWeight: 700, fontSize: mobile ? 12 : 11, color: c.g[900] }}>{designReview.title}</span>
-            <Pill color={profC[designReview.proficiency].txt} bg={profC[designReview.proficiency].bg}>{designReview.proficiency}</Pill>
-          </div>
-          <span style={{ fontSize: mobile ? 10 : 9, fontFamily: mono, color: c.g[400] }}>{designReview.time}</span>
-        </div>
-        <div style={{ fontSize: 11, color: c.g[400], marginBottom: 6, fontStyle: "italic" }}>{designReview.context}</div>
-        <div style={{ fontSize: mobile ? 12 : 11.5, color: c.g[700], lineHeight: 1.55, marginBottom: 8 }}>{designReview.verdict}</div>
+      <div style={{ height: mobile ? 20 : 14 }} />
 
-        <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 10 }}>
-          <div>
-            <div style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: c.green.txt, marginBottom: 4 }}>CAUGHT INDEPENDENTLY</div>
-            {designReview.caught.map((item, i) => (
-              <div key={i} style={{ fontSize: 10, color: c.g[700], lineHeight: 1.5, display: "flex", gap: 5, marginBottom: 2 }}>
-                <span style={{ color: c.green.txt, flexShrink: 0 }}>✓</span> {item}
-              </div>
-            ))}
+      {/* HIRING SIGNALS */}
+      <Section icon="📊" title="HIRING SIGNALS" badge="AI-Generated" badgeColor={c.purple} />
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 10, marginBottom: 6 }}>
+        {[
+          ["Career Trajectory", "Steady upward — intern to senior in 7 years, all at Tata Elxsi. Single-company tenure signals depth over breadth. No job-hopping risk.", c.green],
+          ["Transition Risk", "Services → product startup. Used to working from client specs, not owning product decisions. Manageable — interview showed comfort with ambiguity.", c.amber],
+          ["Gaps", "No robotics-specific experience (actuator sizing, linkage design, motor selection). Core mechanical skills transfer, but will need ramp-up time on robotics domain.", c.amber],
+          ["Availability", "Standard 60-day notice at Tata Elxsi. May negotiate to 30 days with buyout — confirm during offer stage.", c.blue],
+        ].map(([title, text, color]) => (
+          <div key={title} style={{ background: color.bg, border: `1px solid ${color.brd}`, borderRadius: 6, padding: "8px 10px" }}>
+            <div style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: color.txt, marginBottom: 3 }}>{title}</div>
+            <div style={{ fontSize: 11, color: c.g[700], lineHeight: 1.5 }}>{text}</div>
           </div>
-          <div>
-            <div style={{ fontFamily: mono, fontSize: 9.5, fontWeight: 700, color: c.amber.txt, marginBottom: 4 }}>MISSED / PROMPTED</div>
-            {designReview.missed.map((item, i) => (
-              <div key={i} style={{ fontSize: 10, color: c.amber.txt, background: c.amber.bg, padding: "4px 8px", borderRadius: 4, marginBottom: 4 }}>⚠ {item}</div>
-            ))}
-          </div>
-        </div>
+        ))}
       </div>
 
       <div style={{ height: mobile ? 20 : 14 }} />
@@ -444,11 +408,10 @@ function ProfileTab({ mobile }) {
         <div>
           <Section icon="💰" title="COMPENSATION" badge="Within Budget" badgeColor={c.green} />
           <div style={{ fontFamily: mono, fontSize: 10, color: c.g[500], marginBottom: 4 }}>CLIENT BUDGET (Sr. Mech. Design Engineer · Pune / Hybrid)</div>
-          <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>18L – 28L / yr</div>
+          <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>12L – 18L / yr</div>
           {[
-            ["Naukri (Sr. Mech. Design, 7+ YOE, Pune)", "17L – 27L", "India market median"],
-            ["Candidate current CTC", "22L / yr", "Based on 40+ market data points"],
-            ["Candidate closes at", "26L – 28L", "Based on profile + market"],
+            ["Naukri (Sr. Mech. Design, 7+ YOE, Pune)", "10L – 18L", "India market median"],
+            ["Candidate closes at", "~16L", "Est. CTC ~12L (Tata Elxsi) + 30% hike"],
           ].map(([s, v, n]) => (
             <div key={s} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: `1px solid ${c.g[100]}` }}>
               <span style={{ fontSize: 10, color: c.g[500] }}>{s}</span>
@@ -596,7 +559,7 @@ export default function SampleMechEngineerProfile() {
           </div>
           {!mobile && (
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              {[["Resume", true], ["Design Review", true], ["Interview", true]].map(([label, on]) => (
+              {[["Resume", true], ["Interview", true]].map(([label, on]) => (
                 <div key={label} style={{ display: "flex", alignItems: "center", gap: 3 }}>
                   <Dot on={on} />
                   <span style={{ fontSize: 9, fontFamily: mono, color: on ? c.g[700] : c.g[400] }}>{label}</span>
