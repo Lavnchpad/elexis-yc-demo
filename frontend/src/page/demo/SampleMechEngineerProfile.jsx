@@ -254,6 +254,24 @@ function ProfileTab({ mobile }) {
         ))}
       </ul>
 
+      {/* HIRING SIGNALS */}
+      <Section icon="📊" title="HIRING SIGNALS" badge="AI-Generated" badgeColor={c.purple} />
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 10, marginBottom: 6 }}>
+        {[
+          ["Career Trajectory", "Steady upward — intern to senior in 7 years, all at Tata Elxsi. Single-company tenure signals depth over breadth. No job-hopping risk.", c.green],
+          ["Transition Risk", "Services → product startup. Used to working from client specs, not owning product decisions. Manageable — interview showed comfort with ambiguity.", c.amber],
+          ["Gaps", "No robotics-specific experience (actuator sizing, linkage design, motor selection). Core mechanical skills transfer, but will need ramp-up time on robotics domain.", c.amber],
+          ["Availability", "Standard 60-day notice at Tata Elxsi. May negotiate to 30 days with buyout — confirm during offer stage.", c.blue],
+        ].map(([title, text, color]) => (
+          <div key={title} style={{ background: color.bg, border: `1px solid ${color.brd}`, borderRadius: 6, padding: "8px 10px" }}>
+            <div style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: color.txt, marginBottom: 3 }}>{title}</div>
+            <div style={{ fontSize: 11, color: c.g[700], lineHeight: 1.5 }}>{text}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ height: mobile ? 20 : 14 }} />
+
       {/* MUST-HAVES */}
       <Section icon="🔒" title="MUST-HAVE VERIFICATION — KNOCKOUT CRITERIA" badge={mustBadgeText} badgeColor={mustBadgeColor} />
       <div style={{ fontSize: mobile ? 10.5 : 9.5, color: c.g[400], fontFamily: mono, margin: "-4px 0 8px" }}>Any must-have failure = candidate removed. No exceptions.</div>
@@ -345,24 +363,6 @@ function ProfileTab({ mobile }) {
             </div>
           )}
         </div>
-      </div>
-
-      <div style={{ height: mobile ? 20 : 14 }} />
-
-      {/* HIRING SIGNALS */}
-      <Section icon="📊" title="HIRING SIGNALS" badge="AI-Generated" badgeColor={c.purple} />
-      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 10, marginBottom: 6 }}>
-        {[
-          ["Career Trajectory", "Steady upward — intern to senior in 7 years, all at Tata Elxsi. Single-company tenure signals depth over breadth. No job-hopping risk.", c.green],
-          ["Transition Risk", "Services → product startup. Used to working from client specs, not owning product decisions. Manageable — interview showed comfort with ambiguity.", c.amber],
-          ["Gaps", "No robotics-specific experience (actuator sizing, linkage design, motor selection). Core mechanical skills transfer, but will need ramp-up time on robotics domain.", c.amber],
-          ["Availability", "Standard 60-day notice at Tata Elxsi. May negotiate to 30 days with buyout — confirm during offer stage.", c.blue],
-        ].map(([title, text, color]) => (
-          <div key={title} style={{ background: color.bg, border: `1px solid ${color.brd}`, borderRadius: 6, padding: "8px 10px" }}>
-            <div style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: color.txt, marginBottom: 3 }}>{title}</div>
-            <div style={{ fontSize: 11, color: c.g[700], lineHeight: 1.5 }}>{text}</div>
-          </div>
-        ))}
       </div>
 
       <div style={{ height: mobile ? 20 : 14 }} />
